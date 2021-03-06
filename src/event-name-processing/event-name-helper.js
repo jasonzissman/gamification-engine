@@ -1,11 +1,35 @@
-function createMatchingEventCriteriaListenerRegexString(eventCriteria) {
-    // keysSorted = Object.keys(list).sort(function(a,b){return list[a]-list[b]})
-    const regexStr = Object.keys(eventCriteria).sort((a,b)=>{return eventCriteria[a]-eventCriteria[b]}).map(key => `${key}=${eventCriteria[key]}`).join("&");
-    return new RegExp(regexStr);
+function injectOmittedKnownEventKeys(eventCriteria, knownEventKeys) {
+    if (knownEventKeys && knownEventKeys.length > 0) {
+        knownEventKeys.forEach(knownKey => {
+            if (eventCriteria[knownKey] === undefined) {
+                eventCriteria[knownKey] = "___MISSING___"
+            }
+        });
+    }
+
 }
 
-function createEventBroadcastString(event) {    
-    return Object.keys(event).sort((a,b)=>{return event[a]-event[b]}).map(key => `${key}=${event[key]}`).join("&");
+function createMatchingEventCriteriaListenerRegexString(eventCriteria, knownEventKeys) {
+    let regexStr = "";
+    injectOmittedKnownEventKeys(eventCriteria, knownEventKeys);
+    const sortedKeys = Object.keys(eventCriteria).sort();
+    for (const key of sortedKeys) {
+        if (eventCriteria[key] === "___MISSING___") {
+            regexStr += `(&${key}=.*)?`;
+        } else {
+            regexStr += `&${key}=${eventCriteria[key]}`;
+        }
+    }
+    if (regexStr[0] === "(") {
+        return new RegExp(regexStr.slice(0, 1) + regexStr.slice(2));
+    } else {
+        return new RegExp(regexStr.substring(1));
+    }
+
+}
+
+function createEventBroadcastString(event) {
+    return Object.keys(event).sort().map(key => `${key}=${event[key]}`).join("&");
 }
 
 
