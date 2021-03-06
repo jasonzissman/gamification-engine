@@ -1,8 +1,11 @@
 function createSanitizedEvent(event, knownEventKeys) {
-    let retVal = {};
+    let retVal = undefined;
     if (knownEventKeys && knownEventKeys.length > 0) {
         knownEventKeys.forEach(knownKey => {
             if (event[knownKey] !== undefined) {
+                if (!retVal) {
+                    retVal = {};
+                }
                 retVal[knownKey] = event[knownKey];
             }
         });
@@ -21,24 +24,35 @@ function injectOmittedKnownEventKeys(eventCriteria, knownEventKeys) {
 }
 
 function createMatchingEventCriteriaListenerRegexString(eventCriteria, knownEventKeys) {
-    let regexStr = "";
-    injectOmittedKnownEventKeys(eventCriteria, knownEventKeys);
-    const sortedKeys = Object.keys(eventCriteria).sort();
-    for (const key of sortedKeys) {
-        if (eventCriteria[key] === "___MISSING___") {
-            regexStr += `(&${key}=.*)?`;
-        } else {
-            regexStr += `&${key}=${eventCriteria[key]}`;
+
+    let retVal = undefined;
+
+    if (eventCriteria != undefined && Object.keys(eventCriteria).length > 0) {
+        let regexStr = "";
+
+        injectOmittedKnownEventKeys(eventCriteria, knownEventKeys);
+        const sortedKeys = Object.keys(eventCriteria).sort();
+        for (const key of sortedKeys) {
+            if (eventCriteria[key] === "___MISSING___") {
+                regexStr += `(&${key}=.*)?`;
+            } else {
+                regexStr += `&${key}=${eventCriteria[key]}`;
+            }
         }
+
+        retVal = new RegExp(regexStr);
     }
 
-    return new RegExp(regexStr);
-
+    return retVal;
 }
 
 function createEventBroadcastString(event, knownEventKeys) {
+    let retVal = undefined;
     const sanitizedEvent = createSanitizedEvent(event, knownEventKeys);
-    return "&" + Object.keys(sanitizedEvent).sort().map(key => `${key}=${sanitizedEvent[key]}`).join("&");
+    if (sanitizedEvent) {
+        retVal = "&" + Object.keys(sanitizedEvent).sort().map(key => `${key}=${sanitizedEvent[key]}`).join("&");
+    }
+    return retVal;
 }
 
 module.exports = { createEventBroadcastString, createMatchingEventCriteriaListenerRegexString };

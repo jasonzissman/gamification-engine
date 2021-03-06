@@ -13,7 +13,7 @@ describe('Event Name Helper', () => {
 
             assert.equal(eventCriteriaRegex.test(eventBroadcastString), shouldMatch);
         };
-        
+
         it('simple event should match simple criteria', () => {
 
             let eventCriteria = { var1: "foo" };
@@ -187,17 +187,33 @@ describe('Event Name Helper', () => {
 
     });
 
-    // TODO - test to sanitize data. No regex chars allowed.
-
     describe('Efficiency', () => {
 
         it('should not broadcast event fields that are not found in any criteria', () => {
 
             let eventReceived = { var1: "foo", var2: "bar", unrecognizedField: "what?" };
-            const knownEventKeys = ["var1", "var2" ];
+            const knownEventKeys = ["var1", "var2"];
 
             const eventBroadcastString = eventNameHelper.createEventBroadcastString(eventReceived, knownEventKeys);
             assert.equal(eventBroadcastString, "&var1=foo&var2=bar");
+        });
+
+        it('should return undefined if none of the event fields are recognized', () => {
+
+            let eventReceived = { unrecognizedField1: "what", unrecognizedField2: "ok" };
+            const knownEventKeys = ["var1", "var2"];
+
+            const eventBroadcastString = eventNameHelper.createEventBroadcastString(eventReceived, knownEventKeys);
+            assert.equal(eventBroadcastString, undefined);
+        });
+
+        it('should return undefined if no criteria defined', () => {
+
+            const eventCriteria = {};
+            const knownEventKeys = ["var1", "var2", "var3"];
+
+            const eventCriteriaRegex = eventNameHelper.createMatchingEventCriteriaListenerRegexString(eventCriteria, knownEventKeys);
+            assert.equal(eventCriteriaRegex, undefined);
         });
 
     });
