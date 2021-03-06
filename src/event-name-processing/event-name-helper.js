@@ -1,3 +1,15 @@
+function createSanitizedEvent(event, knownEventKeys) {
+    let retVal = {};
+    if (knownEventKeys && knownEventKeys.length > 0) {
+        knownEventKeys.forEach(knownKey => {
+            if (event[knownKey] !== undefined) {
+                retVal[knownKey] = event[knownKey];
+            }
+        });
+    }
+    return retVal;
+}
+
 function injectOmittedKnownEventKeys(eventCriteria, knownEventKeys) {
     if (knownEventKeys && knownEventKeys.length > 0) {
         knownEventKeys.forEach(knownKey => {
@@ -6,7 +18,6 @@ function injectOmittedKnownEventKeys(eventCriteria, knownEventKeys) {
             }
         });
     }
-
 }
 
 function createMatchingEventCriteriaListenerRegexString(eventCriteria, knownEventKeys) {
@@ -20,17 +31,14 @@ function createMatchingEventCriteriaListenerRegexString(eventCriteria, knownEven
             regexStr += `&${key}=${eventCriteria[key]}`;
         }
     }
-    if (regexStr[0] === "(") {
-        return new RegExp(regexStr.slice(0, 1) + regexStr.slice(2));
-    } else {
-        return new RegExp(regexStr.substring(1));
-    }
+
+    return new RegExp(regexStr);
 
 }
 
-function createEventBroadcastString(event) {
-    return Object.keys(event).sort().map(key => `${key}=${event[key]}`).join("&");
+function createEventBroadcastString(event, knownEventKeys) {
+    const sanitizedEvent = createSanitizedEvent(event, knownEventKeys);
+    return "&" + Object.keys(sanitizedEvent).sort().map(key => `${key}=${sanitizedEvent[key]}`).join("&");
 }
-
 
 module.exports = { createEventBroadcastString, createMatchingEventCriteriaListenerRegexString };

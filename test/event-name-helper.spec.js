@@ -3,17 +3,17 @@ const eventNameHelper = require('../src/event-name-processing/event-name-helper'
 
 describe('Event Name Helper', () => {
 
-    describe('eventCriteriaMatching', () => {
+    describe('Event Criteria Matching', () => {
 
         const assertEventCriteriaMatchesEvent = (eventCriteria, eventReceived, shouldMatch) => {
 
-            const knownEventKeys = ["var1", "var2", "var3", "var4", "var5"];
+            const knownEventKeys = ["var1", "var2", "var3", "var4", "a_var1", "h_var2", "z_var3"];
             const eventCriteriaRegex = eventNameHelper.createMatchingEventCriteriaListenerRegexString(eventCriteria, knownEventKeys);
-            const eventName = eventNameHelper.createEventBroadcastString(eventReceived);
+            const eventBroadcastString = eventNameHelper.createEventBroadcastString(eventReceived, knownEventKeys);
 
-            assert.equal(eventCriteriaRegex.test(eventName), shouldMatch);
+            assert.equal(eventCriteriaRegex.test(eventBroadcastString), shouldMatch);
         };
-
+        
         it('simple event should match simple criteria', () => {
 
             let eventCriteria = { var1: "foo" };
@@ -158,10 +158,48 @@ describe('Event Name Helper', () => {
             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, false);
         });
 
-        // Test assert that we reduce even to only known keys
+        it('unknown event field should have no impact on otherwise matching subset criteria #1', () => {
+
+            let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
+            let eventReceived = { var1: "foo", var2: "bar", var3: "zzz", z_unrecognizedField: "what" };
+
+            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+        });
+
+        it('unknown event field should have no impact on otherwise matching subset criteria #2', () => {
+
+            let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
+            let eventReceived = { var1: "foo", var2: "bar", var3: "zzz", a_unrecognizedField: "what" };
+
+            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+        });
+
+        it('unknown event field should have no impact on otherwise matching subset criteria #4', () => {
+
+            // This test causes an unrecognized field to appear in the middle of 
+            // the regex, which is its own test case vs the other permutations.
+
+            let eventCriteria = { a_var1: "foo", h_var2: "bar", z_var3: "zzz" };
+            let eventReceived = { a_var1: "foo", h_var2: "bar", z_var3: "zzz", j_unrecognizedField: "what" };
+
+            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+        });
 
     });
 
+    // TODO - test to sanitize data. No regex chars allowed.
 
+    describe('Efficiency', () => {
+
+        it('should not broadcast event fields that are not found in any criteria', () => {
+
+            let eventReceived = { var1: "foo", var2: "bar", unrecognizedField: "what?" };
+            const knownEventKeys = ["var1", "var2" ];
+
+            const eventBroadcastString = eventNameHelper.createEventBroadcastString(eventReceived, knownEventKeys);
+            assert.equal(eventBroadcastString, "&var1=foo&var2=bar");
+        });
+
+    });
 
 });
