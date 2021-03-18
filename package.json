@@ -4,6 +4,7 @@
   "description": "An engine that enables gamification",
   "main": "index.js",
   "scripts": {
+    "start": "node ./src/index.js",
     "test": "mocha"
   },
   "author": "Jason Zissman",

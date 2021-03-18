@@ -1,8 +1,10 @@
 # Gamification Engine
 A platform that enables gamification for other applications.
 
-# System Architecture
-More info coming
+# Running the app
+```
+npm start
+```
 
 # Running Tests
 
@@ -10,3 +12,8 @@ More info coming
 npm install --save-dev mocha
 npm test
 ```
+
+
+# System Architecture
+More info coming
+
