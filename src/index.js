@@ -8,9 +8,8 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get("/health", (request, response) => {
-    response.status(200).send({ status: "ok" });
-});
+app.use("/health", require('./health/health-routes.js'));
+app.use("/goals", require('./goals/goal-routes.js'));
 
 app.listen(port, (err) => {
     if (err) {
