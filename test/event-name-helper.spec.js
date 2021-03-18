@@ -1,221 +1,221 @@
-const assert = require('assert');
-const eventNameHelper = require('../src/event-name-processing/event-name-helper');
+// const assert = require('assert');
+// const eventNameHelper = require('../src/event-name-processing/event-name-helper');
 
-describe('Event Name Helper', () => {
+// describe('Event Name Helper', () => {
 
-    describe('Event Criteria Matching', () => {
+//     describe('Event Criteria Matching', () => {
 
-        const assertEventCriteriaMatchesEvent = (eventCriteria, eventReceived, shouldMatch) => {
+//         const assertEventCriteriaMatchesEvent = (eventCriteria, eventReceived, shouldMatch) => {
 
-            const knownEventKeys = ["var1", "var2", "var3", "var4", "a_var1", "h_var2", "z_var3"];
-            const eventCriteriaRegex = eventNameHelper.createMatchingEventCriteriaListenerRegexString(eventCriteria, knownEventKeys);
-            const eventBroadcastString = eventNameHelper.createEventBroadcastString(eventReceived, knownEventKeys);
+//             const knownEventKeys = ["var1", "var2", "var3", "var4", "a_var1", "h_var2", "z_var3"];
+//             const eventCriteriaRegex = eventNameHelper.createMatchingEventCriteriaListenerRegexString(eventCriteria, knownEventKeys);
+//             const eventBroadcastString = eventNameHelper.createEventBroadcastString(eventReceived, knownEventKeys);
 
-            assert.equal(eventCriteriaRegex.test(eventBroadcastString), shouldMatch);
-        };
+//             assert.equal(eventCriteriaRegex.test(eventBroadcastString), shouldMatch);
+//         };
 
-        it('simple event should match simple criteria', () => {
+//         it('simple event should match simple criteria', () => {
 
-            let eventCriteria = { var1: "foo" };
-            let eventReceived = { var1: "foo" };
+//             let eventCriteria = { var1: "foo" };
+//             let eventReceived = { var1: "foo" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('simple event should not match simple criteria', () => {
+//         it('simple event should not match simple criteria', () => {
 
-            let eventCriteria = { var1: "foo" };
-            let eventReceived = { var1: "yyy" };
+//             let eventCriteria = { var1: "foo" };
+//             let eventReceived = { var1: "yyy" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, false);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, false);
+//         });
 
-        it('multi-field event should match multi-field criteria', () => {
+//         it('multi-field event should match multi-field criteria', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar" };
-            let eventReceived = { var1: "foo", var2: "bar" };
+//             let eventCriteria = { var1: "foo", var2: "bar" };
+//             let eventReceived = { var1: "foo", var2: "bar" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('multi-field event should NOT match multi-field criteria', () => {
+//         it('multi-field event should NOT match multi-field criteria', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar" };
-            let eventReceived = { var1: "yyy", var2: "zzz" };
+//             let eventCriteria = { var1: "foo", var2: "bar" };
+//             let eventReceived = { var1: "yyy", var2: "zzz" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, false);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, false);
+//         });
 
-        it('should not matter what order event fields come in', () => {
+//         it('should not matter what order event fields come in', () => {
 
-            let eventCriteria = { var2: "bar", var1: "foo" };
-            let eventReceived = { var1: "foo", var2: "bar" };
+//             let eventCriteria = { var2: "bar", var1: "foo" };
+//             let eventReceived = { var1: "foo", var2: "bar" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('should not matter what order criteria fields defined in', () => {
+//         it('should not matter what order criteria fields defined in', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar" };
-            let eventReceived = { var2: "bar", var1: "foo" };
+//             let eventCriteria = { var1: "foo", var2: "bar" };
+//             let eventReceived = { var2: "bar", var1: "foo" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('multi-field event should match subset single-field criteria', () => {
+//         it('multi-field event should match subset single-field criteria', () => {
 
-            let eventCriteria = { var1: "foo" };
-            let eventReceived = { var1: "foo", var2: "bar" };
+//             let eventCriteria = { var1: "foo" };
+//             let eventReceived = { var1: "foo", var2: "bar" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('multi-field event should NOT match non-subset single-field criteria', () => {
+//         it('multi-field event should NOT match non-subset single-field criteria', () => {
 
-            let eventCriteria = { var1: "zzz" };
-            let eventReceived = { var1: "foo", var2: "bar" };
+//             let eventCriteria = { var1: "zzz" };
+//             let eventReceived = { var1: "foo", var2: "bar" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, false);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, false);
+//         });
 
-        it('single-field event should NOT match partial subset multi-field criteria', () => {
+//         it('single-field event should NOT match partial subset multi-field criteria', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar" };
-            let eventReceived = { var1: "foo" };
+//             let eventCriteria = { var1: "foo", var2: "bar" };
+//             let eventReceived = { var1: "foo" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, false);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, false);
+//         });
 
-        it('unsorted multi-field event should match subset single-field criteria', () => {
+//         it('unsorted multi-field event should match subset single-field criteria', () => {
 
-            let eventCriteria = { var1: "foo" };
-            let eventReceived = { var2: "bar", var1: "foo" };
+//             let eventCriteria = { var1: "foo" };
+//             let eventReceived = { var2: "bar", var1: "foo" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('three-field event should match three-field criteria', () => {
+//         it('three-field event should match three-field criteria', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
-            let eventReceived = { var1: "foo", var2: "bar", var3: "zzz" };
+//             let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
+//             let eventReceived = { var1: "foo", var2: "bar", var3: "zzz" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('three-field event should match three-field criteria even if order different #1', () => {
+//         it('three-field event should match three-field criteria even if order different #1', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
-            let eventReceived = { var3: "zzz", var2: "bar", var1: "foo" };
+//             let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
+//             let eventReceived = { var3: "zzz", var2: "bar", var1: "foo" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('three-field event should match three-field criteria even if order different #2', () => {
+//         it('three-field event should match three-field criteria even if order different #2', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
-            let eventReceived = { var2: "bar", var1: "foo", var3: "zzz" };
+//             let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
+//             let eventReceived = { var2: "bar", var1: "foo", var3: "zzz" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('three-field event should match subset two-field criteria #1', () => {
+//         it('three-field event should match subset two-field criteria #1', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar" };
-            let eventReceived = { var1: "foo", var2: "bar", var3: "zzz" };
+//             let eventCriteria = { var1: "foo", var2: "bar" };
+//             let eventReceived = { var1: "foo", var2: "bar", var3: "zzz" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('three-field event should match subset two-field criteria #2', () => {
+//         it('three-field event should match subset two-field criteria #2', () => {
 
-            let eventCriteria = { var1: "foo", var3: "zzz" };
-            let eventReceived = { var1: "foo", var2: "bar", var3: "zzz" };
+//             let eventCriteria = { var1: "foo", var3: "zzz" };
+//             let eventReceived = { var1: "foo", var2: "bar", var3: "zzz" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('three-field event should match subset two-field criteria #3', () => {
+//         it('three-field event should match subset two-field criteria #3', () => {
 
-            let eventCriteria = { var2: "bar", var3: "zzz" };
-            let eventReceived = { var1: "foo", var2: "bar", var3: "zzz" };
+//             let eventCriteria = { var2: "bar", var3: "zzz" };
+//             let eventReceived = { var1: "foo", var2: "bar", var3: "zzz" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('unsorted three-field event should match subset two-field criteria', () => {
+//         it('unsorted three-field event should match subset two-field criteria', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar" };
-            let eventReceived = { var2: "bar", var1: "foo", var3: "zzz" };
+//             let eventCriteria = { var1: "foo", var2: "bar" };
+//             let eventReceived = { var2: "bar", var1: "foo", var3: "zzz" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('unsorted three-field event should NOT match not-subset two-field criteria', () => {
+//         it('unsorted three-field event should NOT match not-subset two-field criteria', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar" };
-            let eventReceived = { var2: "bar", var1: "yyy", var3: "zzz" };
+//             let eventCriteria = { var1: "foo", var2: "bar" };
+//             let eventReceived = { var2: "bar", var1: "yyy", var3: "zzz" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, false);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, false);
+//         });
 
-        it('unknown event field should have no impact on otherwise matching subset criteria #1', () => {
+//         it('unknown event field should have no impact on otherwise matching subset criteria #1', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
-            let eventReceived = { var1: "foo", var2: "bar", var3: "zzz", z_unrecognizedField: "what" };
+//             let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
+//             let eventReceived = { var1: "foo", var2: "bar", var3: "zzz", z_unrecognizedField: "what" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('unknown event field should have no impact on otherwise matching subset criteria #2', () => {
+//         it('unknown event field should have no impact on otherwise matching subset criteria #2', () => {
 
-            let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
-            let eventReceived = { var1: "foo", var2: "bar", var3: "zzz", a_unrecognizedField: "what" };
+//             let eventCriteria = { var1: "foo", var2: "bar", var3: "zzz" };
+//             let eventReceived = { var1: "foo", var2: "bar", var3: "zzz", a_unrecognizedField: "what" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-        it('unknown event field should have no impact on otherwise matching subset criteria #4', () => {
+//         it('unknown event field should have no impact on otherwise matching subset criteria #4', () => {
 
-            // This test causes an unrecognized field to appear in the middle of 
-            // the regex, which is its own test case vs the other permutations.
+//             // This test causes an unrecognized field to appear in the middle of 
+//             // the regex, which is its own test case vs the other permutations.
 
-            let eventCriteria = { a_var1: "foo", h_var2: "bar", z_var3: "zzz" };
-            let eventReceived = { a_var1: "foo", h_var2: "bar", z_var3: "zzz", j_unrecognizedField: "what" };
+//             let eventCriteria = { a_var1: "foo", h_var2: "bar", z_var3: "zzz" };
+//             let eventReceived = { a_var1: "foo", h_var2: "bar", z_var3: "zzz", j_unrecognizedField: "what" };
 
-            assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
-        });
+//             assertEventCriteriaMatchesEvent(eventCriteria, eventReceived, true);
+//         });
 
-    });
+//     });
 
-    describe('Efficiency', () => {
+//     describe('Efficiency', () => {
 
-        it('should not broadcast event fields that are not found in any criteria', () => {
+//         it('should not broadcast event fields that are not found in any criteria', () => {
 
-            let eventReceived = { var1: "foo", var2: "bar", unrecognizedField: "what?" };
-            const knownEventKeys = ["var1", "var2"];
+//             let eventReceived = { var1: "foo", var2: "bar", unrecognizedField: "what?" };
+//             const knownEventKeys = ["var1", "var2"];
 
-            const eventBroadcastString = eventNameHelper.createEventBroadcastString(eventReceived, knownEventKeys);
-            assert.equal(eventBroadcastString, "&var1=foo&var2=bar");
-        });
+//             const eventBroadcastString = eventNameHelper.createEventBroadcastString(eventReceived, knownEventKeys);
+//             assert.equal(eventBroadcastString, "&var1=foo&var2=bar");
+//         });
 
-        it('should return undefined if none of the event fields are recognized', () => {
+//         it('should return undefined if none of the event fields are recognized', () => {
 
-            let eventReceived = { unrecognizedField1: "what", unrecognizedField2: "ok" };
-            const knownEventKeys = ["var1", "var2"];
+//             let eventReceived = { unrecognizedField1: "what", unrecognizedField2: "ok" };
+//             const knownEventKeys = ["var1", "var2"];
 
-            const eventBroadcastString = eventNameHelper.createEventBroadcastString(eventReceived, knownEventKeys);
-            assert.equal(eventBroadcastString, undefined);
-        });
+//             const eventBroadcastString = eventNameHelper.createEventBroadcastString(eventReceived, knownEventKeys);
+//             assert.equal(eventBroadcastString, undefined);
+//         });
 
-        it('should return undefined if no criteria defined', () => {
+//         it('should return undefined if no criteria defined', () => {
 
-            const eventCriteria = {};
-            const knownEventKeys = ["var1", "var2", "var3"];
+//             const eventCriteria = {};
+//             const knownEventKeys = ["var1", "var2", "var3"];
 
-            const eventCriteriaRegex = eventNameHelper.createMatchingEventCriteriaListenerRegexString(eventCriteria, knownEventKeys);
-            assert.equal(eventCriteriaRegex, undefined);
-        });
+//             const eventCriteriaRegex = eventNameHelper.createMatchingEventCriteriaListenerRegexString(eventCriteria, knownEventKeys);
+//             assert.equal(eventCriteriaRegex, undefined);
+//         });
 
-    });
+//     });
 
-});
+// });

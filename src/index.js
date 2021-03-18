@@ -10,6 +10,7 @@ app.use((req, res, next) => {
 
 app.use("/health", require('./health/health-routes.js'));
 app.use("/goals", require('./goals/goal-routes.js'));
+app.use("/entity", require('./entity/entity-routes.js'));
 
 app.listen(port, (err) => {
     if (err) {
