@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const eventCriteriaHelper = require('../event/event-criteria-matcher');
+const dbHelper = require('../database/db-helper');
 
 function areAllFieldsAndValuesInSafeCharSet(object) {
     return /^[a-z|0-9|_|-]+$/i.test(JSON.stringify(object).replace(/[{}:",\[\]\s]/g, ''));
@@ -86,14 +87,10 @@ async function persistGoal(newGoal) {
     if (!validationResult.isValid) {
         retVal = validationResult;
     } else {
-
         const criteriaEntities = createCriteriaEntityFromRequestGoal(newGoal);
         const criteriaIds = criteriaEntities.map(criteria => criteria.id);
         const goalEntity = createGoalEntityFromRequestGoal(newGoal, criteriaIds);
-
-        // Insert everything into DB in one command 
-        // TODO!!!
-
+        await dbHelper.addNewGoalAndCriteria(goalEntity, criteriaEntities);
         eventCriteriaHelper.addNewCriteriaToLookupMap(criteriaEntities);
     }
 

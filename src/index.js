@@ -1,23 +1,40 @@
 const express = require('express');
 const app = express();
+const logger = require('./utility/logger');
+const dbHelper = require('./database/db-helper');
+
 const port = process.env.PORT || 3000;
-const logger = require('./utility/logger.js');
+const dbConnString = process.env.DB_CONN_STRING || "mongodb://localhost:27017/gamification";
 
-app.use((req, res, next) => {
-    logger.info(`Request received at ${req.url}.`);
-    next();
-});
+async function start() {
+    const connectionAttempt = await dbHelper.initDbConnection(dbConnString);
 
-app.use("/event", require('./entity/entity-routes.js'));
-app.use("/health", require('./health/health-routes.js'));
-app.use("/goal", require('./goal/goal-routes.js'));
-app.use("/entity", require('./entity/entity-routes.js'));
-
-
-app.listen(port, (err) => {
-    if (err) {
-        logger.error(err);
+    if (connectionAttempt.status === "ok") {
+        startExpressApp();
+    } else {
+        logger.error("Failed to connect to database! App not starting.");
+        logger.error(connectionAttempt.message);
     }
+}
 
-    logger.info(`Listening on ${port}.`);
-});
+function startExpressApp() {
+    app.use((req, res, next) => {
+        logger.info(`Request received at ${req.url}.`);
+        next();
+    });
+
+    app.use("/event", require('./entity/entity-routes.js'));
+    app.use("/health", require('./health/health-routes.js'));
+    app.use("/goal", require('./goal/goal-routes.js'));
+    app.use("/entity", require('./entity/entity-routes.js'));
+
+    app.listen(port, (err) => {
+        if (err) {
+            logger.error(err);
+        }
+
+        logger.info(`Listening on ${port}.`);
+    });
+}
+
+start();
