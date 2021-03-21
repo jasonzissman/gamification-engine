@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const goalHelper = require('./goal-helper.js');
 
+// HTTP POST <host>/goals/
 router.post("/", async (request, response) => {
     let outcome = await goalHelper.persistGoal(goal);
 
@@ -18,11 +19,13 @@ router.post("/", async (request, response) => {
     }
 });
 
+// HTTP PUT <host>/goals/<goal-id>
 router.put("/:goalId", (request, response) => {
     // TODO invoke goal update routine
     response.status(200).send({ status: "ok" });
 });
 
+// HTTP GET <host>/goals/
 router.get("/", (request, response) => {
     // TODO invoke goal fetch-all routine
     response.status(200).send({ status: "ok" });

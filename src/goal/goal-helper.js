@@ -1,8 +1,4 @@
-async function persistGoal(newGoal) {
-    let retVal = {};
-
-    return retVal;
-}
+const { v4: uuidv4 } = require('uuid');
 
 function isSafeCharacterSet(dataString) {
     return /^[a-z|0-9|_|-]+$/i.test(dataString);
@@ -15,6 +11,7 @@ function areAllFieldsAndValuesInSafeCharSet(object) {
 function isSingleCriteriaValid(criteria) {
     let isValid = false;
 
+    // TODO!!!! Test to make sure nested value not provided for any field
     if (criteria &&
         criteria.qualifyingEvent &&
         Object.keys(criteria.qualifyingEvent).length > 0 &&
@@ -51,7 +48,7 @@ function validateGoal(newGoal) {
     } else if (!areAllFieldsAndValuesInSafeCharSet(newGoal)) {
         retVal.message = "Goal fields can only contain dashes (-), underscores (_), and alpha-numeric characters.";
     } else if (!areAllCriteriaValid(newGoal)) {
-        retVal.message = "All criteria should have qualifying events with at least one name/value attribute, a valid aggregation, and a valid threshold.";
+        retVal.message = "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.";
     } else {
         retVal.isValid = true;
         retVal.message = "ok";
@@ -60,4 +57,39 @@ function validateGoal(newGoal) {
     return retVal;
 }
 
-module.exports = { persistGoal, validateGoal };
+function createGoalEntityFromRequestGoal(newGoal, criteriaIds) {
+    return {
+        id: uuidv4(),
+        name: newGoal.name,
+        targetEntityId: newGoal.targetEntityId,
+        criteria: criteriaIds
+    };
+}
+
+function createCriteriaEntityFromRequestGoal(newGoal) {
+    const criteriaToPersist = [];
+
+    return criteriaToPersist;
+}
+
+async function persistGoal(newGoal) {
+    let retVal = {};
+
+    const validationResult = validateGoal(newGoal);
+    if (!validationResult.isValid) {
+        retVal = validationResult;
+    } else {
+        // 1. Create criteria entities
+        for (const criteria of newGoal.criteria) {
+            
+        }
+        // 2. Create goal entity
+        // createGoalEntityFromRequestGoal(newGoal, CRITERIA_IDS)
+        
+        // 3. Insert into DB in one command 
+    }
+
+    return retVal;
+}
+
+module.exports = { persistGoal, validateGoal, createGoalEntityFromRequestGoal, createCriteriaEntityFromRequestGoal };
