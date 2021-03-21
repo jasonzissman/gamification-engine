@@ -1,8 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-
-function isSafeCharacterSet(dataString) {
-    return /^[a-z|0-9|_|-]+$/i.test(dataString);
-}
+const eventCriteriaHelper = require('../event/event-criteria-matcher');
 
 function areAllFieldsAndValuesInSafeCharSet(object) {
     return /^[a-z|0-9|_|-]+$/i.test(JSON.stringify(object).replace(/[{}:",\[\]\s]/g, ''));
@@ -69,6 +66,16 @@ function createGoalEntityFromRequestGoal(newGoal, criteriaIds) {
 function createCriteriaEntityFromRequestGoal(newGoal) {
     const criteriaToPersist = [];
 
+    for (const criteria of newGoal.criteria) {
+        criteriaToPersist.push({
+            id: uuidv4(),            
+            targetEntityId: newGoal.targetEntityId,
+            qualifyingEvent: criteria.qualifyingEvent,
+            aggregation: criteria.aggregation,
+            threshold: criteria.threshold
+        });
+    }
+
     return criteriaToPersist;
 }
 
@@ -79,14 +86,15 @@ async function persistGoal(newGoal) {
     if (!validationResult.isValid) {
         retVal = validationResult;
     } else {
-        // 1. Create criteria entities
-        for (const criteria of newGoal.criteria) {
-            
-        }
-        // 2. Create goal entity
-        // createGoalEntityFromRequestGoal(newGoal, CRITERIA_IDS)
-        
-        // 3. Insert into DB in one command 
+
+        const criteriaEntities = createCriteriaEntityFromRequestGoal(newGoal);
+        const criteriaIds = criteriaEntities.map(criteria => criteria.id);
+        const goalEntity = createGoalEntityFromRequestGoal(newGoal, criteriaIds);
+
+        // Insert everything into DB in one command 
+        // TODO!!!
+
+        eventCriteriaHelper.addNewCriteriaToLookupMap(criteriaEntities);
     }
 
     return retVal;

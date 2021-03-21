@@ -3,7 +3,7 @@ const eventCriteriaHelper = require('../src/event/event-criteria-matcher');
 
 describe('Criteria Matching', () => {
 
-    describe('Contrived Scenario 1', () => {
+    describe('Basic Scenarios', () => {
 
         it('should match received event to appropriate qualifying event - test 1', () => {
 
@@ -418,4 +418,64 @@ describe('Criteria Matching', () => {
 
     });
 
+    describe('Runtime Insertion of New Criteria', () => {
+
+        it('Lookup should not break as new criteria inserted', () => {
+
+            const criteria = [{
+                id: "criterion-1",
+                targetEntityId: "userId",
+                qualifyingEvent: {
+                    var1: "aaa",
+                    var2: "bbb"
+                },
+                aggregation: "count",
+                threshold: 5
+            }];
+            eventCriteriaHelper.initCriteriaLookupMap(criteria);
+
+            const receivedEvent1 = {
+                var1: "aaa",
+                var2: "bbb"
+            };
+            const matchingCriteria1 = eventCriteriaHelper.lookupMatchingCriteria(receivedEvent1);
+
+            assert.strictEqual(matchingCriteria1.length, 1);
+            assert.strictEqual(matchingCriteria1[0], "criterion-1");
+
+            const newCriteria = {
+                id: "criterion-2",
+                targetEntityId: "userId",
+                qualifyingEvent: {
+                    var1: "aaa",
+                    var2: "bbb",
+                    var3: "ccc"
+                },
+                aggregation: "count",
+                threshold: 5
+            };
+            eventCriteriaHelper.addNewCriterionToLookupMap(newCriteria);
+
+            const receivedEvent2 = {
+                var1: "aaa",
+                var2: "bbb"
+            };
+            const matchingCriteria2 = eventCriteriaHelper.lookupMatchingCriteria(receivedEvent2);
+
+            assert.strictEqual(matchingCriteria2.length, 1);
+            assert.strictEqual(matchingCriteria2[0], "criterion-1");
+
+            const receivedEvent3 = {
+                var1: "aaa",
+                var2: "bbb",
+                var3: "ccc",
+                var4: "ddd"
+            };
+            const matchingCriteria3 = eventCriteriaHelper.lookupMatchingCriteria(receivedEvent3);
+
+            assert.strictEqual(matchingCriteria3.length, 2);
+            assert.strictEqual(matchingCriteria3.indexOf("criterion-1") > -1, true);
+            assert.strictEqual(matchingCriteria3.indexOf("criterion-2") > -1, true);
+        });
+    });
 });

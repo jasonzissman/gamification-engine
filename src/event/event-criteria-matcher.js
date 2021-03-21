@@ -1,27 +1,30 @@
 let EVENT_LOOKUP_MAP = {};
+let CRITERIA_IDS_FIELD = "_criteriaIds";
 
 function generateLookupFieldValueKey(criterionKey, criterionValue) {
     return `${criterionKey}=${criterionValue}`;
 }
 
 function initCriteriaLookupMap(criteria) {
-
     EVENT_LOOKUP_MAP = {};
-
-    for (criterion of criteria) {
-        addNewCriterionQualifyingEvent(criterion)
-    }
-
+    addNewCriteriaToLookupMap(criteria);
     return;
 }
 
-function addNewCriterionQualifyingEvent(criterion) {
-    const criterionQualifyingEvent = Object.assign({}, criterion.qualifyingEvent);
-    const sortedKeys = Object.keys(criterionQualifyingEvent).sort();
+function addNewCriteriaToLookupMap(criteria) {
+    for (criterion of criteria) {
+        addNewCriterionToLookupMap(criterion)
+    }
+    return
+}
+
+function addNewCriterionToLookupMap(criterion) {
+
+    const sortedKeys = Object.keys(criterion.qualifyingEvent).sort();
 
     let pointerToLastNode = EVENT_LOOKUP_MAP;
     for (const criterionKey of sortedKeys) {
-        const formattedLookupKey = generateLookupFieldValueKey(criterionKey, criterionQualifyingEvent[criterionKey]);
+        const formattedLookupKey = generateLookupFieldValueKey(criterionKey, criterion.qualifyingEvent[criterionKey]);
         if (!pointerToLastNode[formattedLookupKey]) {
             pointerToLastNode[formattedLookupKey] = {};
         }
@@ -32,37 +35,33 @@ function addNewCriterionQualifyingEvent(criterion) {
         pointerToLastNode = {
             _criteriaIds: []
         }
-    } else if (pointerToLastNode["_criteriaIds"] === undefined) {
-        pointerToLastNode["_criteriaIds"] = [];
+    } else if (pointerToLastNode[CRITERIA_IDS_FIELD] === undefined) {
+        pointerToLastNode[CRITERIA_IDS_FIELD] = [];
     }
-    pointerToLastNode["_criteriaIds"].push(criterion.id);
+    pointerToLastNode[CRITERIA_IDS_FIELD].push(criterion.id);
 
 
     return;
 }
 
 function lookupMatchingCriteria(receivedEvent) {
-    const matchingCriteriaIds = [];
-    const receivedEventClone = Object.assign({}, receivedEvent);
-    const sortedKeys = Object.keys(receivedEventClone).sort();
+    const matchingCriteriaIds = [];    
+    const sortedKeys = Object.keys(receivedEvent).sort();
 
     const nodesToSearch = [EVENT_LOOKUP_MAP];
     for(const criterionKey of sortedKeys) {
-        const formattedLookupKey = generateLookupFieldValueKey(criterionKey, receivedEventClone[criterionKey]);
+        const formattedLookupKey = generateLookupFieldValueKey(criterionKey, receivedEvent[criterionKey]);
         for(const node of nodesToSearch) {
             if(node[formattedLookupKey]) {
                 nodesToSearch.push(node[formattedLookupKey]);
-                if (node[formattedLookupKey]["_criteriaIds"]) {
-                    Array.prototype.push.apply(matchingCriteriaIds, node[formattedLookupKey]["_criteriaIds"]);                    
+                if (node[formattedLookupKey][CRITERIA_IDS_FIELD]) {
+                    Array.prototype.push.apply(matchingCriteriaIds, node[formattedLookupKey][CRITERIA_IDS_FIELD]);                    
                 }
             }
         }
     }
 
-
-
     return matchingCriteriaIds;
 }
 
-
-module.exports = { initCriteriaLookupMap, addNewCriterionQualifyingEvent, lookupMatchingCriteria };
+module.exports = { initCriteriaLookupMap, addNewCriteriaToLookupMap, addNewCriterionToLookupMap, lookupMatchingCriteria };
