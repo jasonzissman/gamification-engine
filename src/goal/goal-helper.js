@@ -1,13 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const eventCriteriaHelper = require('../event/event-criteria-matcher');
 const dbHelper = require('../database/db-helper');
-
-const ACCEPTED_ALPHABET = /^[a-z|0-9|_|-]+$/i;
-const ACCEPTED_ALPHABET_REPLACE = undefined; //; // TODO _ finish!
-
-function areAllFieldsAndValuesInSafeCharSet(object) {
-    return ACCEPTED_ALPHABET.test(JSON.stringify(object).replace(/[{}:",\[\]\s]/g, ''));
-}
+const eventFieldsHelper = require('../event/event-fields-helper');
 
 function isSingleCriteriaValid(criteria) {
     let isValid = false;
@@ -45,7 +39,7 @@ function validateGoal(newGoal) {
 
     if (!newGoal || !newGoal.name || !newGoal.targetEntityId || !newGoal.criteria || !(newGoal.criteria.length > 0)) {
         retVal.message = "Must provide valid goal name, targetEntityId, and non-empty criteria.";
-    } else if (!areAllFieldsAndValuesInSafeCharSet(newGoal)) {
+    } else if (!eventFieldsHelper.areAllFieldsAndValuesInSafeCharSet(newGoal)) {
         retVal.message = "Goal fields can only contain dashes (-), underscores (_), and alpha-numeric characters.";
     } else if (!areAllCriteriaValid(newGoal)) {
         retVal.message = "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.";
@@ -59,8 +53,8 @@ function validateGoal(newGoal) {
 function createGoalEntityFromRequestGoal(newGoal, criteriaIds) {
     return {
         id: uuidv4(),
-        name: newGoal.name,
-        targetEntityId: newGoal.targetEntityId,
+        name: eventFieldsHelper.generateCleanField(newGoal.name),
+        targetEntityId: eventFieldsHelper.generateCleanField(newGoal.targetEntityId),
         criteria: criteriaIds
     };
 }
@@ -71,10 +65,10 @@ function createCriteriaEntityFromRequestGoal(newGoal) {
     for (const criteria of newGoal.criteria) {
         criteriaToPersist.push({
             id: uuidv4(),            
-            targetEntityId: newGoal.targetEntityId,
-            qualifyingEvent: criteria.qualifyingEvent,
-            aggregation: criteria.aggregation,
-            threshold: criteria.threshold
+            targetEntityId: eventFieldsHelper.generateCleanField(newGoal.targetEntityId),
+            qualifyingEvent: eventFieldsHelper.generateObjectWithCleanFields(criteria.qualifyingEvent),
+            aggregation: eventFieldsHelper.generateCleanField(criteria.aggregation),
+            threshold: eventFieldsHelper.generateCleanField(criteria.threshold)
         });
     }
 
@@ -107,8 +101,6 @@ async function persistGoal(newGoal) {
 }
 
 module.exports = { 
-    ACCEPTED_ALPHABET,
-    ACCEPTED_ALPHABET_REPLACE,
     persistGoal, 
     validateGoal, 
     createGoalEntityFromRequestGoal, 

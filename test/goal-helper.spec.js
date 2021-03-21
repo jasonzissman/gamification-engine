@@ -10,7 +10,7 @@ describe('Goal Helper', () => {
         it('should fail if goal undefined', () => {
             let newGoal = undefined;
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
         });
 
@@ -35,7 +35,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
         });
 
@@ -55,7 +55,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
         });
 
@@ -74,7 +74,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
         });
 
@@ -94,7 +94,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
         });
 
@@ -105,7 +105,7 @@ describe('Goal Helper', () => {
 
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
         });
 
@@ -116,7 +116,7 @@ describe('Goal Helper', () => {
                 criteria: []
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
         });
 
@@ -136,7 +136,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "Goal fields can only contain dashes (-), underscores (_), and alpha-numeric characters.");
         });
 
@@ -156,7 +156,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "Goal fields can only contain dashes (-), underscores (_), and alpha-numeric characters.");
         });
 
@@ -176,7 +176,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "Goal fields can only contain dashes (-), underscores (_), and alpha-numeric characters.");
         });
 
@@ -197,7 +197,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "Goal fields can only contain dashes (-), underscores (_), and alpha-numeric characters.");
         });
 
@@ -213,7 +213,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
@@ -230,7 +230,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
@@ -249,7 +249,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
@@ -269,7 +269,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
@@ -288,7 +288,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
@@ -308,7 +308,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
@@ -331,7 +331,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, false);
+            assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
@@ -351,8 +351,7 @@ describe('Goal Helper', () => {
                 ]
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, true);
-            assert.strictEqual(goalValidation.message, "ok");
+            assert.strictEqual(goalValidation.status, "ok");
         });
 
         it('should succeed if all requirements met on multi-criteria goal', () => {
@@ -378,9 +377,29 @@ describe('Goal Helper', () => {
                 ]
             };
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.isValid, true);
-            assert.strictEqual(goalValidation.message, "ok");
+            assert.strictEqual(goalValidation.status, "ok");
         });
+
+        it('should support spaces in field values', () => {
+            let newGoal = {
+                name: "Mobile Power User",
+                targetEntityId: "userId",
+                criteria: [
+                    {
+                        qualifyingEvent: {
+                            action: "log-in",
+                            platform: "some new device"
+                        },
+                        aggregation: "count",
+                        threshold: 5
+                    }
+                ]
+            };
+            let goalValidation = goalHelper.validateGoal(newGoal);
+            assert.strictEqual(goalValidation.status, "ok");
+        });
+
+        
 
     });
 
