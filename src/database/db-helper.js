@@ -49,7 +49,7 @@ async function addNewGoalAndCriteria(goal, criteria) {
     await Promise.all(insertGoalPromise, insertCriteriaPromise).then(() => {
         retVal = {status: "ok"};
     }).catch((err) => {
-        retVal = {status: "Failed to insert goal", message: err}''
+        retVal = {status: "Failed to insert goal", message: err};
         logger.error(`Failed to insert goal ${goal.id} and criteria ${goal.criteriaIds} into DB.`);
     });
 
