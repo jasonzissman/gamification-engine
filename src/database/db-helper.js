@@ -2,6 +2,7 @@ const { MongoClient } = require("mongodb");
 const logger = require('../utility/logger.js');
 
 let DB_CONNECTION; // acts as connection pool
+let DB_NAME = "gamification";
 let COLLECTION_GOALS_NAME = "goals";
 let COLLECTION_CRITERIA_NAME = "criteria";
 
@@ -16,7 +17,8 @@ async function initDbConnection(url) {
     };
 
     try {
-        DB_CONNECTION = await MongoClient.connect(url, options);
+        let clientConn = await MongoClient.connect(url, options);
+        DB_CONNECTION = clientConn.db(DB_NAME);
         logger.info(`Successfully connected to DB at ${url}.`);
         retVal = {
             status: "ok"
@@ -34,7 +36,7 @@ async function initDbConnection(url) {
 async function addNewGoalAndCriteria(goal, criteria) {
     let retVal = {};
 
-    logger.info(`Inserting goal ${goal.id} and criteria ${goal.criteriaIds} into DB.`);
+    logger.info(`Inserting goal ${goal.id} and criteria ${goal.criteria} into DB.`);
 
     const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
     const insertGoalPromise = goalCollection.insertOne(goal).then(() => {
@@ -43,14 +45,14 @@ async function addNewGoalAndCriteria(goal, criteria) {
 
     const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
     const insertCriteriaPromise = criteriaCollection.insertMany(criteria).then(() => {
-        logger.info(`Successfully inserted criteria ${goal.criteriaIds} into DB.`);
+        logger.info(`Successfully inserted criteria ${goal.criteria} into DB.`);
     });
 
-    await Promise.all(insertGoalPromise, insertCriteriaPromise).then(() => {
+    await Promise.all([insertGoalPromise, insertCriteriaPromise]).then(() => {
         retVal = {status: "ok"};
     }).catch((err) => {
         retVal = {status: "Failed to insert goal", message: err};
-        logger.error(`Failed to insert goal ${goal.id} and criteria ${goal.criteriaIds} into DB.`);
+        logger.error(`Failed to insert goal ${goal.id} and criteria ${goal.criteria} into DB.`);
     });
 
     return retVal;

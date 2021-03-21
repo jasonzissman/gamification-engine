@@ -2,8 +2,11 @@ const { v4: uuidv4 } = require('uuid');
 const eventCriteriaHelper = require('../event/event-criteria-matcher');
 const dbHelper = require('../database/db-helper');
 
+const ACCEPTED_ALPHABET = /^[a-z|0-9|_|-]+$/i;
+const ACCEPTED_ALPHABET_REPLACE = undefined; //; // TODO _ finish!
+
 function areAllFieldsAndValuesInSafeCharSet(object) {
-    return /^[a-z|0-9|_|-]+$/i.test(JSON.stringify(object).replace(/[{}:",\[\]\s]/g, ''));
+    return ACCEPTED_ALPHABET.test(JSON.stringify(object).replace(/[{}:",\[\]\s]/g, ''));
 }
 
 function isSingleCriteriaValid(criteria) {
@@ -37,8 +40,7 @@ function areAllCriteriaValid(newGoal) {
 
 function validateGoal(newGoal) {
     let retVal = {
-        isValid: false,
-        message: "Goal validation failed. Ensure a valid goal is provided."
+        status: "failed validation",
     };
 
     if (!newGoal || !newGoal.name || !newGoal.targetEntityId || !newGoal.criteria || !(newGoal.criteria.length > 0)) {
@@ -48,8 +50,7 @@ function validateGoal(newGoal) {
     } else if (!areAllCriteriaValid(newGoal)) {
         retVal.message = "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.";
     } else {
-        retVal.isValid = true;
-        retVal.message = "ok";
+        retVal.status = "ok";
     }
 
     return retVal;
@@ -83,18 +84,33 @@ function createCriteriaEntityFromRequestGoal(newGoal) {
 async function persistGoal(newGoal) {
     let retVal = {};
 
+    // TODO authorize request - put in middleware?
+    
     const validationResult = validateGoal(newGoal);
-    if (!validationResult.isValid) {
-        retVal = validationResult;
+    if (validationResult.status !== "ok") {
+        retVal = {status: "bad_request", message: validationResult.message};
     } else {
         const criteriaEntities = createCriteriaEntityFromRequestGoal(newGoal);
         const criteriaIds = criteriaEntities.map(criteria => criteria.id);
         const goalEntity = createGoalEntityFromRequestGoal(newGoal, criteriaIds);
-        await dbHelper.addNewGoalAndCriteria(goalEntity, criteriaEntities);
-        eventCriteriaHelper.addNewCriteriaToLookupMap(criteriaEntities);
+
+        let insertionAttempt = await dbHelper.addNewGoalAndCriteria(goalEntity, criteriaEntities);
+        if (insertionAttempt.status === "ok") {
+            eventCriteriaHelper.addNewCriteriaToLookupMap(criteriaEntities);
+            retVal = { status: "ok"};
+        } else {
+            retVal = { status: "failed", message: insertionAttempt.message};
+        }
     }
 
     return retVal;
 }
 
-module.exports = { persistGoal, validateGoal, createGoalEntityFromRequestGoal, createCriteriaEntityFromRequestGoal };
+module.exports = { 
+    ACCEPTED_ALPHABET,
+    ACCEPTED_ALPHABET_REPLACE,
+    persistGoal, 
+    validateGoal, 
+    createGoalEntityFromRequestGoal, 
+    createCriteriaEntityFromRequestGoal 
+};

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const eventProcessor = require('./event-processor');
 
 /**
  * Note - Ideally, we would subscribe to a message broker (e.g. Kafka) for
@@ -8,7 +9,9 @@ const router = express.Router();
  */
 
 router.post("/", (request, response) => {
-    // TODO invoke event processing routine
+    // TODO validate payload not too big
+    eventProcessor.processEvent(request.body);
+    // Immediately return 200 regardless of result
     response.status(200).send({ status: "received" });
 });
 

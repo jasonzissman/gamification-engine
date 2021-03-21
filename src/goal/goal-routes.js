@@ -2,29 +2,33 @@ const express = require('express');
 const router = express.Router();
 const goalHelper = require('./goal-helper.js');
 
-// HTTP POST <host>/goals/
+// Create a new goal
+// HTTP POST <host>/goal/
 router.post("/", async (request, response) => {
-    let outcome = await goalHelper.persistGoal(goal);
+    // TODO validate payload not too big
+    let outcome = await goalHelper.persistGoal(request.body);
 
-    if (outcome.message=== "successful") {
-        response.status(200).send({ status: "ok" });
-    } else  if (outcome.message === "bad_request") {
-        response.status(400).send({ status: "failed" });
-    } else  if (outcome.message === "unauthorized") {
-        response.status(401).send({ status: "failed" });
-    } else  if (outcome.message === "forbidden") {
-        response.status(403).send({ status: "failed" });
+    if (outcome.status === "ok") {
+        response.status(200).send(outcome);
+    } else if (outcome.status === "bad_request") {
+        response.status(400).send(outcome);
+    } else if (outcome.status === "unauthorized") {
+        response.status(401).send(outcome);
+    } else if (outcome.status === "forbidden") {
+        response.status(403).send(outcome);
     } else {
-        response.status(500).send({ status: "failed" });
+        response.status(500).send({ status: "server error" });
     }
 });
 
+// Update existing goal
 // HTTP PUT <host>/goals/<goal-id>
 router.put("/:goalId", (request, response) => {
     // TODO invoke goal update routine
     response.status(200).send({ status: "ok" });
 });
 
+// Get goals
 // HTTP GET <host>/goals/
 router.get("/", (request, response) => {
     // TODO invoke goal fetch-all routine

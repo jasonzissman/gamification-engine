@@ -4,7 +4,7 @@ const logger = require('./utility/logger');
 const dbHelper = require('./database/db-helper');
 
 const port = process.env.PORT || 3000;
-const dbConnString = process.env.DB_CONN_STRING || "mongodb://localhost:27017/gamification";
+const dbConnString = process.env.DB_CONN_STRING || "mongodb://localhost:27017";
 
 async function start() {
     const connectionAttempt = await dbHelper.initDbConnection(dbConnString);
@@ -22,6 +22,8 @@ function startExpressApp() {
         logger.info(`Request received at ${req.url}.`);
         next();
     });
+
+    app.use(express.json());
 
     app.use("/event", require('./entity/entity-routes.js'));
     app.use("/health", require('./health/health-routes.js'));
