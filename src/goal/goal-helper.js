@@ -68,7 +68,7 @@ function createCriteriaEntityFromRequestGoal(newGoal) {
             targetEntityId: eventFieldsHelper.generateCleanField(newGoal.targetEntityId),
             qualifyingEvent: eventFieldsHelper.generateObjectWithCleanFields(criteria.qualifyingEvent),
             aggregation: eventFieldsHelper.generateCleanField(criteria.aggregation),
-            threshold: eventFieldsHelper.generateCleanField(criteria.threshold)
+            threshold: Number(criteria.threshold)
         });
     }
 

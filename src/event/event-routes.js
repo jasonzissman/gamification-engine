@@ -8,6 +8,8 @@ const eventProcessor = require('./event-processor');
  * and to speed up development. 
  */
 
+ // Create a new event
+// HTTP POST <host>/event/
 router.post("/", (request, response) => {
     // TODO validate payload not too big
     eventProcessor.processEvent(request.body);

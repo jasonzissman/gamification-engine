@@ -6,11 +6,12 @@ function processEvent(receivedEvent) {
     // TODO authorize request - put in middleware?
 
     if (receivedEvent) {
-        // TODO cleanse data to only be acceptable alphabet AND reduce to only field-value combos known to be in criteria
         let cleanEvent = createCleanVersionOfEvent(receivedEvent, eventCriteriaMatcher.KNOWN_CRITERIA_KEY_VALUE_PAIRS);
-        // TODO find relevant criteria IDs from lookup map
+
+        let relevantCriteriaIds = eventCriteriaMatcher.lookupMatchingCriteria(cleanEvent);
 
         // TODO if relevant criteria IDs found, update progress for this entityID towards those goals
+        // relevantCriteriaIds
     }
 }
 
