@@ -49,6 +49,25 @@ async function getSpecificEntityProgress(entityIds) {
     return entityProgressCollection.find({ 'id': { $in: entityIds } }).toArray();
 }
 
+async function updateSpecificEntityProgress(entityProgressMap) {
+    const entityProgressCollection = DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME);
+
+    const operations = [];
+    for (var entityId in entityProgressMap) {
+        operations.push({
+            replaceOne: {
+                "filter": {
+                    "id": entityId
+                },
+                "replacement": entityProgressMap[entityId],
+                "upsert": true
+            }
+        });
+    }
+
+    return entityProgressCollection.bulkWrite(operations)
+}
+
 async function getSpecificCriteria(criteriaIds) {
     const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
     return criteriaCollection.find({ 'id': { $in: criteriaIds } }).toArray();
@@ -85,5 +104,6 @@ module.exports = {
     getSpecificCriteria,
     getSpecificGoals,
     getSpecificEntityProgress,
+    updateSpecificEntityProgress,
     addNewGoalAndCriteria
 };

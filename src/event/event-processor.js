@@ -47,12 +47,12 @@ function getListOfUpdatesToMake(event, criteria) {
                     goalId: criterion.goalId,
                     criterionId: criterion.id,
                     aggregation: "count",
-                    change: 1
+                    threshold: criterion.threshold
                 });
             }
         }
     }
-    
+
     return progressUpdates;
 }
 
@@ -64,21 +64,71 @@ async function updateProgressTowardsGoals(event, criteria) {
     const relevantGoalsPromise = dbHelper.getSpecificGoals(progressUpdates.map(p => p.goalId));
 
     const dbInvocations = await Promise.all([relevantEntityProgressPromise, relevantGoalsPromise]);
-    
-    const relevantEntityProgress = dbInvocations[0];
-    const relevantGoals = dbInvocations[1];
 
-    for(entity of allImpactedEntities) {
-        // if no existing entity progress in DB, create new one
-        // If no progress on this goal for this entity, create new one
-        // If no progress on this criteria for this entity, create new one
-        // update progress towards criteria
-        // check if all criteria requirements met, update if so
+    const relevantEntityProgress = dbInvocations[0].reduce((result, item) => {
+        result[item.id] = item;
+        return result;
+    }, {});
+    const relevantGoals = dbInvocations[1].reduce((result, item) => {
+        result[item.id] = item;
+        return result;
+    }, {});
+
+    for (progressUpdate of progressUpdates) {
+
+        const entityId = progressUpdate.entityId;
+        const goalID = progressUpdate.goalId;
+        const criterionId = progressUpdate.criterionId;
+
+        if (!relevantEntityProgress[entityId]) {
+            relevantEntityProgress[entityId] = {
+                id: entityId,
+                goals: {}
+            };
+        }
+        if (!relevantEntityProgress[entityId].goals[goalID]) {
+            relevantEntityProgress[entityId].goals[goalID] = {
+                isComplete: false,
+                criteria: {}
+            };
+        }
+        if (!relevantEntityProgress[entityId].goals[goalID].criteria[criterionId]) {
+            relevantEntityProgress[entityId].goals[goalID].criteria[criterionId] = {
+                isComplete: false,
+                value: 0
+            };
+        }
+
+        let hasCriterionBeenCompleted = relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].isComplete;
+
+        // TODO ONLY SUPPORTS COUNT AGGREGATIONS FOR NOW
+        if (progressUpdate.aggregation === "count") {
+            relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].value += 1;
+            if (!hasCriterionBeenCompleted && relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].value >= progressUpdate.threshold) {
+                hasCriterionBeenCompleted = true;
+                relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].isComplete = true;
+            }
+        }
+
         // check if all goal requirements met, update if so
-        // reinsert into DB
+        if (!relevantEntityProgress[entityId].goals[goalID].isComplete) {
+            let markGoalAsComplete = true;
+            for (const thisCriterionId of relevantGoals[goalID].criteria) {
+                markGoalAsComplete = markGoalAsComplete && (relevantEntityProgress[entityId].goals[goalID].criteria[thisCriterionId] && relevantEntityProgress[entityId].goals[goalID].criteria[thisCriterionId].isComplete);
+                if (!markGoalAsComplete) {
+                    break;
+                }
+            }
+            if(markGoalAsComplete) {
+                relevantEntityProgress[entityId].goals[goalID].isComplete = true;
+            }
+        }
+
     }
 
-    // Send notification if goal completed
+    // reinsert relevantEntityProgress into DB
+    await dbHelper.updateSpecificEntityProgress(relevantEntityProgress);
+
 }
 
 function createCleanVersionOfEvent(receivedEvent, knownCriteriaKeyValuePairs, knownEntityIds) {
