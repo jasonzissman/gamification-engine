@@ -12,7 +12,10 @@ describe("input validation", () => {
             let knownCriteriaKeyValuePairs = {
                 "var1=aaa": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs);
+            let knownEntityIds = {
+                "userGuid": true
+            };
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
             assert.strictEqual(cleanEvent.var1, "aaa");
         });
 
@@ -25,7 +28,10 @@ describe("input validation", () => {
                 "var1=aaa": true,
                 "var2=bbb": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs);
+            let knownEntityIds = {
+                "userGuid": true
+            };
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
             assert.strictEqual(cleanEvent.var1, "aaa");
         });
 
@@ -36,7 +42,10 @@ describe("input validation", () => {
             let knownCriteriaKeyValuePairs = {
                 "var1=some value with space": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs);
+            let knownEntityIds = {
+                "userGuid": true
+            };
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
             assert.strictEqual(cleanEvent.var1, "some value with space");
         });
 
@@ -48,7 +57,10 @@ describe("input validation", () => {
             let knownCriteriaKeyValuePairs = {
                 "var1=aaa": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs);
+            let knownEntityIds = {
+                "userGuid": true
+            };
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
             assert.strictEqual(cleanEvent.var1, "aaa");
             assert.strictEqual(cleanEvent.what, undefined);
         });
@@ -65,9 +77,29 @@ describe("input validation", () => {
                 "what=789": true,
                 "what=thisIsNotAtypical": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs);
+            let knownEntityIds = {
+                "userGuid": true
+            };
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
             assert.strictEqual(cleanEvent.var1, "aaa");
             assert.strictEqual(cleanEvent.what, undefined);
+        });
+
+        it("should also keep entityId fields", () => {
+            let event = {
+                var1: "aaa",
+                userGuid: "123"
+            };
+            let knownCriteriaKeyValuePairs = {
+                "var1=aaa": true
+            };
+            let knownEntityIds = {
+                "userGuid": true
+            };
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
+
+            assert.strictEqual(cleanEvent.var1, "aaa");
+            assert.strictEqual(cleanEvent.userGuid, "123");
         });
     });
 

@@ -1,5 +1,4 @@
 const express = require('express');
-const app = express();
 const logger = require('./utility/logger');
 const dbHelper = require('./database/db-helper');
 const eventCriteriaMatcher = require('./event/event-criteria-matcher');
@@ -9,7 +8,7 @@ const dbConnString = process.env.DB_CONN_STRING || "mongodb://localhost:27017";
 
 async function start() {
     const connectionAttempt = await dbHelper.initDbConnection(dbConnString);
-
+    
     if (connectionAttempt.status === "ok") {
         let existingCriteria = await dbHelper.getAllCriteria();
         await eventCriteriaMatcher.initCriteriaLookupMap(existingCriteria);
@@ -20,9 +19,10 @@ async function start() {
     }
 }
 
-
-
 function startExpressApp() {
+
+    const app = express();
+
     app.use((req, res, next) => {
         logger.info(`Request received at ${req.url}.`);
         next();
@@ -30,7 +30,7 @@ function startExpressApp() {
 
     app.use(express.json());
 
-    app.use("/event", require('./entity/entity-routes.js'));
+    app.use("/event", require('./event/event-routes.js'));
     app.use("/health", require('./health/health-routes.js'));
     app.use("/goal", require('./goal/goal-routes.js'));
     app.use("/entity", require('./entity/entity-routes.js'));

@@ -5,6 +5,7 @@ let DB_CONNECTION; // acts as connection pool
 let DB_NAME = "gamification";
 let COLLECTION_GOALS_NAME = "goals";
 let COLLECTION_CRITERIA_NAME = "criteria";
+let COLLECTION_ENTITY_PROGRESS_NAME = "entityProgress";
 
 async function initDbConnection(url) {
 
@@ -38,6 +39,21 @@ async function getAllCriteria() {
     return criteriaCollection.find({}).toArray();
 }
 
+async function getSpecificGoals(goalIds) {
+    const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
+    return goalCollection.find({ 'id': { $in: goalIds } }).toArray();
+}
+
+async function getSpecificEntityProgress(entityIds) {
+    const entityProgressCollection = DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME);
+    return entityProgressCollection.find({ 'id': { $in: entityIds } }).toArray();
+}
+
+async function getSpecificCriteria(criteriaIds) {
+    const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
+    return criteriaCollection.find({ 'id': { $in: criteriaIds } }).toArray();
+}
+
 async function addNewGoalAndCriteria(goal, criteria) {
     let retVal = {};
 
@@ -54,13 +70,20 @@ async function addNewGoalAndCriteria(goal, criteria) {
     });
 
     await Promise.all([insertGoalPromise, insertCriteriaPromise]).then(() => {
-        retVal = {status: "ok"};
+        retVal = { status: "ok" };
     }).catch((err) => {
-        retVal = {status: "Failed to insert goal", message: err};
+        retVal = { status: "Failed to insert goal", message: err };
         logger.error(`Failed to insert goal ${goal.id} and criteria ${goal.criteria} into DB.`);
     });
 
     return retVal;
 }
 
-module.exports = { initDbConnection, getAllCriteria, addNewGoalAndCriteria };
+module.exports = {
+    initDbConnection,
+    getAllCriteria,
+    getSpecificCriteria,
+    getSpecificGoals,
+    getSpecificEntityProgress,
+    addNewGoalAndCriteria
+};

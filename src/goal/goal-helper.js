@@ -87,6 +87,7 @@ async function persistGoal(newGoal) {
         const criteriaEntities = createCriteriaEntityFromRequestGoal(newGoal);
         const criteriaIds = criteriaEntities.map(criteria => criteria.id);
         const goalEntity = createGoalEntityFromRequestGoal(newGoal, criteriaIds);
+        criteriaEntities.forEach(criterion => {criterion.goalId = goalEntity.id});
 
         let insertionAttempt = await dbHelper.addNewGoalAndCriteria(goalEntity, criteriaEntities);
         if (insertionAttempt.status === "ok") {

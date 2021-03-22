@@ -23,3 +23,9 @@ npm test
 # System Architecture
 More info coming
 
+# TODO!!!!
+* Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
+* Put index on appropriate fields in Mongo, e.g. id
+* Cache calls to database
+* General authorization approach
+* Put in timing/profiling options to warn if things are going too slow

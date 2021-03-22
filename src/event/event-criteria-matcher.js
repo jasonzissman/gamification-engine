@@ -3,16 +3,25 @@ const logger = require('../utility/logger');
 
 let EVENT_LOOKUP_MAP = {};
 let KNOWN_CRITERIA_KEY_VALUE_PAIRS = {};
+let KNOWN_ENTITY_ID_FIELDS = {};
 let CRITERIA_IDS_FIELD = "_criteriaIds";
+
+function clearOutObject(object) {
+    for (var key in object) {
+        delete object[key];
+    }
+}
 
 function initCriteriaLookupMap(criteria) {
     logger.info("Initializing lookup maps.");
-    EVENT_LOOKUP_MAP = {};
-    KNOWN_CRITERIA_KEY_VALUE_PAIRS = {};
+    clearOutObject(EVENT_LOOKUP_MAP);
+    clearOutObject(KNOWN_CRITERIA_KEY_VALUE_PAIRS);
+    clearOutObject(KNOWN_ENTITY_ID_FIELDS);
     addNewCriteriaToLookupMap(criteria);
+    logger.info(`All known criteria size: ${Object.keys(KNOWN_CRITERIA_KEY_VALUE_PAIRS).length}`);
+    logger.info(`All known entityId fields size: ${Object.keys(KNOWN_ENTITY_ID_FIELDS).length}`);
+    logger.info(`Lookup map size (top level only): ${Object.keys(EVENT_LOOKUP_MAP).length}`);
     logger.info(`Finished initializing lookup maps.`);
-    logger.info(`All known criteria: ${Object.keys(KNOWN_CRITERIA_KEY_VALUE_PAIRS)}`);
-    logger.info(`Lookup map (top level only): ${Object.keys(EVENT_LOOKUP_MAP)}`);
     return;
 }
 
@@ -25,10 +34,11 @@ function addNewCriteriaToLookupMap(criteria) {
 
 function addNewCriterionToLookupMap(criterion) {
 
+    KNOWN_ENTITY_ID_FIELDS[criterion.targetEntityId] = true;
     const sortedKeys = Object.keys(criterion.qualifyingEvent).sort();
 
     let pointerToLastNode = EVENT_LOOKUP_MAP;
-    for (const criterionKey of sortedKeys) {        
+    for (const criterionKey of sortedKeys) {
         const formattedLookupKey = eventFieldsHelper.generateNormalizedFieldValueKey(criterionKey, criterion.qualifyingEvent[criterionKey]);
         KNOWN_CRITERIA_KEY_VALUE_PAIRS[formattedLookupKey] = true;
         if (!pointerToLastNode[formattedLookupKey]) {
@@ -70,4 +80,4 @@ function lookupMatchingCriteria(receivedEvent) {
     return matchingCriteriaIds;
 }
 
-module.exports = { KNOWN_CRITERIA_KEY_VALUE_PAIRS, initCriteriaLookupMap, addNewCriteriaToLookupMap, addNewCriterionToLookupMap, lookupMatchingCriteria };
+module.exports = { KNOWN_CRITERIA_KEY_VALUE_PAIRS, KNOWN_ENTITY_ID_FIELDS, initCriteriaLookupMap, addNewCriteriaToLookupMap, addNewCriterionToLookupMap, lookupMatchingCriteria };
