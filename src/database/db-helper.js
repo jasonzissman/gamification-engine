@@ -33,6 +33,11 @@ async function initDbConnection(url) {
     return retVal;
 }
 
+async function getAllCriteria() {
+    const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
+    return criteriaCollection.find({}).toArray();
+}
+
 async function addNewGoalAndCriteria(goal, criteria) {
     let retVal = {};
 
@@ -58,4 +63,4 @@ async function addNewGoalAndCriteria(goal, criteria) {
     return retVal;
 }
 
-module.exports = { initDbConnection, addNewGoalAndCriteria };
+module.exports = { initDbConnection, getAllCriteria, addNewGoalAndCriteria };

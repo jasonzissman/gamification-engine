@@ -1,12 +1,18 @@
 const eventFieldsHelper = require('../event/event-fields-helper');
+const logger = require('../utility/logger');
 
-let KNOWN_CRITERIA_KEY_VALUE_PAIRS = {};
 let EVENT_LOOKUP_MAP = {};
+let KNOWN_CRITERIA_KEY_VALUE_PAIRS = {};
 let CRITERIA_IDS_FIELD = "_criteriaIds";
 
 function initCriteriaLookupMap(criteria) {
+    logger.info("Initializing lookup maps.");
     EVENT_LOOKUP_MAP = {};
+    KNOWN_CRITERIA_KEY_VALUE_PAIRS = {};
     addNewCriteriaToLookupMap(criteria);
+    logger.info(`Finished initializing lookup maps.`);
+    logger.info(`All known criteria: ${Object.keys(KNOWN_CRITERIA_KEY_VALUE_PAIRS)}`);
+    logger.info(`Lookup map (top level only): ${Object.keys(EVENT_LOOKUP_MAP)}`);
     return;
 }
 

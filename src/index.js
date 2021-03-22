@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const logger = require('./utility/logger');
 const dbHelper = require('./database/db-helper');
+const eventCriteriaMatcher = require('./event/event-criteria-matcher');
 
 const port = process.env.PORT || 3000;
 const dbConnString = process.env.DB_CONN_STRING || "mongodb://localhost:27017";
@@ -10,12 +11,16 @@ async function start() {
     const connectionAttempt = await dbHelper.initDbConnection(dbConnString);
 
     if (connectionAttempt.status === "ok") {
+        let existingCriteria = await dbHelper.getAllCriteria();
+        await eventCriteriaMatcher.initCriteriaLookupMap(existingCriteria);
         startExpressApp();
     } else {
         logger.error("Failed to connect to database! App not starting.");
         logger.error(connectionAttempt.message);
     }
 }
+
+
 
 function startExpressApp() {
     app.use((req, res, next) => {
