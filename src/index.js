@@ -24,7 +24,7 @@ function startExpressApp() {
     const app = express();
 
     app.use((req, res, next) => {
-        logger.info(`Request received at ${req.url}.`);
+        logger.info(`Request received: ${req.method} ${req.url}.`);
         next();
     });
 

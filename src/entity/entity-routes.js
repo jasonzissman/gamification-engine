@@ -1,9 +1,16 @@
 const express = require('express');
+const entityHelper = require('./entity-helper');
+
 const router = express.Router();
 
-router.get("/:entityId/progress", (request, response) => {
-    // TODO invoke fetch progress routine for specific entity
-    response.status(200).send({ status: "ok" });
+router.get("/:entityId/progress", async (request, response) => {
+    // TODO authorize request - put in common middleware?
+    const entity = await entityHelper.getEntityProgress(request.params.entityId);
+    if (entity) {
+        response.status(200).send(entity);
+    } else {
+        response.status(404).send({status: `no progress found for entity ${request.params.entityId}.`});
+    }
 });
 
 module.exports = router;

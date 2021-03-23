@@ -59,7 +59,7 @@ function computeProgressUpdatesToMake(event, criteria) {
 
 async function getReleventGoalsAndEntityProgressFromDb(progressUpdates) {
     const allImpactedEntityIds = progressUpdates.map(p => p.entityId);
-    const relevantEntityProgressPromise = dbHelper.getSpecificEntityProgress(allImpactedEntityIds);
+    const relevantEntityProgressPromise = dbHelper.getSpecificEntitiesProgress(allImpactedEntityIds);
     const allRelevantGoalIds = progressUpdates.map(p => p.goalId);
     const relevantGoalsPromise = dbHelper.getSpecificGoals(allRelevantGoalIds);
 
@@ -73,21 +73,21 @@ function arrayToObjectWithIdKey(array) {
     }, {});
 }
 
-function initEntityProgressTowardsCriterion(relevantEntityProgress, entityId, goalID, criterionId) {
+function initEntityProgressTowardsCriterion(relevantEntityProgress, entityId, goalId, criterionId) {
     if (!relevantEntityProgress[entityId]) {
         relevantEntityProgress[entityId] = {
             id: entityId,
             goals: {}
         };
     }
-    if (!relevantEntityProgress[entityId].goals[goalID]) {
-        relevantEntityProgress[entityId].goals[goalID] = {
+    if (!relevantEntityProgress[entityId].goals[goalId]) {
+        relevantEntityProgress[entityId].goals[goalId] = {
             isComplete: false,
             criteria: {}
         };
     }
-    if (!relevantEntityProgress[entityId].goals[goalID].criteria[criterionId]) {
-        relevantEntityProgress[entityId].goals[goalID].criteria[criterionId] = {
+    if (!relevantEntityProgress[entityId].goals[goalId].criteria[criterionId]) {
+        relevantEntityProgress[entityId].goals[goalId].criteria[criterionId] = {
             isComplete: false,
             value: 0
         };
@@ -97,41 +97,41 @@ function initEntityProgressTowardsCriterion(relevantEntityProgress, entityId, go
 function updateEntityProgressForCriterion(entityProgress, progressUpdate) {
 
     const entityId = progressUpdate.entityId;
-    const goalID = progressUpdate.goalId;
+    const goalId = progressUpdate.goalId;
     const criterionId = progressUpdate.criterionId;
     const aggregation = progressUpdate.aggregation;
     const aggregationValue = progressUpdate.aggregationValue;
     const threshold = progressUpdate.threshold;
 
-    initEntityProgressTowardsCriterion(entityProgress, entityId, goalID, criterionId);
+    initEntityProgressTowardsCriterion(entityProgress, entityId, goalId, criterionId);
 
     if (aggregation === "count") {
-        entityProgress[entityId].goals[goalID].criteria[criterionId].value += 1;
+        entityProgress[entityId].goals[goalId].criteria[criterionId].value += 1;
     } else if (aggregation === "sum") {
-        entityProgress[entityId].goals[goalID].criteria[criterionId].value += aggregationValue;
+        entityProgress[entityId].goals[goalId].criteria[criterionId].value += aggregationValue;
     }
-    let hasMetThreshold = entityProgress[entityId].goals[goalID].criteria[criterionId].value >= threshold;
+    let hasMetThreshold = entityProgress[entityId].goals[goalId].criteria[criterionId].value >= threshold;
     if (hasMetThreshold) {
-        entityProgress[entityId].goals[goalID].criteria[criterionId].isComplete = true;
+        entityProgress[entityId].goals[goalId].criteria[criterionId].isComplete = true;
     }
 }
 
 function updateEntityProgressForGoal(entityProgress, progressUpdate, goals) {
 
     const entityId = progressUpdate.entityId;
-    const goalID = progressUpdate.goalId;
+    const goalId = progressUpdate.goalId;
 
     // check if all goal requirements met, update if so
-    if (!entityProgress[entityId].goals[goalID].isComplete) {
+    if (!entityProgress[entityId].goals[goalId].isComplete) {
         let markGoalAsComplete = true;
-        for (const thisCriterionId of goals[goalID].criteria) {
-            markGoalAsComplete = markGoalAsComplete && (entityProgress[entityId].goals[goalID].criteria[thisCriterionId] && entityProgress[entityId].goals[goalID].criteria[thisCriterionId].isComplete);
+        for (const thisCriterionId of goals[goalId].criteria) {
+            markGoalAsComplete = markGoalAsComplete && (entityProgress[entityId].goals[goalId].criteria[thisCriterionId] && entityProgress[entityId].goals[goalId].criteria[thisCriterionId].isComplete);
             if (!markGoalAsComplete) {
                 break;
             }
         }
         if (markGoalAsComplete) {
-            entityProgress[entityId].goals[goalID].isComplete = true;
+            entityProgress[entityId].goals[goalId].isComplete = true;
         }
     }
 }
@@ -145,7 +145,7 @@ async function updateEntityProgressTowardsGoals(progressUpdatesToMake) {
     for (progressUpdate of progressUpdatesToMake) {
 
         const entityId = progressUpdate.entityId;
-        const goalID = progressUpdate.goalId;
+        const goalId = progressUpdate.goalId;
         const criterionId = progressUpdate.criterionId;
         const aggregation = progressUpdate.aggregation;
         const aggregationValue = progressUpdate.aggregationValue;

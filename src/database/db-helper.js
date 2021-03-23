@@ -52,13 +52,34 @@ async function getAllCriteria() {
     return criteriaCollection.find({}).toArray();
 }
 
+async function getAllCriteriaForGoal(goalId) {
+    const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
+    return criteriaCollection.find({ goalId: goalId }).toArray();
+}
+
+async function getAllGoals() {
+    // TODO support paging?
+    const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
+    return goalCollection.find({}).toArray();
+}
+
+async function getSpecificGoal(goalId) {
+    // TODO cache this, individual goals won't change often
+    const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
+    return goalCollection.findOne({ 'id': goalId });
+}
 async function getSpecificGoals(goalIds) {
     // TODO cache this, individual goals won't change often
     const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
     return goalCollection.find({ 'id': { $in: goalIds } }).toArray();
 }
 
-async function getSpecificEntityProgress(entityIds) {
+async function getSpecificEntityProgress(entityId) {
+    const entityProgressCollection = DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME);
+    return entityProgressCollection.findOne({ 'id': entityId });
+}
+
+async function getSpecificEntitiesProgress(entityIds) {
     const entityProgressCollection = DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME);
     return entityProgressCollection.find({ 'id': { $in: entityIds } }).toArray();
 }
@@ -118,8 +139,12 @@ module.exports = {
     ping,
     getAllCriteria,
     getSpecificCriteria,
+    getAllCriteriaForGoal,
+    getAllGoals,
+    getSpecificGoal,
     getSpecificGoals,
     getSpecificEntityProgress,
+    getSpecificEntitiesProgress,
     updateSpecificEntityProgress,
     addNewGoalAndCriteria
 };
