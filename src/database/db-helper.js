@@ -34,12 +34,26 @@ async function initDbConnection(url) {
     return retVal;
 }
 
+async function ping() {
+    let status = await DB_CONNECTION.command({ ping: 1 });
+    if (status && status["ok"] == 1) {
+        return {
+            status: "ok"
+        }
+    } else {
+        return {
+            status: "unable to ping database"
+        }
+    }
+}
+
 async function getAllCriteria() {
     const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
     return criteriaCollection.find({}).toArray();
 }
 
 async function getSpecificGoals(goalIds) {
+    // TODO cache this, individual goals won't change often
     const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
     return goalCollection.find({ 'id': { $in: goalIds } }).toArray();
 }
@@ -69,6 +83,7 @@ async function updateSpecificEntityProgress(entityProgressMap) {
 }
 
 async function getSpecificCriteria(criteriaIds) {
+    // TODO cache this, individual criteria won't change often
     const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
     return criteriaCollection.find({ 'id': { $in: criteriaIds } }).toArray();
 }
@@ -100,6 +115,7 @@ async function addNewGoalAndCriteria(goal, criteria) {
 
 module.exports = {
     initDbConnection,
+    ping,
     getAllCriteria,
     getSpecificCriteria,
     getSpecificGoals,

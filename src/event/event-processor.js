@@ -7,6 +7,7 @@ async function processEvent(receivedEvent) {
     // TODO authorize request - put in middleware?
     // TODO - is there a better design pattern to filter out irrelevant events? 
     // We have ~10 nested if checks here.
+    // TODO - put in instrumentation to track how far down this filter we typically go. Would help tweak perf.
 
     if (receivedEvent) {
         const cleanEvent = createCleanVersionOfEvent(receivedEvent, eventCriteriaMatcher.KNOWN_CRITERIA_KEY_VALUE_PAIRS, eventCriteriaMatcher.KNOWN_ENTITY_ID_FIELDS);
@@ -17,18 +18,17 @@ async function processEvent(receivedEvent) {
 
             if (relevantCriteriaIds && relevantCriteriaIds.length > 0) {
 
-                // TODO cache this, they won't change often
                 const criteria = await dbHelper.getSpecificCriteria(relevantCriteriaIds);
 
-                if (criteria && criteria.length > 0) {
+                const progressUpdatesToMake = computeProgressUpdatesToMake(cleanEvent, criteria);
+                if (progressUpdatesToMake && progressUpdatesToMake.length > 0) {
 
-                    updateProgressTowardsGoals(cleanEvent, criteria);
+                    updateEntityProgressTowardsGoals(progressUpdatesToMake);
 
                 }
 
             }
         }
-
     }
 }
 
@@ -73,7 +73,7 @@ function arrayToObjectWithIdKey(array) {
     }, {});
 }
 
-async function initEntityProgressTowardsCriterion(relevantEntityProgress, entityId, goalID, criterionId) {
+function initEntityProgressTowardsCriterion(relevantEntityProgress, entityId, goalID, criterionId) {
     if (!relevantEntityProgress[entityId]) {
         relevantEntityProgress[entityId] = {
             id: entityId,
@@ -94,57 +94,69 @@ async function initEntityProgressTowardsCriterion(relevantEntityProgress, entity
     }
 }
 
-async function updateProgressTowardsGoals(event, criteria) {
+function updateEntityProgressForCriterion(entityProgress, progressUpdate) {
 
-    const progressUpdatesToMake = computeProgressUpdatesToMake(event, criteria);
-    if (progressUpdatesToMake && progressUpdatesToMake.length > 0) {
+    const entityId = progressUpdate.entityId;
+    const goalID = progressUpdate.goalId;
+    const criterionId = progressUpdate.criterionId;
+    const aggregation = progressUpdate.aggregation;
+    const aggregationValue = progressUpdate.aggregationValue;
+    const threshold = progressUpdate.threshold;
 
-        const dbInvocations = await getReleventGoalsAndEntityProgressFromDb(progressUpdatesToMake);
-        const relevantEntityProgress = arrayToObjectWithIdKey(dbInvocations[0]);
-        const relevantGoals = arrayToObjectWithIdKey(dbInvocations[1]);
+    initEntityProgressTowardsCriterion(entityProgress, entityId, goalID, criterionId);
 
-        for (progressUpdate of progressUpdatesToMake) {
+    if (aggregation === "count") {
+        entityProgress[entityId].goals[goalID].criteria[criterionId].value += 1;
+    } else if (aggregation === "sum") {
+        entityProgress[entityId].goals[goalID].criteria[criterionId].value += aggregationValue;
+    }
+    let hasMetThreshold = entityProgress[entityId].goals[goalID].criteria[criterionId].value >= threshold;
+    if (hasMetThreshold) {
+        entityProgress[entityId].goals[goalID].criteria[criterionId].isComplete = true;
+    }
+}
 
-            const entityId = progressUpdate.entityId;
-            const goalID = progressUpdate.goalId;
-            const criterionId = progressUpdate.criterionId;
-            const aggregation = progressUpdate.aggregation;
-            const aggregationValue = progressUpdate.aggregationValue;
+function updateEntityProgressForGoal(entityProgress, progressUpdate, goals) {
 
-            initEntityProgressTowardsCriterion(relevantEntityProgress, entityId, goalID, criterionId);
+    const entityId = progressUpdate.entityId;
+    const goalID = progressUpdate.goalId;
 
-            let hasCriterionBeenCompleted = relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].isComplete;
-
-            // TODO ONLY SUPPORTS COUNT AGGREGATION FOR NOW
-            if (aggregation === "count") {
-                relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].value += aggregationValue;
-                if (!hasCriterionBeenCompleted && relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].value >= progressUpdate.threshold) {
-                    hasCriterionBeenCompleted = true;
-                    relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].isComplete = true;
-                }
+    // check if all goal requirements met, update if so
+    if (!entityProgress[entityId].goals[goalID].isComplete) {
+        let markGoalAsComplete = true;
+        for (const thisCriterionId of goals[goalID].criteria) {
+            markGoalAsComplete = markGoalAsComplete && (entityProgress[entityId].goals[goalID].criteria[thisCriterionId] && entityProgress[entityId].goals[goalID].criteria[thisCriterionId].isComplete);
+            if (!markGoalAsComplete) {
+                break;
             }
-
-            // check if all goal requirements met, update if so
-            if (!relevantEntityProgress[entityId].goals[goalID].isComplete) {
-                let markGoalAsComplete = true;
-                for (const thisCriterionId of relevantGoals[goalID].criteria) {
-                    markGoalAsComplete = markGoalAsComplete && (relevantEntityProgress[entityId].goals[goalID].criteria[thisCriterionId] && relevantEntityProgress[entityId].goals[goalID].criteria[thisCriterionId].isComplete);
-                    if (!markGoalAsComplete) {
-                        break;
-                    }
-                }
-                if (markGoalAsComplete) {
-                    relevantEntityProgress[entityId].goals[goalID].isComplete = true;
-                }
-            }
-
         }
+        if (markGoalAsComplete) {
+            entityProgress[entityId].goals[goalID].isComplete = true;
+        }
+    }
+}
 
-        // reinsert relevantEntityProgress into DB
-        await dbHelper.updateSpecificEntityProgress(relevantEntityProgress);
+async function updateEntityProgressTowardsGoals(progressUpdatesToMake) {
 
+    const dbInvocations = await getReleventGoalsAndEntityProgressFromDb(progressUpdatesToMake);
+    const relevantEntityProgress = arrayToObjectWithIdKey(dbInvocations[0]);
+    const relevantGoals = arrayToObjectWithIdKey(dbInvocations[1]);
+
+    for (progressUpdate of progressUpdatesToMake) {
+
+        const entityId = progressUpdate.entityId;
+        const goalID = progressUpdate.goalId;
+        const criterionId = progressUpdate.criterionId;
+        const aggregation = progressUpdate.aggregation;
+        const aggregationValue = progressUpdate.aggregationValue;
+        const threshold = progressUpdate.threshold;
+
+        updateEntityProgressForCriterion(relevantEntityProgress, progressUpdate);
+        updateEntityProgressForGoal(relevantEntityProgress, progressUpdate, relevantGoals)
     }
 
+    // reinsert relevantEntityProgress into DB
+    await dbHelper.updateSpecificEntityProgress(relevantEntityProgress);
 }
 
 function createCleanVersionOfEvent(receivedEvent, knownCriteriaKeyValuePairs, knownEntityIds) {

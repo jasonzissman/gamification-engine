@@ -1,6 +1,7 @@
 const eventFieldsHelper = require('../event/event-fields-helper');
 const logger = require('../utility/logger');
 
+// TODO should be better data structure than plain object for fast lookups
 let EVENT_LOOKUP_MAP = {};
 let KNOWN_CRITERIA_KEY_VALUE_PAIRS = {};
 let KNOWN_ENTITY_ID_FIELDS = {};
