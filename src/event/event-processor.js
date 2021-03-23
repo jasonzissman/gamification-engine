@@ -46,6 +46,7 @@ function computeProgressUpdatesToMake(event, criteria) {
                     goalId: criterion.goalId,
                     criterionId: criterion.id,
                     aggregation: criterion.aggregation,
+                    aggregationValue: criterion.aggregationValue,
                     threshold: criterion.threshold
                 });
 
@@ -56,78 +57,93 @@ function computeProgressUpdatesToMake(event, criteria) {
     return progressUpdates;
 }
 
+async function getReleventGoalsAndEntityProgressFromDb(progressUpdates) {
+    const allImpactedEntityIds = progressUpdates.map(p => p.entityId);
+    const relevantEntityProgressPromise = dbHelper.getSpecificEntityProgress(allImpactedEntityIds);
+    const allRelevantGoalIds = progressUpdates.map(p => p.goalId);
+    const relevantGoalsPromise = dbHelper.getSpecificGoals(allRelevantGoalIds);
+
+    return Promise.all([relevantEntityProgressPromise, relevantGoalsPromise]);
+}
+
+function arrayToObjectWithIdKey(array) {
+    return array.reduce((result, item) => {
+        result[item.id] = item;
+        return result;
+    }, {});
+}
+
+async function initEntityProgressTowardsCriterion(relevantEntityProgress, entityId, goalID, criterionId) {
+    if (!relevantEntityProgress[entityId]) {
+        relevantEntityProgress[entityId] = {
+            id: entityId,
+            goals: {}
+        };
+    }
+    if (!relevantEntityProgress[entityId].goals[goalID]) {
+        relevantEntityProgress[entityId].goals[goalID] = {
+            isComplete: false,
+            criteria: {}
+        };
+    }
+    if (!relevantEntityProgress[entityId].goals[goalID].criteria[criterionId]) {
+        relevantEntityProgress[entityId].goals[goalID].criteria[criterionId] = {
+            isComplete: false,
+            value: 0
+        };
+    }
+}
+
 async function updateProgressTowardsGoals(event, criteria) {
 
-    const progressUpdates = computeProgressUpdatesToMake(event, criteria);
-    const allImpactedEntities = progressUpdates.map(p => p.entityId);
-    const relevantEntityProgressPromise = dbHelper.getSpecificEntityProgress(allImpactedEntities);
-    const relevantGoalsPromise = dbHelper.getSpecificGoals(progressUpdates.map(p => p.goalId));
+    const progressUpdatesToMake = computeProgressUpdatesToMake(event, criteria);
+    if (progressUpdatesToMake && progressUpdatesToMake.length > 0) {
 
-    const dbInvocations = await Promise.all([relevantEntityProgressPromise, relevantGoalsPromise]);
+        const dbInvocations = await getReleventGoalsAndEntityProgressFromDb(progressUpdatesToMake);
+        const relevantEntityProgress = arrayToObjectWithIdKey(dbInvocations[0]);
+        const relevantGoals = arrayToObjectWithIdKey(dbInvocations[1]);
 
-    const relevantEntityProgress = dbInvocations[0].reduce((result, item) => {
-        result[item.id] = item;
-        return result;
-    }, {});
-    const relevantGoals = dbInvocations[1].reduce((result, item) => {
-        result[item.id] = item;
-        return result;
-    }, {});
+        for (progressUpdate of progressUpdatesToMake) {
 
-    for (progressUpdate of progressUpdates) {
+            const entityId = progressUpdate.entityId;
+            const goalID = progressUpdate.goalId;
+            const criterionId = progressUpdate.criterionId;
+            const aggregation = progressUpdate.aggregation;
+            const aggregationValue = progressUpdate.aggregationValue;
 
-        const entityId = progressUpdate.entityId;
-        const goalID = progressUpdate.goalId;
-        const criterionId = progressUpdate.criterionId;
+            initEntityProgressTowardsCriterion(relevantEntityProgress, entityId, goalID, criterionId);
 
-        if (!relevantEntityProgress[entityId]) {
-            relevantEntityProgress[entityId] = {
-                id: entityId,
-                goals: {}
-            };
-        }
-        if (!relevantEntityProgress[entityId].goals[goalID]) {
-            relevantEntityProgress[entityId].goals[goalID] = {
-                isComplete: false,
-                criteria: {}
-            };
-        }
-        if (!relevantEntityProgress[entityId].goals[goalID].criteria[criterionId]) {
-            relevantEntityProgress[entityId].goals[goalID].criteria[criterionId] = {
-                isComplete: false,
-                value: 0
-            };
-        }
+            let hasCriterionBeenCompleted = relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].isComplete;
 
-        let hasCriterionBeenCompleted = relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].isComplete;
-
-        // TODO ONLY SUPPORTS COUNT AGGREGATIONS FOR NOW
-        if (progressUpdate.aggregation === "count") {
-            relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].value += 1;
-            if (!hasCriterionBeenCompleted && relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].value >= progressUpdate.threshold) {
-                hasCriterionBeenCompleted = true;
-                relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].isComplete = true;
-            }
-        }
-
-        // check if all goal requirements met, update if so
-        if (!relevantEntityProgress[entityId].goals[goalID].isComplete) {
-            let markGoalAsComplete = true;
-            for (const thisCriterionId of relevantGoals[goalID].criteria) {
-                markGoalAsComplete = markGoalAsComplete && (relevantEntityProgress[entityId].goals[goalID].criteria[thisCriterionId] && relevantEntityProgress[entityId].goals[goalID].criteria[thisCriterionId].isComplete);
-                if (!markGoalAsComplete) {
-                    break;
+            // TODO ONLY SUPPORTS COUNT AGGREGATION FOR NOW
+            if (aggregation === "count") {
+                relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].value += aggregationValue;
+                if (!hasCriterionBeenCompleted && relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].value >= progressUpdate.threshold) {
+                    hasCriterionBeenCompleted = true;
+                    relevantEntityProgress[entityId].goals[goalID].criteria[criterionId].isComplete = true;
                 }
             }
-            if (markGoalAsComplete) {
-                relevantEntityProgress[entityId].goals[goalID].isComplete = true;
+
+            // check if all goal requirements met, update if so
+            if (!relevantEntityProgress[entityId].goals[goalID].isComplete) {
+                let markGoalAsComplete = true;
+                for (const thisCriterionId of relevantGoals[goalID].criteria) {
+                    markGoalAsComplete = markGoalAsComplete && (relevantEntityProgress[entityId].goals[goalID].criteria[thisCriterionId] && relevantEntityProgress[entityId].goals[goalID].criteria[thisCriterionId].isComplete);
+                    if (!markGoalAsComplete) {
+                        break;
+                    }
+                }
+                if (markGoalAsComplete) {
+                    relevantEntityProgress[entityId].goals[goalID].isComplete = true;
+                }
             }
+
         }
 
-    }
+        // reinsert relevantEntityProgress into DB
+        await dbHelper.updateSpecificEntityProgress(relevantEntityProgress);
 
-    // reinsert relevantEntityProgress into DB
-    await dbHelper.updateSpecificEntityProgress(relevantEntityProgress);
+    }
 
 }
 

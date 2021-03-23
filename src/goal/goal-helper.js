@@ -11,6 +11,7 @@ function isSingleCriteriaValid(criteria) {
         criteria.qualifyingEvent &&
         Object.keys(criteria.qualifyingEvent).length > 0 &&
         criteria.aggregation &&
+        criteria.aggregationValue && // 0 is not a valid agg value!
         criteria.threshold) { // 0 is not a valid threshold!
 
         isValid = true;
@@ -68,6 +69,7 @@ function createCriteriaEntityFromRequestGoal(newGoal) {
             targetEntityId: eventFieldsHelper.generateCleanField(newGoal.targetEntityId),
             qualifyingEvent: eventFieldsHelper.generateObjectWithCleanFields(criteria.qualifyingEvent),
             aggregation: eventFieldsHelper.generateCleanField(criteria.aggregation),
+            aggregationValue: Number(criteria.aggregationValue),
             threshold: Number(criteria.threshold)
         });
     }
