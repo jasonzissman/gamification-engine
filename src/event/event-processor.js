@@ -32,23 +32,23 @@ async function processEvent(receivedEvent) {
     }
 }
 
-function getListOfUpdatesToMake(event, criteria) {
+function computeProgressUpdatesToMake(event, criteria) {
     const progressUpdates = [];
 
-    for (const criterion of criteria) {
+    if (criteria && criteria.length > 0) {
+        for (const criterion of criteria) {
 
-        const entityIdField = criterion.targetEntityId;
-        const entityId = event[entityIdField];
-        if (entityId && entityId.length > 0) {
-            // TODO ONLY SUPPORTS COUNT AGGREGATIONS FOR NOW
-            if (criterion.aggregation === "count") {
+            const entityIdField = criterion.targetEntityId;
+            const entityId = event[entityIdField];
+            if (entityId && entityId.length > 0) {
                 progressUpdates.push({
                     entityId: entityId,
                     goalId: criterion.goalId,
                     criterionId: criterion.id,
-                    aggregation: "count",
+                    aggregation: criterion.aggregation,
                     threshold: criterion.threshold
                 });
+
             }
         }
     }
@@ -58,7 +58,7 @@ function getListOfUpdatesToMake(event, criteria) {
 
 async function updateProgressTowardsGoals(event, criteria) {
 
-    const progressUpdates = getListOfUpdatesToMake(event, criteria);
+    const progressUpdates = computeProgressUpdatesToMake(event, criteria);
     const allImpactedEntities = progressUpdates.map(p => p.entityId);
     const relevantEntityProgressPromise = dbHelper.getSpecificEntityProgress(allImpactedEntities);
     const relevantGoalsPromise = dbHelper.getSpecificGoals(progressUpdates.map(p => p.goalId));
@@ -119,7 +119,7 @@ async function updateProgressTowardsGoals(event, criteria) {
                     break;
                 }
             }
-            if(markGoalAsComplete) {
+            if (markGoalAsComplete) {
                 relevantEntityProgress[entityId].goals[goalID].isComplete = true;
             }
         }
@@ -147,4 +147,8 @@ function createCleanVersionOfEvent(receivedEvent, knownCriteriaKeyValuePairs, kn
     return cleanEvent;
 }
 
-module.exports = { processEvent, createCleanVersionOfEvent };
+module.exports = {
+    processEvent,
+    computeProgressUpdatesToMake,
+    createCleanVersionOfEvent
+};

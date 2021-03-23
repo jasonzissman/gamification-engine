@@ -1,7 +1,7 @@
 const assert = require('assert');
 const eventProcessor = require('../src/event/event-processor');
 
-describe("input validation", () => {
+describe("event processing", () => {
 
     describe("createCleanVersionOfEvent", () => {
 
@@ -102,5 +102,171 @@ describe("input validation", () => {
             assert.strictEqual(cleanEvent.userGuid, "123");
         });
     });
+
+    describe("computeProgressUpdatesToMake", () => {
+
+        it("should return empty array if undefined criteria", () => {
+            const event = {};
+            const criteria = undefined;
+            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
+            assert.deepStrictEqual(retVal, []);
+        });
+
+        it("should return empty array if empty criteria", () => {
+            const event = {};
+            const criteria = [];
+            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
+            assert.deepStrictEqual(retVal, []);
+        });
+
+        it("should return one update if everything valid", () => {
+            const event = {
+                userId: "john-doe-123",
+                var1: "aaa"
+            };
+            const criteria = [{
+                goalId: "goal-1234",
+                id: "criterion-9999",
+                targetEntityId: "userId",
+                aggregation: "count",
+                threshold: 5
+            }];
+            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
+            assert.deepStrictEqual(retVal, [{
+                goalId: "goal-1234",
+                entityId: "john-doe-123",
+                criterionId: "criterion-9999",
+                aggregation: "count",
+                threshold: 5
+            }]);
+        });
+        it("should not return an update if criteria's entityID is not on event", () => {
+            const event = {
+                userId: "john-doe-123",
+                var1: "aaa"
+            };
+            const criteria = [{
+                goalId: "goal-1234",
+                id: "criterion-9999",
+                targetEntityId: "someUnknownField",
+                aggregation: "count",
+                threshold: 5
+            }];
+            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
+            assert.deepStrictEqual(retVal, []);
+        });
+        it("should not return an update if criteria's entityID is empty on event", () => {
+            const event = {
+                userId: "",
+                var1: "aaa"
+            };
+            const criteria = [{
+                goalId: "goal-1234",
+                id: "criterion-9999",
+                targetEntityId: "userId",
+                aggregation: "count",
+                threshold: 5
+            }];
+            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
+            assert.deepStrictEqual(retVal, []);
+        });
+
+        it("should return two updates if two criteria apply", () => {
+            const event = {
+                userId: "john-doe-123",
+                var1: "aaa"
+            };
+            const criteria = [{
+                goalId: "goal-1234",
+                id: "criterion-9999",
+                targetEntityId: "userId",
+                aggregation: "count",
+                threshold: 5
+            }, {
+                goalId: "goal-5678",
+                id: "criterion-0000",
+                targetEntityId: "userId",
+                aggregation: "count",
+                threshold: 5
+            }];
+            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
+            assert.deepStrictEqual(retVal, [{
+                goalId: "goal-1234",
+                entityId: "john-doe-123",
+                criterionId: "criterion-9999",
+                aggregation: "count",
+                threshold: 5
+            }, {
+                goalId: "goal-5678",
+                entityId: "john-doe-123",
+                criterionId: "criterion-0000",
+                aggregation: "count",
+                threshold: 5
+            }]);
+        });
+
+        it("should return one update if only one criteria matches", () => {
+            const event = {
+                userId: "john-doe-123",
+                var1: "aaa"
+            };
+            const criteria = [{
+                goalId: "goal-1234",
+                id: "criterion-9999",
+                targetEntityId: "userId",
+                aggregation: "count",
+                threshold: 5
+            }, {
+                goalId: "goal-5678",
+                id: "criterion-0000",
+                targetEntityId: "someUnknownField",
+                aggregation: "count",
+                threshold: 5
+            }];
+            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
+            assert.deepStrictEqual(retVal, [{
+                goalId: "goal-1234",
+                entityId: "john-doe-123",
+                criterionId: "criterion-9999",
+                aggregation: "count",
+                threshold: 5
+            }]);
+        });
+
+        it("should return two updates if two criteria apply on different entity IDs", () => {
+            const event = {
+                userId: "john-doe-123",
+                groupId: "the-group-456",
+                var1: "aaa"
+            };
+            const criteria = [{
+                goalId: "goal-1234",
+                id: "criterion-9999",
+                targetEntityId: "groupId",
+                aggregation: "count",
+                threshold: 5
+            }, {
+                goalId: "goal-5678",
+                id: "criterion-0000",
+                targetEntityId: "userId",
+                aggregation: "count",
+                threshold: 5
+            }];
+            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
+            assert.deepStrictEqual(retVal, [{
+                goalId: "goal-1234",
+                entityId: "the-group-456",
+                criterionId: "criterion-9999",
+                aggregation: "count",
+                threshold: 5
+            }, {
+                goalId: "goal-5678",
+                entityId: "john-doe-123",
+                criterionId: "criterion-0000",
+                aggregation: "count",
+                threshold: 5
+            }]);
+        });
+    })
 
 })
