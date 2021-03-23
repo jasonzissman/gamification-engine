@@ -21,12 +21,12 @@ router.post("/", async (request, response) => {
     }
 });
 
-// Update existing goal
-// HTTP PUT <host>/goals/<goal-id>
-router.put("/:goalId", (request, response) => {
-    // TODO invoke goal update routine
-    response.status(200).send({ status: "ok" });
-});
+// // Update existing goal
+// // HTTP PUT <host>/goals/<goal-id>
+// router.put("/:goalId", (request, response) => {
+//     // TODO invoke goal update routine
+//     response.status(200).send({ status: "ok" });
+// });
 
 // Get goals
 // HTTP GET <host>/goals/

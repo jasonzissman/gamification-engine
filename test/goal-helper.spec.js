@@ -491,7 +491,7 @@ describe('Goal Helper', () => {
             ]
         };    
 
-        it("should add id to goal and only include necessary fields", () => {
+        it("should only include necessary fields", () => {
         
             assert.strictEqual(newGoal.id, undefined);
             assert.strictEqual(newGoal.name, "Mobile Power User");
@@ -500,15 +500,10 @@ describe('Goal Helper', () => {
             assert.strictEqual(newGoal.foo, "bar");
             assert.strictEqual(newGoal.delete, "me");
 
-            const criteriaIds = [111,222];
-            const goalToPersist = goalHelper.createGoalEntityFromRequestGoal(newGoal, criteriaIds);
+            const goalToPersist = goalHelper.createGoalEntityFromRequestGoal(newGoal);
 
-            assert.strictEqual(Object.keys(goalToPersist).length, 4);
-            assert.strictEqual(goalToPersist.id.length, 36);
+            assert.strictEqual(Object.keys(goalToPersist).length, 2);
             assert.strictEqual(goalToPersist.name, "Mobile Power User");
-            assert.strictEqual(goalToPersist.criteria.length, 2);
-            assert.strictEqual(goalToPersist.criteria[0], 111);
-            assert.strictEqual(goalToPersist.criteria[1], 222);
             assert.strictEqual(goalToPersist.targetEntityId, "userId");
             assert.strictEqual(goalToPersist.foo, undefined);
             assert.strictEqual(goalToPersist.bar, undefined);

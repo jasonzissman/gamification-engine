@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectID, ObjectId } = require("mongodb");
 const logger = require('../utility/logger.js');
 
 let DB_CONNECTION; // acts as connection pool
@@ -47,41 +47,61 @@ async function ping() {
     }
 }
 
+function replaceMongoObjectIdWithNormalId(item) {
+    if (item["_id"] instanceof ObjectID) {
+        item["id"] = item["_id"].toHexString();
+        delete item["_id"];
+    }
+}
+
 async function getAllCriteria() {
     const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
-    return criteriaCollection.find({}).toArray();
+    let criteria = await criteriaCollection.find({}).toArray();
+    criteria.forEach(replaceMongoObjectIdWithNormalId)
+    return criteria;
 }
 
 async function getAllCriteriaForGoal(goalId) {
     const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
-    return criteriaCollection.find({ goalId: goalId }).toArray();
+    let criteria = await criteriaCollection.find({ goalId: goalId }).toArray();
+    criteria.forEach(replaceMongoObjectIdWithNormalId);
+    return criteria;
 }
 
 async function getAllGoals() {
-    // TODO support paging?
     const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
-    return goalCollection.find({}).toArray();
+    let goals = await goalCollection.find({}).toArray();
+    goals.forEach(replaceMongoObjectIdWithNormalId);
+    return goals;
 }
 
 async function getSpecificGoal(goalId) {
     // TODO cache this, individual goals won't change often
+    const mongoId = ObjectID(goalId);
     const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
-    return goalCollection.findOne({ 'id': goalId });
+    const goal = await goalCollection.findOne({ '_id': mongoId });
+    if (goal) {
+        replaceMongoObjectIdWithNormalId(goal);
+    }
+    return goal;
 }
 async function getSpecificGoals(goalIds) {
     // TODO cache this, individual goals won't change often
+    const mongoIds = goalIds.map(id => ObjectID(id));
     const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
-    return goalCollection.find({ 'id': { $in: goalIds } }).toArray();
+    let goals = await goalCollection.find({ '_id': { $in: mongoIds } }).toArray();
+    goals.forEach(replaceMongoObjectIdWithNormalId);
+    return goals;
 }
 
 async function getSpecificEntityProgress(entityId) {
     const entityProgressCollection = DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME);
-    return entityProgressCollection.findOne({ 'id': entityId });
+    return entityProgressCollection.findOne({ 'entityId': entityId });
 }
 
 async function getSpecificEntitiesProgress(entityIds) {
     const entityProgressCollection = DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME);
-    return entityProgressCollection.find({ 'id': { $in: entityIds } }).toArray();
+    return entityProgressCollection.find({ 'entityId': { $in: entityIds } }).toArray();
 }
 
 async function updateSpecificEntityProgress(entityProgressMap) {
@@ -92,7 +112,7 @@ async function updateSpecificEntityProgress(entityProgressMap) {
         operations.push({
             replaceOne: {
                 "filter": {
-                    "id": entityId
+                    "entityId": entityId
                 },
                 "replacement": entityProgressMap[entityId],
                 "upsert": true
@@ -105,33 +125,42 @@ async function updateSpecificEntityProgress(entityProgressMap) {
 
 async function getSpecificCriteria(criteriaIds) {
     // TODO cache this, individual criteria won't change often
+    const mongoIds = criteriaIds.map(id => ObjectID(id));
     const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
-    return criteriaCollection.find({ 'id': { $in: criteriaIds } }).toArray();
+    let criteria = await criteriaCollection.find({ '_id': { $in: mongoIds } }).toArray();
+    criteria.forEach(replaceMongoObjectIdWithNormalId);
+    return criteria;
 }
 
-async function addNewGoalAndCriteria(goal, criteria) {
-    let retVal = {};
-
-    logger.info(`Inserting goal ${goal.id} and criteria ${goal.criteria} into DB.`);
-
+async function persistGoal(goal) {
+    logger.info(`Inserting goal ${goal.name} into DB.`);
     const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
-    const insertGoalPromise = goalCollection.insertOne(goal).then(() => {
-        logger.info(`Successfully inserted goal ${goal.id} into DB.`);
-    });
+    let insertionResult = await goalCollection.insertOne(goal);
+    logger.info(`Successfully inserted goal with id '${insertionResult.insertedId}' into DB.`);
+    return insertionResult.insertedId.toString();
+}
 
+async function updateGoalCriteria(goalId, criteriaIds) {
+    logger.info(`Upserting goal criteria '${goalId}'.`);
+    const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
+    await goalCollection.updateOne({
+        "_id": ObjectID(goalId)
+    }, {
+        $set: {
+            criteriaIds: criteriaIds
+        }
+    }
+    );
+    logger.info(`Successfully updated goal with id '${goalId}'.`);
+    return;
+}
+
+async function persistCriteria(criteria) {
+    logger.info(`Inserting criteria into DB.`);
     const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
-    const insertCriteriaPromise = criteriaCollection.insertMany(criteria).then(() => {
-        logger.info(`Successfully inserted criteria ${goal.criteria} into DB.`);
-    });
-
-    await Promise.all([insertGoalPromise, insertCriteriaPromise]).then(() => {
-        retVal = { status: "ok" };
-    }).catch((err) => {
-        retVal = { status: "Failed to insert goal", message: err };
-        logger.error(`Failed to insert goal ${goal.id} and criteria ${goal.criteria} into DB.`);
-    });
-
-    return retVal;
+    let insertionResult = await criteriaCollection.insertMany(criteria);
+    logger.info(`Successfully inserted criteria ${insertionResult.insertedIds} into DB.`);
+    return Object.values(insertionResult.insertedIds).map(id => id.toString());
 }
 
 module.exports = {
@@ -146,5 +175,7 @@ module.exports = {
     getSpecificEntityProgress,
     getSpecificEntitiesProgress,
     updateSpecificEntityProgress,
-    addNewGoalAndCriteria
+    persistGoal,
+    updateGoalCriteria,
+    persistCriteria
 };

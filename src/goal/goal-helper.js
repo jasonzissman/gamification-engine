@@ -1,4 +1,3 @@
-const { v4: uuidv4 } = require('uuid');
 const eventCriteriaHelper = require('../event/event-criteria-matcher');
 const dbHelper = require('../database/db-helper');
 const eventFieldsHelper = require('../event/event-fields-helper');
@@ -51,12 +50,10 @@ function validateGoal(newGoal) {
     return retVal;
 }
 
-function createGoalEntityFromRequestGoal(newGoal, criteriaIds) {
+function createGoalEntityFromRequestGoal(newGoal) {
     return {
-        id: uuidv4(),
         name: eventFieldsHelper.generateCleanField(newGoal.name),
-        targetEntityId: eventFieldsHelper.generateCleanField(newGoal.targetEntityId),
-        criteria: criteriaIds
+        targetEntityId: eventFieldsHelper.generateCleanField(newGoal.targetEntityId)
     };
 }
 
@@ -65,7 +62,6 @@ function createCriteriaEntityFromRequestGoal(newGoal) {
 
     for (const criteria of newGoal.criteria) {
         criteriaToPersist.push({
-            id: uuidv4(),
             targetEntityId: eventFieldsHelper.generateCleanField(newGoal.targetEntityId),
             qualifyingEvent: eventFieldsHelper.generateObjectWithCleanFields(criteria.qualifyingEvent),
             aggregation: eventFieldsHelper.generateCleanField(criteria.aggregation),
@@ -87,16 +83,20 @@ async function persistGoal(newGoal) {
         retVal = { status: "bad_request", message: validationResult.message };
     } else {
         const criteriaEntities = createCriteriaEntityFromRequestGoal(newGoal);
-        const criteriaIds = criteriaEntities.map(criteria => criteria.id);
-        const goalEntity = createGoalEntityFromRequestGoal(newGoal, criteriaIds);
-        criteriaEntities.forEach(criterion => { criterion.goalId = goalEntity.id });
 
-        let insertionAttempt = await dbHelper.addNewGoalAndCriteria(goalEntity, criteriaEntities);
-        if (insertionAttempt.status === "ok") {
+        const goalEntity = createGoalEntityFromRequestGoal(newGoal);
+
+        try {
+            let insertedGoalId = await dbHelper.persistGoal(goalEntity);
+            criteriaEntities.forEach(criterion => { criterion.goalId = insertedGoalId });
+            
+            let insertedCriteriaIds = await dbHelper.persistCriteria(criteriaEntities);
+            await dbHelper.updateGoalCriteria(insertedGoalId, insertedCriteriaIds);
+            
             eventCriteriaHelper.addNewCriteriaToLookupMap(criteriaEntities);
             retVal = { status: "ok" };
-        } else {
-            retVal = { status: "failed", message: insertionAttempt.message };
+        } catch(err) {
+            retVal = { status: "failed", message: "Failed to add goal to database." };
         }
     }
 
