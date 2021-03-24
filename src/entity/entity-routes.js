@@ -9,7 +9,7 @@ router.get("/:entityId/progress", async (request, response) => {
     if (entity) {
         response.status(200).send(entity);
     } else {
-        response.status(404).send({status: `no progress found for entity ${request.params.entityId}.`});
+        response.status(404).send({message: `no progress found for entity ${request.params.entityId}.`});
     }
 });
 

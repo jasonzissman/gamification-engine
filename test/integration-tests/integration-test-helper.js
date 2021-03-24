@@ -13,7 +13,7 @@ const TEST_APP_BASE_URL = `http://${TEST_APP_SERVER_HOST}:${TEST_APP_SERVER_PORT
 async function issueHttpGet(pathAndParams) {
     const url = `${TEST_APP_BASE_URL}/${pathAndParams}`;
     logger.info(`GET issued to ${url}.`);
-    let response = await axios.get(url);
+    let response = await axios.get(url, {validateStatus: false});
     logger.info(`GET response received from ${url}.`);
     return response;
 };
@@ -21,7 +21,7 @@ async function issueHttpGet(pathAndParams) {
 async function issueHttpPost(pathAndParams, body, headers) {
     const url = `${TEST_APP_BASE_URL}/${pathAndParams}`;
     logger.info(`POST issued to ${url}.`);
-    let response = await axios.post(url, body, {headers: headers});
+    let response = await axios.post(url, body, {headers: headers, validateStatus: false});
     logger.info(`POST response received from ${url}.`);
     return response;
 };

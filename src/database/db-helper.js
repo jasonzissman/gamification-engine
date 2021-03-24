@@ -99,7 +99,9 @@ async function getSpecificGoals(goalIds) {
 async function getSpecificEntityProgress(entityId) {
     const entityProgressCollection = DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME);
     let entityProgress = await entityProgressCollection.findOne({ 'entityId': entityId });
-    mongoIdHelper.stripOutMongoObjectId(entityProgress);
+    if (entityProgress) {
+        mongoIdHelper.stripOutMongoObjectId(entityProgress);
+    }
     return entityProgress;
 }
 

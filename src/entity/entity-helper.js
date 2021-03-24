@@ -6,7 +6,8 @@ async function getEntityProgress(entityId) {
 
     if (entityId && entityId.length > 0) {
         entityProgress = await dbHelper.getSpecificEntityProgress(entityId)        
-    } else {
+    } 
+    if (!entityProgress) {
         logger.info(`Unable to find entity '${entityId}' in DB.`);
     }
 
