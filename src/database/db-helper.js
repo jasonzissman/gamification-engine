@@ -22,6 +22,8 @@ async function initDbConnection(url) {
         let clientConn = await MongoClient.connect(url, options);
         DB_CONNECTION = clientConn.db(DB_NAME);
         logger.info(`Successfully connected to DB at ${url}.`);
+        await ensureIndicesExist();
+        logger.info(`DB indices are configured.`);
         retVal = {
             status: "ok"
         }
@@ -33,6 +35,14 @@ async function initDbConnection(url) {
     }
 
     return retVal;
+}
+
+async function ensureIndicesExist() {
+    // create indices if not already there
+    return Promise.all([
+        DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME).createIndex({ entityId: 1 }),
+        DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME).createIndex({ goalID: 1 })
+    ]);
 }
 
 async function ping() {

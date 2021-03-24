@@ -24,10 +24,9 @@ npm test
 More info coming
 
 # TODO!!!!
-* Use MongoIDs instead of generating new ones. MongoDB is optimized for ObjectIDs. Unless this couples us too much? Try to make it not too invasive.
+* More unit and integration tests
 * Can we support a broader character set for goals and events? Feels needlessly restrictive right now.
 * Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
-* Put index on appropriate fields in Mongo, e.g. id on all collections, and any referenced IDs needed for lookups (e.g. criteria.goalId)
 * Cache calls to database
 * General authorization approach
 * Put in timing/profiling options to warn if things are going too slow
