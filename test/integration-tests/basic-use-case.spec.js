@@ -7,18 +7,15 @@ const entityProgressTestHelper = require('./entity-progress-test-helper');
 describe('Basic Use Cases', () => {
 
     let mongoInstance;
-    let appServer;
 
     beforeEach(async () => {
         mongoInstance = await integrationTestHelper.startInMemoryMongo();
-        appServer = await integrationTestHelper.startAppServer(mongoInstance.uri);
+        await integrationTestHelper.startAppServer(mongoInstance.uri);
     });
 
     afterEach(async () => {
 
-        if (appServer) {
-            appServer.shutDown();
-        }
+        await integrationTestHelper.shutDownAppServer();
 
         if (mongoInstance && mongoInstance.mongoId) {
             await integrationTestHelper.stopInMemoryMongo(mongoInstance.mongoId);
@@ -26,7 +23,7 @@ describe('Basic Use Cases', () => {
 
     });
 
-    it('should allow clients to define goal and track progress towards goal', async () => {
+    it('should mark a goal as complete after enough relevant events received', async () => {
 
         let createdGoal = await goalTestHelper.addGoal({
             "name": "Mobile Power User",
@@ -69,6 +66,39 @@ describe('Basic Use Cases', () => {
                         }
                     },
                     isComplete: false
+                }
+            }
+        });
+
+        await eventTestHelper.sendEvent({
+            "clientId": "client-app-1234",
+            "action": "log-in",
+            "platform": "mobile",
+            "userId": "john-doe-1234",
+            "foo": "bar"
+        });
+
+        await eventTestHelper.sendEvent({
+            "clientId": "client-app-1234",
+            "action": "log-in",
+            "platform": "mobile",
+            "userId": "john-doe-1234",
+            "foo": "bar"
+        });
+
+        let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
+
+        assert.deepStrictEqual(progress2.data, {
+            entityId: 'john-doe-1234',
+            goals: {
+                [goalId]: {
+                    criteriaIds: {
+                        [criteriaIds[0]]: {
+                            isComplete: true,
+                            value: 3
+                        }
+                    },
+                    isComplete: true
                 }
             }
         });

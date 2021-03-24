@@ -4,6 +4,7 @@ const axios = require('axios');
 const logger = require('../../src/utility/logger');
 
 const ALL_MONGO_INSTANCES = {};
+let APP_SERVER;
 
 const TEST_APP_SERVER_HOST = "localhost";
 const TEST_APP_SERVER_PORT = 10393;
@@ -31,15 +32,22 @@ async function addGoal(goal) {
     return issueHttpPost(pathAndParams, goal, headers);
 }
 
+async function shutDownAppServer() {
+    if (APP_SERVER) {
+        await APP_SERVER.shutDown();
+    }
+}
+
 async function startAppServer(mongoConnString) {
 
     process.env.PORT = TEST_APP_SERVER_PORT;
     process.env.DB_CONN_STRING = mongoConnString;
-    let appServer = require('../../src/index.js');
+    APP_SERVER = require('../../src/index.js');
+    await APP_SERVER.start();
 
     let maxAttempts = 5;
     let attempt = 0;
-    let timeBetweenAttemptsMs = 1000;
+    let timeBetweenAttemptsMs = 2000;
     return new Promise((resolve, reject) => {
         let checkServerIntervalId = setInterval(async () => {
             attempt++;
@@ -48,7 +56,7 @@ async function startAppServer(mongoConnString) {
             if (healthRequest.status === 200) {
                 logger.info(`App server has started. Proceeding.`);
                 clearInterval(checkServerIntervalId);
-                resolve(appServer);
+                resolve();
             } else if (attempt > maxAttempts) {
                 logger.info(`Exceeded maximum attempts (${maxAttempts}). Exiting.`);
                 clearInterval(checkServerIntervalId);
@@ -59,7 +67,6 @@ async function startAppServer(mongoConnString) {
         }, timeBetweenAttemptsMs);
     });
 }
-
 
 async function startInMemoryMongo() {
     const mongoId = uuidv4();
@@ -91,6 +98,7 @@ module.exports = {
     stopInMemoryMongo,
     stopAllInMemoryMongoInstances,
     startAppServer,
+    shutDownAppServer,
     issueHttpGet,
     issueHttpPost,
     addGoal

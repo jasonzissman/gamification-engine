@@ -175,6 +175,8 @@ async function persistCriteria(criteria) {
 
 async function closeAllDbConnections() {
     CLIENT_CONN.close();
+    CLIENT_CONN = undefined;
+    DB_CONNECTION = undefined;
 }
 
 module.exports = {

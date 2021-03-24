@@ -4,9 +4,9 @@
   "description": "An engine that enables gamification",
   "main": "index.js",
   "scripts": {
-    "start": "node ./src/index.js",
-    "unit-test": "mocha \"test/unit-tests/**/*.spec.js\"",
-    "integration-test": "mocha \"test/integration-tests/**/*.spec.js\""
+    "start": "npx run-func ./src/index.js start",
+    "unit-test": "mocha \"test/unit-tests/**/*spec.js\"",
+    "integration-test": "mocha \"test/integration-tests/**/*spec.js\""
   },
   "author": "Jason Zissman",
   "license": "ISC",

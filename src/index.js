@@ -3,12 +3,10 @@ const logger = require('./utility/logger');
 const dbHelper = require('./database/db-helper');
 const eventCriteriaMatcher = require('./event/event-criteria-matcher');
 
-const port = process.env.PORT || 3000;
-const dbConnString = process.env.DB_CONN_STRING || "mongodb://localhost:27017";
-
 let httpServer;
 
 async function start() {
+    const dbConnString = process.env.DB_CONN_STRING || "mongodb://localhost:27017";
     const connectionAttempt = await dbHelper.initDbConnection(dbConnString);
 
     if (connectionAttempt.status === "ok") {
@@ -19,6 +17,11 @@ async function start() {
         logger.error("Failed to connect to database! App not starting.");
         logger.error(connectionAttempt.message);
     }
+}
+
+async function shutDown() {
+    await dbHelper.closeAllDbConnections();
+    await httpServer.close();
 }
 
 function startExpressApp() {
@@ -37,6 +40,8 @@ function startExpressApp() {
     app.use("/goal", require('./goal/goal-routes.js'));
     app.use("/entity", require('./entity/entity-routes.js'));
 
+    const port = process.env.PORT || 3000;
+
     httpServer = app.listen(port, (err) => {
         if (err) {
             logger.error(err);
@@ -46,11 +51,7 @@ function startExpressApp() {
     });
 }
 
-start();
-
 module.exports = {
-    shutDown: () => {
-        dbHelper.closeAllDbConnections();
-        httpServer.close();
-    }
+    start,
+    shutDown
 };
