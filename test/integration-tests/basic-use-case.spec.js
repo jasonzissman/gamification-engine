@@ -27,7 +27,7 @@ describe('Basic Use Cases', () => {
 
         let createdGoal = await goalTestHelper.addGoal({
             "name": "Mobile Power User",
-            "desc": "Log in at least 3 times on a mobile device",
+            "description": "Log in at least 3 times on a mobile device",
             "targetEntityId": "userId",
             "criteria": [
                 {
@@ -109,7 +109,7 @@ describe('Basic Use Cases', () => {
 
         let goal1 = await goalTestHelper.addGoal({
             "name": "Mobile Power User",
-            "desc": "Log in at least 3 times on a mobile device",
+            "description": "Log in at least 3 times on a mobile device",
             "targetEntityId": "userId",
             "criteria": [
                 {
@@ -129,7 +129,7 @@ describe('Basic Use Cases', () => {
 
         let goal2 = await goalTestHelper.addGoal({
             "name": "The Popular Group",
-            "desc": "Have members of your group log into at least 3 times",
+            "description": "Have members of your group log into at least 3 times",
             "targetEntityId": "groupId",
             "criteria": [
                 {
@@ -227,6 +227,68 @@ describe('Basic Use Cases', () => {
                 }
             }
         });
+
+    }).timeout(15000);
+
+    it('should allow fetching of existing goals', async () => {
+
+        let goal1 = await goalTestHelper.addGoal({
+            "name": "Mobile Power User",
+            "description": "Log in at least 3 times on a mobile device",
+            "targetEntityId": "userId",
+            "criteria": [
+                {
+                    "qualifyingEvent": {
+                        "action": "log-in",
+                        "platform": "mobile"
+                    },
+                    "aggregation": "count",
+                    "aggregationValue": 1,
+                    "threshold": 3
+                }
+            ]
+        });
+
+        let goal1Id = goal1.data.goal.id;
+        let goal1CriteriaIds = goal1.data.goal.criteriaIds;
+
+        let goal2 = await goalTestHelper.addGoal({
+            "name": "The Popular Group",
+            "description": "Have members of your group log into at least 3 times",
+            "targetEntityId": "groupId",
+            "criteria": [
+                {
+                    "qualifyingEvent": {
+                        "action": "log-in",
+                    },
+                    "aggregation": "count",
+                    "aggregationValue": 1,
+                    "threshold": 3
+                }
+            ]
+        });
+
+        let goal2Id = goal2.data.goal.id;
+        let goal2CriteriaIds = goal2.data.goal.criteriaIds;
+
+        let fetchedGoals = await goalTestHelper.getGoals();
+
+        assert.deepStrictEqual(fetchedGoals.data, [
+            {
+                criteriaIds: goal1CriteriaIds,
+                id: goal1Id,
+                description: "Log in at least 3 times on a mobile device",
+                name: 'Mobile Power User',
+                targetEntityId: 'userId'
+            },
+            {
+                criteriaIds: goal2CriteriaIds,
+                id: goal2Id,
+                description: "Have members of your group log into at least 3 times",
+                name: 'The Popular Group',
+                targetEntityId: 'groupId'
+            }
+        ]);
 
     }).timeout(15000);
 });

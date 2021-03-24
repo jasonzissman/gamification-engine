@@ -51,10 +51,14 @@ function validateGoal(newGoal) {
 }
 
 function createGoalEntityFromRequestGoal(newGoal) {
-    return {
+    let retVal = {
         name: eventFieldsHelper.generateCleanField(newGoal.name),
-        targetEntityId: eventFieldsHelper.generateCleanField(newGoal.targetEntityId)
+        targetEntityId: eventFieldsHelper.generateCleanField(newGoal.targetEntityId)        
     };
+    if (newGoal.description) {
+        retVal.description = eventFieldsHelper.generateCleanField(newGoal.description);
+    }
+    return retVal;
 }
 
 function createCriteriaEntityFromRequestGoal(newGoal) {

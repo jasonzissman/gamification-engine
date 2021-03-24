@@ -6,6 +6,12 @@ async function addGoal(goal) {
     return integrationTestHelper.issueHttpPost(pathAndParams, goal, headers);
 }
 
+async function getGoals() {
+    let pathAndParams = `goal`;
+    return integrationTestHelper.issueHttpGet(pathAndParams);
+}
+
 module.exports = {
-    addGoal
+    addGoal,
+    getGoals
 };

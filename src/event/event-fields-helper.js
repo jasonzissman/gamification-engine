@@ -2,7 +2,11 @@ const FORBIDDEN_CHARS = /[^0-9a-zA-Z_-\s]/;
 const FORBIDDEN_CHARS_GLOBAL = /[^0-9a-zA-Z_-\s]/g;
 
 function generateCleanField(field) {
-    return field.replace(FORBIDDEN_CHARS_GLOBAL, '');
+    if (field) {
+        return field.replace(FORBIDDEN_CHARS_GLOBAL, '');
+    } else {
+        return;
+    }
 }
 
 function generateObjectWithCleanFields(object) {

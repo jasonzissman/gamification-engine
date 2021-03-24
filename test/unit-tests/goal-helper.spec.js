@@ -1,8 +1,6 @@
 const assert = require('assert');
 const goalHelper = require('../../src/goal/goal-helper');
 
-
-
 describe('Goal Helper', () => {
 
     describe('Goal Validation', () => {
@@ -468,6 +466,7 @@ describe('Goal Helper', () => {
         let newGoal = {
             name: "Mobile Power User",
             targetEntityId: "userId",
+            description: "Log in at least 3 times on a mobile device",
             foo: "bar",
             delete: "me",
             criteria: [
@@ -495,6 +494,7 @@ describe('Goal Helper', () => {
         
             assert.strictEqual(newGoal.id, undefined);
             assert.strictEqual(newGoal.name, "Mobile Power User");
+            assert.strictEqual(newGoal.description, "Log in at least 3 times on a mobile device");
             assert.strictEqual(newGoal.targetEntityId, "userId");
             assert.strictEqual(newGoal.criteria.length, 2);
             assert.strictEqual(newGoal.foo, "bar");
@@ -502,8 +502,9 @@ describe('Goal Helper', () => {
 
             const goalToPersist = goalHelper.createGoalEntityFromRequestGoal(newGoal);
 
-            assert.strictEqual(Object.keys(goalToPersist).length, 2);
+            assert.strictEqual(Object.keys(goalToPersist).length, 3);
             assert.strictEqual(goalToPersist.name, "Mobile Power User");
+            assert.strictEqual(goalToPersist.description, "Log in at least 3 times on a mobile device");
             assert.strictEqual(goalToPersist.targetEntityId, "userId");
             assert.strictEqual(goalToPersist.foo, undefined);
             assert.strictEqual(goalToPersist.bar, undefined);
