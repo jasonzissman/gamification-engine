@@ -6,9 +6,11 @@ const eventCriteriaMatcher = require('./event/event-criteria-matcher');
 const port = process.env.PORT || 3000;
 const dbConnString = process.env.DB_CONN_STRING || "mongodb://localhost:27017";
 
+let httpServer;
+
 async function start() {
     const connectionAttempt = await dbHelper.initDbConnection(dbConnString);
-    
+
     if (connectionAttempt.status === "ok") {
         let existingCriteria = await dbHelper.getAllCriteria();
         await eventCriteriaMatcher.initCriteriaLookupMap(existingCriteria);
@@ -35,7 +37,7 @@ function startExpressApp() {
     app.use("/goal", require('./goal/goal-routes.js'));
     app.use("/entity", require('./entity/entity-routes.js'));
 
-    app.listen(port, (err) => {
+    httpServer = app.listen(port, (err) => {
         if (err) {
             logger.error(err);
         }
@@ -45,3 +47,10 @@ function startExpressApp() {
 }
 
 start();
+
+module.exports = {
+    shutDown: () => {
+        dbHelper.closeAllDbConnections();
+        httpServer.close();
+    }
+};

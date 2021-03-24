@@ -1,5 +1,5 @@
 const assert = require('assert');
-const goalHelper = require('../src/goal/goal-helper');
+const goalHelper = require('../../src/goal/goal-helper');
 
 
 

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./src/index.js",
-    "test": "mocha"
+    "unit-test": "mocha \"test/unit-tests/**/*.spec.js\"",
+    "integration-test": "mocha \"test/integration-tests/**/*.spec.js\""
   },
   "author": "Jason Zissman",
   "license": "ISC",
@@ -15,6 +16,8 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "mocha": "^8.3.1"
+    "http": "0.0.1-security",
+    "mocha": "^8.3.1",
+    "mongodb-memory-server": "^6.9.6"
   }
 }

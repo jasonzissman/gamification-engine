@@ -1,5 +1,5 @@
 const assert = require('assert');
-const eventCriteriaHelper = require('../src/event/event-criteria-matcher');
+const eventCriteriaHelper = require('../../src/event/event-criteria-matcher');
 
 describe('Criteria Matching', () => {
 

@@ -2,6 +2,7 @@ const { MongoClient } = require("mongodb");
 const logger = require('../utility/logger.js');
 const mongoIdHelper = require('./mongo-id-helper');
 
+let CLIENT_CONN;
 let DB_CONNECTION; // acts as connection pool
 let DB_NAME = "gamification";
 let COLLECTION_GOALS_NAME = "goals";
@@ -19,8 +20,8 @@ async function initDbConnection(url) {
     };
 
     try {
-        let clientConn = await MongoClient.connect(url, options);
-        DB_CONNECTION = clientConn.db(DB_NAME);
+        CLIENT_CONN = await MongoClient.connect(url, options);
+        DB_CONNECTION = CLIENT_CONN.db(DB_NAME);
         logger.info(`Successfully connected to DB at ${url}.`);
         await ensureIndicesExist();
         logger.info(`DB indices are configured.`);
@@ -38,7 +39,7 @@ async function initDbConnection(url) {
 }
 
 async function ensureIndicesExist() {
-    // create indices if not already there
+    // createIndex() will create the index if not already there
     return Promise.all([
         DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME).createIndex({ entityId: 1 }),
         DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME).createIndex({ goalID: 1 })
@@ -85,6 +86,7 @@ async function getSpecificGoal(goalId) {
     }
     return goal;
 }
+
 async function getSpecificGoals(goalIds) {
     // TODO cache this, individual goals won't change often
     const mongoIds = goalIds.map(id => mongoIdHelper.generateMongoObjectId(id));
@@ -168,6 +170,10 @@ async function persistCriteria(criteria) {
     return Object.values(insertionResult.insertedIds).map(id => mongoIdHelper.convertMongoObjectIdToString(id));
 }
 
+async function closeAllDbConnections() {
+    CLIENT_CONN.close();
+}
+
 module.exports = {
     initDbConnection,
     ping,
@@ -182,5 +188,6 @@ module.exports = {
     updateSpecificEntityProgress,
     persistGoal,
     updateGoalCriteria,
-    persistCriteria
+    persistCriteria,
+    closeAllDbConnections
 };
