@@ -150,16 +150,18 @@ async function persistGoal(goal) {
 async function updateGoalCriteria(goalId, criteriaIds) {
     logger.info(`Upserting goal criteria '${goalId}'.`);
     const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
-    await goalCollection.updateOne({
+    let resultingGoal = await goalCollection.findOneAndUpdate({
         "_id": mongoIdHelper.generateMongoObjectId(goalId)
     }, {
         $set: {
             criteriaIds: criteriaIds
         }
-    }
+    },
+        { returnOriginal: false }
     );
     logger.info(`Successfully updated criteria on goal with id '${goalId}'.`);
-    return;
+    mongoIdHelper.replaceMongoObjectIdWithNormalId(resultingGoal.value);
+    return resultingGoal.value;
 }
 
 async function persistCriteria(criteria) {
@@ -167,6 +169,7 @@ async function persistCriteria(criteria) {
     const criteriaCollection = DB_CONNECTION.collection(COLLECTION_CRITERIA_NAME);
     let insertionResult = await criteriaCollection.insertMany(criteria);
     logger.info(`Successfully inserted criteria ${insertionResult.insertedIds} into DB.`);
+    criteria.forEach(mongoIdHelper.replaceMongoObjectIdWithNormalId);
     return Object.values(insertionResult.insertedIds).map(id => mongoIdHelper.convertMongoObjectIdToString(id));
 }
 

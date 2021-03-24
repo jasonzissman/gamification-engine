@@ -91,10 +91,10 @@ async function persistGoal(newGoal) {
             criteriaEntities.forEach(criterion => { criterion.goalId = insertedGoalId });
             
             let insertedCriteriaIds = await dbHelper.persistCriteria(criteriaEntities);
-            await dbHelper.updateGoalCriteria(insertedGoalId, insertedCriteriaIds);
+            let resultingGoal = await dbHelper.updateGoalCriteria(insertedGoalId, insertedCriteriaIds);
             
             eventCriteriaHelper.addNewCriteriaToLookupMap(criteriaEntities);
-            retVal = { status: "ok" };
+            retVal = { status: "ok", goal: resultingGoal};
         } catch(err) {
             retVal = { status: "failed", message: "Failed to add goal to database." };
         }

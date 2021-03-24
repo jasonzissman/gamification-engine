@@ -1,24 +1,39 @@
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { v4: uuidv4 } = require('uuid');
-const http = require('http');
+const axios = require('axios');
+const logger = require('../../src/utility/logger');
 
 const ALL_MONGO_INSTANCES = {};
 
-async function issueHttpGet(url) {
-    return new Promise((resolve) => {
-        console.log(`${new Date()}::: Request issued to ${url}.`);
+const TEST_APP_SERVER_HOST = "localhost";
+const TEST_APP_SERVER_PORT = 10393;
+const TEST_APP_BASE_URL = `http://${TEST_APP_SERVER_HOST}:${TEST_APP_SERVER_PORT}`;
 
-        http.get(url, (res) => {
-            console.log(`${new Date()}::: Response received from ${url}.`);
-            resolve(res);
-        });
-    });
+async function issueHttpGet(pathAndParams) {
+    const url = `${TEST_APP_BASE_URL}/${pathAndParams}`;
+    logger.info(`GET issued to ${url}.`);
+    let response = await axios.get(url);
+    logger.info(`GET response received from ${url}.`);
+    return response;
 };
+
+async function issueHttpPost(pathAndParams, body, headers) {
+    const url = `${TEST_APP_BASE_URL}/${pathAndParams}`;
+    logger.info(`POST issued to ${url}.`);
+    let response = await axios.post(url, body, {headers: headers});
+    logger.info(`POST response received from ${url}.`);
+    return response;
+};
+
+async function addGoal(goal) {
+    let pathAndParams = "goal";
+    const headers = {"Content-Type": "application/json"};
+    return issueHttpPost(pathAndParams, goal, headers);
+}
 
 async function startAppServer(mongoConnString) {
 
-    const appServerPort = 10393;
-    process.env.PORT = appServerPort;
+    process.env.PORT = TEST_APP_SERVER_PORT;
     process.env.DB_CONN_STRING = mongoConnString;
     let appServer = require('../../src/index.js');
 
@@ -28,18 +43,18 @@ async function startAppServer(mongoConnString) {
     return new Promise((resolve, reject) => {
         let checkServerIntervalId = setInterval(async () => {
             attempt++;
-            console.log(`Attempt #${attempt} to see if app server started.`);
-            let healthRequest = await issueHttpGet(`http://localhost:${appServerPort}/health`);
-            if (healthRequest.statusCode === 200) {
-                console.log(`App server has started. Proceeding.`);
+            logger.info(`Attempt #${attempt} to see if app server started.`);
+            let healthRequest = await issueHttpGet(`health`);
+            if (healthRequest.status === 200) {
+                logger.info(`App server has started. Proceeding.`);
                 clearInterval(checkServerIntervalId);
                 resolve(appServer);
             } else if (attempt > maxAttempts) {
-                console.log(`Exceeded maximum attempts (${maxAttempts}). Exiting.`);
+                logger.info(`Exceeded maximum attempts (${maxAttempts}). Exiting.`);
                 clearInterval(checkServerIntervalId);
                 reject();
             } else {
-                console.log(`App server not ready. Will try again in ${timeBetweenAttemptsMs} ms.`);
+                logger.info(`App server not ready. Will try again in ${timeBetweenAttemptsMs} ms.`);
             }
         }, timeBetweenAttemptsMs);
     });
@@ -76,5 +91,7 @@ module.exports = {
     stopInMemoryMongo,
     stopAllInMemoryMongoInstances,
     startAppServer,
-    issueHttpGet
+    issueHttpGet,
+    issueHttpPost,
+    addGoal
 };

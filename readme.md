@@ -37,6 +37,7 @@ More info coming
 
 # TODO!!!!
 * More unit and integration tests
+* Support description field on goals
 * Update readme
 * Can we support a broader character set for goals and events? Feels needlessly restrictive right now.
 * Add support for goal expiration! Should not process criteria/goals that are no longer applicable.

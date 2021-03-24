@@ -16,7 +16,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "http": "0.0.1-security",
+    "axios": "^0.21.1",
     "mocha": "^8.3.1",
     "mongodb-memory-server": "^6.9.6"
   }
