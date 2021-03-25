@@ -127,7 +127,7 @@ describe("event processing", () => {
             const criteria = [{
                 goalId: "goal-1234",
                 id: "criterion-9999",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 aggregation: "count",
                 aggregationValue: 2,
                 threshold: 5
@@ -150,7 +150,7 @@ describe("event processing", () => {
             const criteria = [{
                 goalId: "goal-1234",
                 id: "criterion-9999",
-                targetEntityId: "someUnknownField",
+                targetEntityIdField: "someUnknownField",
                 aggregation: "count",
                 aggregationValue: 2,
                 threshold: 5
@@ -166,7 +166,7 @@ describe("event processing", () => {
             const criteria = [{
                 goalId: "goal-1234",
                 id: "criterion-9999",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 aggregation: "count",
                 aggregationValue: 2,
                 threshold: 5
@@ -183,14 +183,14 @@ describe("event processing", () => {
             const criteria = [{
                 goalId: "goal-1234",
                 id: "criterion-9999",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 aggregation: "count",
                 aggregationValue: 2,
                 threshold: 5
             }, {
                 goalId: "goal-5678",
                 id: "criterion-0000",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 aggregation: "count",
                 aggregationValue: 2,
                 threshold: 5
@@ -221,14 +221,14 @@ describe("event processing", () => {
             const criteria = [{
                 goalId: "goal-1234",
                 id: "criterion-9999",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 aggregation: "count",
                 aggregationValue: 2,
                 threshold: 5
             }, {
                 goalId: "goal-5678",
                 id: "criterion-0000",
-                targetEntityId: "someUnknownField",
+                targetEntityIdField: "someUnknownField",
                 aggregation: "count",
                 aggregationValue: 2,
                 threshold: 5
@@ -253,14 +253,14 @@ describe("event processing", () => {
             const criteria = [{
                 goalId: "goal-1234",
                 id: "criterion-9999",
-                targetEntityId: "groupId",
+                targetEntityIdField: "groupId",
                 aggregation: "count",
                 aggregationValue: 2,
                 threshold: 5
             }, {
                 goalId: "goal-5678",
                 id: "criterion-0000",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 aggregation: "count",
                 aggregationValue: 2,
                 threshold: 5

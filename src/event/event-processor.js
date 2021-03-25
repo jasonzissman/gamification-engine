@@ -38,7 +38,7 @@ function computeProgressUpdatesToMake(event, criteria) {
     if (criteria && criteria.length > 0) {
         for (const criterion of criteria) {
 
-            const entityIdField = criterion.targetEntityId;
+            const entityIdField = criterion.targetEntityIdField;
             const entityId = event[entityIdField];
             if (entityId && entityId.length > 0) {
                 progressUpdates.push({

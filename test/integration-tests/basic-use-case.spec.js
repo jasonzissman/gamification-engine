@@ -4,7 +4,11 @@ const goalTestHelper = require('./goal-test-helper');
 const eventTestHelper = require('./event-test-helper');
 const entityProgressTestHelper = require('./entity-progress-test-helper');
 
-describe('Basic Use Cases', () => {
+describe('Basic Use Cases', function () {
+
+    // The Mocha this.timeout() call only works inside of 'function'
+    // declarations, not inside of arrow notation () => {}
+    this.timeout(15000);
 
     let mongoInstance;
 
@@ -20,7 +24,6 @@ describe('Basic Use Cases', () => {
         if (mongoInstance && mongoInstance.mongoId) {
             await integrationTestHelper.stopInMemoryMongo(mongoInstance.mongoId);
         }
-
     });
 
     it('should mark a goal as complete after enough relevant events received', async () => {
@@ -28,7 +31,7 @@ describe('Basic Use Cases', () => {
         let createdGoal = await goalTestHelper.addGoal({
             "name": "Mobile Power User",
             "description": "Log in at least 3 times on a mobile device",
-            "targetEntityId": "userId",
+            "targetEntityIdField": "userId",
             "criteria": [
                 {
                     "qualifyingEvent": {
@@ -110,7 +113,7 @@ describe('Basic Use Cases', () => {
         let goal1 = await goalTestHelper.addGoal({
             "name": "Mobile Power User",
             "description": "Log in at least 3 times on a mobile device",
-            "targetEntityId": "userId",
+            "targetEntityIdField": "userId",
             "criteria": [
                 {
                     "qualifyingEvent": {
@@ -130,7 +133,7 @@ describe('Basic Use Cases', () => {
         let goal2 = await goalTestHelper.addGoal({
             "name": "The Popular Group",
             "description": "Have members of your group log into at least 3 times",
-            "targetEntityId": "groupId",
+            "targetEntityIdField": "groupId",
             "criteria": [
                 {
                     "qualifyingEvent": {
@@ -235,7 +238,7 @@ describe('Basic Use Cases', () => {
         let goal1 = await goalTestHelper.addGoal({
             "name": "Mobile Power User",
             "description": "Log in at least 3 times on a mobile device",
-            "targetEntityId": "userId",
+            "targetEntityIdField": "userId",
             "criteria": [
                 {
                     "qualifyingEvent": {
@@ -255,7 +258,7 @@ describe('Basic Use Cases', () => {
         let goal2 = await goalTestHelper.addGoal({
             "name": "The Popular Group",
             "description": "Have members of your group log into at least 3 times",
-            "targetEntityId": "groupId",
+            "targetEntityIdField": "groupId",
             "criteria": [
                 {
                     "qualifyingEvent": {
@@ -279,14 +282,14 @@ describe('Basic Use Cases', () => {
                 id: goal1Id,
                 description: "Log in at least 3 times on a mobile device",
                 name: 'Mobile Power User',
-                targetEntityId: 'userId'
+                targetEntityIdField: 'userId'
             },
             {
                 criteriaIds: goal2CriteriaIds,
                 id: goal2Id,
                 description: "Have members of your group log into at least 3 times",
                 name: 'The Popular Group',
-                targetEntityId: 'groupId'
+                targetEntityIdField: 'groupId'
             }
         ]);
 

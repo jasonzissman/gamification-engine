@@ -35,7 +35,7 @@ function addNewCriteriaToLookupMap(criteria) {
 
 function addNewCriterionToLookupMap(criterion) {
 
-    KNOWN_ENTITY_ID_FIELDS[criterion.targetEntityId] = true;
+    KNOWN_ENTITY_ID_FIELDS[criterion.targetEntityIdField] = true;
     const sortedKeys = Object.keys(criterion.qualifyingEvent).sort();
 
     let pointerToLastNode = EVENT_LOOKUP_MAP;

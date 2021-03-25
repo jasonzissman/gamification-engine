@@ -37,8 +37,8 @@ function validateGoal(newGoal) {
         status: "failed validation",
     };
 
-    if (!newGoal || !newGoal.name || !newGoal.targetEntityId || !newGoal.criteria || !(newGoal.criteria.length > 0)) {
-        retVal.message = "Must provide valid goal name, targetEntityId, and non-empty criteria.";
+    if (!newGoal || !newGoal.name || !newGoal.targetEntityIdField || !newGoal.criteria || !(newGoal.criteria.length > 0)) {
+        retVal.message = "Must provide valid goal name, targetEntityIdField, and non-empty criteria.";
     } else if (!eventFieldsHelper.areAllFieldsAndValuesInSafeCharSet(newGoal)) {
         retVal.message = "Goal fields can only contain dashes (-), underscores (_), and alpha-numeric characters.";
     } else if (!areAllCriteriaValid(newGoal)) {
@@ -53,7 +53,7 @@ function validateGoal(newGoal) {
 function createGoalEntityFromRequestGoal(newGoal) {
     let retVal = {
         name: eventFieldsHelper.generateCleanField(newGoal.name),
-        targetEntityId: eventFieldsHelper.generateCleanField(newGoal.targetEntityId)        
+        targetEntityIdField: eventFieldsHelper.generateCleanField(newGoal.targetEntityIdField)        
     };
     if (newGoal.description) {
         retVal.description = eventFieldsHelper.generateCleanField(newGoal.description);
@@ -66,7 +66,7 @@ function createCriteriaEntityFromRequestGoal(newGoal) {
 
     for (const criteria of newGoal.criteria) {
         criteriaToPersist.push({
-            targetEntityId: eventFieldsHelper.generateCleanField(newGoal.targetEntityId),
+            targetEntityIdField: eventFieldsHelper.generateCleanField(newGoal.targetEntityIdField),
             qualifyingEvent: eventFieldsHelper.generateObjectWithCleanFields(criteria.qualifyingEvent),
             aggregation: eventFieldsHelper.generateCleanField(criteria.aggregation),
             aggregationValue: Number(criteria.aggregationValue),

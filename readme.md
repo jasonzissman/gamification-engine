@@ -1,41 +1,41 @@
 # Gamification Engine
 A platform that enables gamification for other applications.
 
-# Setup
+## Overview
+
+## Setup
 ```
 npm install
 ```
 
-# Running Unit Tests
+## Running Unit Tests
 
 ```
 npm run unit-test
 ```
 
-# Running Integration Tests
+## Running Integration Tests
 
 ```
 npm run integration-test
 ```
 
-# Running the app
+## Running the app
 ```
 npm start
 ```
 
-# Optional ENV variables
+## Optional ENV variables
 ```
 DB_CONN_STRING // database connection string
 PORT // port this application listens on
 ```
 
-
-
-
-# System Architecture
+## System Architecture
 More info coming
 
-# TODO!!!!
+## TODO!!!!
+* fully support count vs. sum aggregations
 * More unit and integration tests
 * Update readme
 * Can we support a broader character set for goals and events? Feels needlessly restrictive right now.

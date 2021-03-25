@@ -9,7 +9,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -33,7 +33,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa"
                 },
@@ -56,7 +56,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "ccc"
                 },
@@ -78,7 +78,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -103,7 +103,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -112,7 +112,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             }, {
                 id: "criterion-2",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "ccc",
                     var2: "ddd"
@@ -136,7 +136,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -145,7 +145,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             }, {
                 id: "criterion-2",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "ddd"
@@ -169,7 +169,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -178,7 +178,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             }, {
                 id: "criterion-2",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -203,7 +203,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -212,7 +212,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             }, {
                 id: "criterion-2",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb",
@@ -238,7 +238,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -247,7 +247,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             }, {
                 id: "criterion-2",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var2: "bbb"
                 },
@@ -271,7 +271,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -280,7 +280,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             }, {
                 id: "criterion-2",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var2: "bbb"
                 },
@@ -288,7 +288,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             }, {
                 id: "criterion-3",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa"
                 },
@@ -313,7 +313,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -322,7 +322,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             }, {
                 id: "criterion-2",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var2: "bbb"
                 },
@@ -330,7 +330,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             }, {
                 id: "criterion-3",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa"
                 },
@@ -338,7 +338,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             },{
                 id: "criterion-4",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb",
@@ -366,7 +366,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -375,7 +375,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             }, {
                 id: "criterion-2",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var2: "bbb"
                 },
@@ -383,7 +383,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             }, {
                 id: "criterion-3",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa"
                 },
@@ -391,7 +391,7 @@ describe('Criteria Matching', () => {
                 threshold: 5
             },{
                 id: "criterion-4",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb",
@@ -424,7 +424,7 @@ describe('Criteria Matching', () => {
 
             const criteria = [{
                 id: "criterion-1",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb"
@@ -445,7 +445,7 @@ describe('Criteria Matching', () => {
 
             const newCriteria = {
                 id: "criterion-2",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     var1: "aaa",
                     var2: "bbb",

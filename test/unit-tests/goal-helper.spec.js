@@ -9,16 +9,16 @@ describe('Goal Helper', () => {
             let newGoal = undefined;
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
         });
 
         it('should fail if goal empty', () => {
             let newGoal = {};
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
         });
 
-        it('should fail if no targetEntityId', () => {
+        it('should fail if no targetEntityIdField', () => {
             let newGoal = {
                 name: "Mobile Power User",
                 criteria: [
@@ -35,13 +35,13 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
         });
 
-        it('should fail if empty targetEntityId', () => {
+        it('should fail if empty targetEntityIdField', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "",
+                targetEntityIdField: "",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -56,12 +56,12 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
         });
 
         it('should fail if no name', () => {
             let newGoal = {
-                targetEntityId: "userGuid",
+                targetEntityIdField: "userGuid",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -76,13 +76,13 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
         });
 
         it('should fail if empty name', () => {
             let newGoal = {
                 name: "",
-                targetEntityId: "userGuid",
+                targetEntityIdField: "userGuid",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -97,35 +97,35 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
         });
 
         it('should fail if no criteria', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId"
+                targetEntityIdField: "userId"
 
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
         });
 
         it('should fail if empty criteria', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: []
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityId, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
         });
 
         it('should fail if invalid characters 1', () => {
             let newGoal = {
                 name: "&&&",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -146,7 +146,7 @@ describe('Goal Helper', () => {
         it('should fail if invalid characters 2', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "***",
+                targetEntityIdField: "***",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -167,7 +167,7 @@ describe('Goal Helper', () => {
         it('should fail if invalid characters 3', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -189,7 +189,7 @@ describe('Goal Helper', () => {
             const weirdFieldName = "###";
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -210,7 +210,7 @@ describe('Goal Helper', () => {
         it('should fail if no qualifyingEvent in 1 criteria', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         aggregation: "count",
@@ -227,7 +227,7 @@ describe('Goal Helper', () => {
         it('should fail if empty qualifyingEvent in 1 criteria', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {},
@@ -245,7 +245,7 @@ describe('Goal Helper', () => {
         it('should fail if no aggregation in 1 criteria', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -265,7 +265,7 @@ describe('Goal Helper', () => {
         it('should fail if empty aggregation in 1 criteria', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -286,7 +286,7 @@ describe('Goal Helper', () => {
         it('should fail if no threshold in 1 criteria', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -306,7 +306,7 @@ describe('Goal Helper', () => {
         it('should fail if "0" aggregation in 1 criteria', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -327,7 +327,7 @@ describe('Goal Helper', () => {
         it('should fail if no aggregationValue in criteria', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -347,7 +347,7 @@ describe('Goal Helper', () => {
         it('should fail if "0" aggregation value', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -368,7 +368,7 @@ describe('Goal Helper', () => {
         it('should fail if one of multiple criteria is invalid', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -392,7 +392,7 @@ describe('Goal Helper', () => {
         it('should succeed if all requirements met', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -412,7 +412,7 @@ describe('Goal Helper', () => {
         it('should succeed if all requirements met on multi-criteria goal', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -440,7 +440,7 @@ describe('Goal Helper', () => {
         it('should support spaces in field values', () => {
             let newGoal = {
                 name: "Mobile Power User",
-                targetEntityId: "userId",
+                targetEntityIdField: "userId",
                 criteria: [
                     {
                         qualifyingEvent: {
@@ -465,7 +465,7 @@ describe('Goal Helper', () => {
 
         let newGoal = {
             name: "Mobile Power User",
-            targetEntityId: "userId",
+            targetEntityIdField: "userId",
             description: "Log in at least 3 times on a mobile device",
             foo: "bar",
             delete: "me",
@@ -495,7 +495,7 @@ describe('Goal Helper', () => {
             assert.strictEqual(newGoal.id, undefined);
             assert.strictEqual(newGoal.name, "Mobile Power User");
             assert.strictEqual(newGoal.description, "Log in at least 3 times on a mobile device");
-            assert.strictEqual(newGoal.targetEntityId, "userId");
+            assert.strictEqual(newGoal.targetEntityIdField, "userId");
             assert.strictEqual(newGoal.criteria.length, 2);
             assert.strictEqual(newGoal.foo, "bar");
             assert.strictEqual(newGoal.delete, "me");
@@ -505,7 +505,7 @@ describe('Goal Helper', () => {
             assert.strictEqual(Object.keys(goalToPersist).length, 3);
             assert.strictEqual(goalToPersist.name, "Mobile Power User");
             assert.strictEqual(goalToPersist.description, "Log in at least 3 times on a mobile device");
-            assert.strictEqual(goalToPersist.targetEntityId, "userId");
+            assert.strictEqual(goalToPersist.targetEntityIdField, "userId");
             assert.strictEqual(goalToPersist.foo, undefined);
             assert.strictEqual(goalToPersist.bar, undefined);
         });
