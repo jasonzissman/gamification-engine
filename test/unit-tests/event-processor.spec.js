@@ -12,10 +12,10 @@ describe("event processing", () => {
             let knownCriteriaKeyValuePairs = {
                 "var1=aaa": true
             };
-            let knownEntityIds = {
+            let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
             assert.strictEqual(cleanEvent.var1, "aaa");
         });
 
@@ -28,10 +28,10 @@ describe("event processing", () => {
                 "var1=aaa": true,
                 "var2=bbb": true
             };
-            let knownEntityIds = {
+            let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
             assert.strictEqual(cleanEvent.var1, "aaa");
         });
 
@@ -42,10 +42,10 @@ describe("event processing", () => {
             let knownCriteriaKeyValuePairs = {
                 "var1=some value with space": true
             };
-            let knownEntityIds = {
+            let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
             assert.strictEqual(cleanEvent.var1, "some value with space");
         });
 
@@ -57,10 +57,10 @@ describe("event processing", () => {
             let knownCriteriaKeyValuePairs = {
                 "var1=aaa": true
             };
-            let knownEntityIds = {
+            let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
             assert.strictEqual(cleanEvent.var1, "aaa");
             assert.strictEqual(cleanEvent.what, undefined);
         });
@@ -77,10 +77,10 @@ describe("event processing", () => {
                 "what=789": true,
                 "what=thisIsNotAtypical": true
             };
-            let knownEntityIds = {
+            let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
             assert.strictEqual(cleanEvent.var1, "aaa");
             assert.strictEqual(cleanEvent.what, undefined);
         });
@@ -93,14 +93,35 @@ describe("event processing", () => {
             let knownCriteriaKeyValuePairs = {
                 "var1=aaa": true
             };
-            let knownEntityIds = {
+            let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownEntityIds);
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
 
             assert.strictEqual(cleanEvent.var1, "aaa");
             assert.strictEqual(cleanEvent.userGuid, "123");
         });
+
+        it("should also keep entityId fields", () => {
+            let event = {
+                var1: "aaa",
+                stringField: "123",
+                numericField: 123
+            };
+            let knownCriteriaKeyValuePairs = {
+                "var1=aaa": true
+            };
+            let knownSystemFields = {
+                "stringField": true,
+                "numericField": true
+            };
+            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
+
+            assert.strictEqual(cleanEvent.var1, "aaa");
+            assert.strictEqual(cleanEvent.stringField, "123");
+            assert.strictEqual(cleanEvent.numericField, 123);
+        });
+        
     });
 
     describe("computeProgressUpdatesToMake", () => {
@@ -129,8 +150,7 @@ describe("event processing", () => {
                 id: "criterion-9999",
                 targetEntityIdField: "userId",
                 aggregation: {
-                    type: "count",
-                    value: 2
+                    type: "count"
                 },
                 threshold: 5
             }];
@@ -153,8 +173,7 @@ describe("event processing", () => {
                 id: "criterion-9999",
                 targetEntityIdField: "someUnknownField",
                 aggregation: {
-                    type: "count",
-                    value: 2
+                    type: "count"
                 },
                 threshold: 5
             }];
@@ -171,8 +190,7 @@ describe("event processing", () => {
                 id: "criterion-9999",
                 targetEntityIdField: "userId",
                 aggregation: {
-                    type: "count",
-                    value: 2
+                    type: "count"
                 },
                 threshold: 5
             }];
@@ -190,8 +208,7 @@ describe("event processing", () => {
                 id: "criterion-9999",
                 targetEntityIdField: "userId",
                 aggregation: {
-                    type: "count",
-                    value: 2
+                    type: "count"
                 },
                 threshold: 5
             }, {
@@ -199,8 +216,7 @@ describe("event processing", () => {
                 id: "criterion-0000",
                 targetEntityIdField: "userId",
                 aggregation: {
-                    type: "count",
-                    value: 2
+                    type: "count"
                 },
                 threshold: 5
             }];
@@ -286,6 +302,82 @@ describe("event processing", () => {
                 goalId: "goal-5678",
                 entityId: "john-doe-123",
                 criterionId: "criterion-0000",
+                aggregationValueToAdd: 1,
+                threshold: 5
+            }]);
+        });
+
+        it("should return update with appropriate agg value for sum agg", () => {
+            const event = {
+                userId: "john-doe-123",
+                var1: "aaa"
+            };
+            const criteria = [{
+                goalId: "goal-1234",
+                id: "criterion-9999",
+                targetEntityIdField: "userId",
+                aggregation: {
+                    type: "sum",
+                    value: 3
+                },
+                threshold: 5
+            }];
+            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
+            assert.deepStrictEqual(retVal, [{
+                goalId: "goal-1234",
+                entityId: "john-doe-123",
+                criterionId: "criterion-9999",
+                aggregationValueToAdd: 3,
+                threshold: 5
+            }]);
+        });
+
+        it("should return update with appropriate agg value for sum agg", () => {
+            const event = {
+                userId: "john-doe-123",
+                var1: "aaa",
+                timeInMs: 3034
+            };
+            const criteria = [{
+                goalId: "goal-1234",
+                id: "criterion-9999",
+                targetEntityIdField: "userId",
+                aggregation: {
+                    type: "sum",
+                    valueField: "timeInMs"
+                },
+                threshold: 5
+            }];
+            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
+            assert.deepStrictEqual(retVal, [{
+                goalId: "goal-1234",
+                entityId: "john-doe-123",
+                criterionId: "criterion-9999",
+                aggregationValueToAdd: 3034,
+                threshold: 5
+            }]);
+        });
+
+        it("should return update with agg of '1' for sum agg if agg field not found", () => {
+            const event = {
+                userId: "john-doe-123",
+                var1: "aaa"
+            };
+            const criteria = [{
+                goalId: "goal-1234",
+                id: "criterion-9999",
+                targetEntityIdField: "userId",
+                aggregation: {
+                    type: "sum",
+                    valueField: "timeInMs" // not found on event!
+                },
+                threshold: 5
+            }];
+            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
+            assert.deepStrictEqual(retVal, [{
+                goalId: "goal-1234",
+                entityId: "john-doe-123",
+                criterionId: "criterion-9999",
                 aggregationValueToAdd: 1,
                 threshold: 5
             }]);

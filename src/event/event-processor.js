@@ -11,7 +11,7 @@ async function processEvent(receivedEvent) {
     // TODO - put in instrumentation to track how far down this filter we typically go. Would help tweak perf.
 
     if (receivedEvent) {
-        const cleanEvent = createCleanVersionOfEvent(receivedEvent, eventCriteriaMatcher.KNOWN_CRITERIA_KEY_VALUE_PAIRS, eventCriteriaMatcher.KNOWN_ENTITY_ID_FIELDS);
+        const cleanEvent = createCleanVersionOfEvent(receivedEvent, eventCriteriaMatcher.KNOWN_CRITERIA_KEY_VALUE_PAIRS, eventCriteriaMatcher.KNOWN_SYSTEM_FIELDS);
 
         if (cleanEvent && Object.keys(cleanEvent).length > 0) {
 
@@ -162,7 +162,7 @@ async function updateEntityProgressTowardsGoals(progressUpdatesToMake) {
     await dbHelper.updateSpecificEntityProgress(relevantEntityProgress);
 }
 
-function createCleanVersionOfEvent(receivedEvent, knownCriteriaKeyValuePairs, knownEntityIds) {
+function createCleanVersionOfEvent(receivedEvent, knownCriteriaKeyValuePairs, knownSystemFields) {
     let cleanEvent = {};
 
     for (let key in receivedEvent) {
@@ -170,7 +170,7 @@ function createCleanVersionOfEvent(receivedEvent, knownCriteriaKeyValuePairs, kn
         let cleanValue = eventFieldsHelper.generateCleanField(receivedEvent[key]);
 
         let keyValueCombo = eventFieldsHelper.generateNormalizedFieldValueKey(cleanKey, cleanValue);
-        if (knownCriteriaKeyValuePairs[keyValueCombo] || knownEntityIds[cleanKey]) {
+        if (knownCriteriaKeyValuePairs[keyValueCombo] || knownSystemFields[cleanKey]) {
             cleanEvent[cleanKey] = cleanValue
         }
     }

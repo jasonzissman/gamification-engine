@@ -4,7 +4,7 @@ const logger = require('../utility/logger');
 // TODO should be better data structure than plain object for fast lookups
 let EVENT_LOOKUP_MAP = {};
 let KNOWN_CRITERIA_KEY_VALUE_PAIRS = {};
-let KNOWN_ENTITY_ID_FIELDS = {};
+let KNOWN_SYSTEM_FIELDS = {};
 let CRITERIA_IDS_FIELD = "_criteriaIds";
 
 function clearOutObject(object) {
@@ -17,10 +17,10 @@ function initCriteriaLookupMap(criteria) {
     logger.info("Initializing lookup maps.");
     clearOutObject(EVENT_LOOKUP_MAP);
     clearOutObject(KNOWN_CRITERIA_KEY_VALUE_PAIRS);
-    clearOutObject(KNOWN_ENTITY_ID_FIELDS);
+    clearOutObject(KNOWN_SYSTEM_FIELDS);
     addNewCriteriaToLookupMap(criteria);
     logger.info(`All known criteria size: ${Object.keys(KNOWN_CRITERIA_KEY_VALUE_PAIRS).length}`);
-    logger.info(`All known entityId fields size: ${Object.keys(KNOWN_ENTITY_ID_FIELDS).length}`);
+    logger.info(`All known entityId fields size: ${Object.keys(KNOWN_SYSTEM_FIELDS).length}`);
     logger.info(`Lookup map size (top level only): ${Object.keys(EVENT_LOOKUP_MAP).length}`);
     logger.info(`Finished initializing lookup maps.`);
     return;
@@ -35,7 +35,10 @@ function addNewCriteriaToLookupMap(criteria) {
 
 function addNewCriterionToLookupMap(criterion) {
 
-    KNOWN_ENTITY_ID_FIELDS[criterion.targetEntityIdField] = true;
+    KNOWN_SYSTEM_FIELDS[criterion.targetEntityIdField] = true;
+    if (criterion.aggregation.type === "sum" && !criterion.aggregation.value) {
+        KNOWN_SYSTEM_FIELDS[criterion.aggregation.valueField] = true;
+    }
     const sortedKeys = Object.keys(criterion.qualifyingEvent).sort();
 
     let pointerToLastNode = EVENT_LOOKUP_MAP;
@@ -81,4 +84,4 @@ function lookupMatchingCriteria(receivedEvent) {
     return matchingCriteriaIds;
 }
 
-module.exports = { KNOWN_CRITERIA_KEY_VALUE_PAIRS, KNOWN_ENTITY_ID_FIELDS, initCriteriaLookupMap, addNewCriteriaToLookupMap, addNewCriterionToLookupMap, lookupMatchingCriteria };
+module.exports = { KNOWN_CRITERIA_KEY_VALUE_PAIRS, KNOWN_SYSTEM_FIELDS, initCriteriaLookupMap, addNewCriteriaToLookupMap, addNewCriterionToLookupMap, lookupMatchingCriteria };

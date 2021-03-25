@@ -2,8 +2,11 @@ const FORBIDDEN_CHARS = /[^0-9a-zA-Z_-\s]/;
 const FORBIDDEN_CHARS_GLOBAL = /[^0-9a-zA-Z_-\s]/g;
 
 function generateCleanField(field) {
-    if (field) {
+
+    if (isNaN(field) && field) {
         return field.replace(FORBIDDEN_CHARS_GLOBAL, '');
+    } else if (!isNaN(field)) {
+        return field;
     } else {
         return;
     }
@@ -12,7 +15,7 @@ function generateCleanField(field) {
 function generateObjectWithCleanFields(object) {
     let cleanObject = {};
 
-    for(let key in object) {
+    for (let key in object) {
         let cleanKey = generateCleanField(key);
         let cleanValue = generateCleanField(object[key]);
         cleanObject[cleanKey] = cleanValue;
@@ -29,7 +32,7 @@ function generateNormalizedFieldValueKey(criterionKey, criterionValue) {
     return `${criterionKey}=${criterionValue}`;
 }
 
-module.exports = { 
+module.exports = {
     generateObjectWithCleanFields,
     generateCleanField,
     areAllFieldsAndValuesInSafeCharSet,

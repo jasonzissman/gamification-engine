@@ -29,7 +29,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     }
@@ -52,7 +51,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     }
@@ -74,7 +72,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     }
@@ -97,7 +94,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     }
@@ -142,7 +138,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     }
@@ -165,7 +160,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     }
@@ -188,7 +182,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     }
@@ -212,7 +205,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     }
@@ -231,7 +223,6 @@ describe('Goal Helper', () => {
                     {
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     }
@@ -251,7 +242,6 @@ describe('Goal Helper', () => {
                         qualifyingEvent: {},
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     }
@@ -273,7 +263,7 @@ describe('Goal Helper', () => {
                             platform: "mobile"
                         },
                         aggregation: {
-                            value: 2
+
                         },
                         threshold: 5
                     }
@@ -296,7 +286,7 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "",
-                            value: 2
+
                         },
                         threshold: 5
                     }
@@ -319,7 +309,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                     }
                 ]
@@ -341,7 +330,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 0
                     }
@@ -351,8 +339,8 @@ describe('Goal Helper', () => {
             assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
-        
-      
+
+
 
         it('should fail if one of multiple criteria is invalid', () => {
             let newGoal = {
@@ -366,7 +354,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     },
@@ -392,7 +379,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     }
@@ -414,7 +400,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 5
                     },
@@ -424,7 +409,6 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
-                            value: 2
                         },
                         threshold: 2
                     }
@@ -446,6 +430,27 @@ describe('Goal Helper', () => {
                         },
                         aggregation: {
                             type: "count",
+                        },
+                        threshold: 5
+                    }
+                ]
+            };
+            let goalValidation = goalHelper.validateGoal(newGoal);
+            assert.strictEqual(goalValidation.status, "ok");
+        });
+
+        it('should accept agg value if agg type is sum', () => {
+            let newGoal = {
+                name: "Mobile Power User",
+                targetEntityIdField: "userId",
+                criteria: [
+                    {
+                        qualifyingEvent: {
+                            action: "log-in",
+                            platform: "some new device"
+                        },
+                        aggregation: {
+                            type: "sum",
                             value: 2
                         },
                         threshold: 5
@@ -456,6 +461,70 @@ describe('Goal Helper', () => {
             assert.strictEqual(goalValidation.status, "ok");
         });
 
+        it('should accept agg value field if agg type is sum', () => {
+            let newGoal = {
+                name: "Mobile Power User",
+                targetEntityIdField: "userId",
+                criteria: [
+                    {
+                        qualifyingEvent: {
+                            action: "log-in",
+                            platform: "some new device"
+                        },
+                        aggregation: {
+                            type: "sum",
+                            valueField: "the-field"
+                        },
+                        threshold: 5
+                    }
+                ]
+            };
+            let goalValidation = goalHelper.validateGoal(newGoal);
+            assert.strictEqual(goalValidation.status, "ok");
+        });
+
+        it('should reject if no agg value field or agg value when agg type is sum', () => {
+            let newGoal = {
+                name: "Mobile Power User",
+                targetEntityIdField: "userId",
+                criteria: [
+                    {
+                        qualifyingEvent: {
+                            action: "log-in",
+                            platform: "some new device"
+                        },
+                        aggregation: {
+                            type: "sum",
+                        },
+                        threshold: 5
+                    }
+                ]
+            };
+            let goalValidation = goalHelper.validateGoal(newGoal);
+            assert.strictEqual(goalValidation.status, "failed validation");
+        });
+
+        it('should reject if "0" agg value field when agg type is sum', () => {
+            let newGoal = {
+                name: "Mobile Power User",
+                targetEntityIdField: "userId",
+                criteria: [
+                    {
+                        qualifyingEvent: {
+                            action: "log-in",
+                            platform: "some new device"
+                        },
+                        aggregation: {
+                            type: "sum",
+                            value: 0
+                        },
+                        threshold: 5
+                    }
+                ]
+            };
+            let goalValidation = goalHelper.validateGoal(newGoal);
+            assert.strictEqual(goalValidation.status, "failed validation");
+        });
     });
 
     describe('Persisting Goals', () => {
@@ -474,7 +543,7 @@ describe('Goal Helper', () => {
                     },
                     aggregation: {
                         type: "count",
-                        value: 2
+
                     },
                     threshold: 5
                 },
