@@ -36,6 +36,7 @@ More info coming
 
 ## TODO!!!!
 * fully support count vs. sum aggregations
+* event processing should be locked down. Don't want two updates to overwrite each other. 
 * More unit and integration tests
 * Update readme
 * Can we support a broader character set for goals and events? Feels needlessly restrictive right now.

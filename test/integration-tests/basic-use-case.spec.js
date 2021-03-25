@@ -315,7 +315,7 @@ describe('Basic Use Cases', function () {
                         type: "sum",
                         valueField: "sessionDurationInSeconds"
                     },
-                    threshold: 300 // seconds = 5 minutes
+                    threshold: 300 // 300 seconds = 5 minutes
                 }
             ]
         });
@@ -390,7 +390,7 @@ describe('Basic Use Cases', function () {
                         type: "sum",
                         value: 40
                     },
-                    threshold: 100 
+                    threshold: 100
                 }
             ]
         });
@@ -452,5 +452,101 @@ describe('Basic Use Cases', function () {
 
     }).timeout(15000);
 
+    it('should require all criteria to finish before marking goal as complete', async () => {
 
+        let createdGoal = await goalTestHelper.addGoal({
+            name: "Power User",
+            description: "Log in 2 times AND spend at least 5 minutes in the app",
+            targetEntityIdField: "userId",
+            criteria: [
+                {
+                    qualifyingEvent: {
+                        action: "log-in",
+                    },
+                    aggregation: {
+                        type: "count",
+                    },
+                    threshold: 2
+                },
+                {
+                    qualifyingEvent: {
+                        action: "session-ended"
+                    },
+                    aggregation: {
+                        type: "sum",
+                        valueField: "sessionDurationInSeconds"
+                    },
+                    threshold: 300 // 300 seconds = 5 minutes
+                }
+            ]
+        });
+
+        let goalId = createdGoal.data.goal.id;
+        let criteriaIds = createdGoal.data.goal.criteriaIds;
+
+        // User logs in
+        await eventTestHelper.sendEvent({
+            action: "log-in",
+            userId: "john-doe-1234",
+        });
+
+        // Some time elapses
+        await new Promise(r => setTimeout(r, 500));
+
+        // User session ends 10 minutes later
+        await eventTestHelper.sendEvent({
+            action: "session-ended",
+            userId: "john-doe-1234",
+            sessionDurationInSeconds: 600, // 10 minutes, well past requirements
+        });
+
+        let progress1 = await entityProgressTestHelper.getProgress("john-doe-1234");
+
+        assert.deepStrictEqual(progress1.data, {
+            entityId: 'john-doe-1234',
+            goals: {
+                [goalId]: {
+                    criteriaIds: {
+                        [criteriaIds[0]]: {
+                            isComplete: false,
+                            value: 1
+                        },
+                        [criteriaIds[1]]: {
+                            isComplete: true,
+                            value: 600
+                        }
+                    },
+                    isComplete: false
+                }
+            }
+        });
+
+        // User logs in again
+        await eventTestHelper.sendEvent({
+            action: "log-in",
+            userId: "john-doe-1234",
+        });
+
+        let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
+
+        assert.deepStrictEqual(progress2.data, {
+            entityId: 'john-doe-1234',
+            goals: {
+                [goalId]: {
+                    criteriaIds: {
+                        [criteriaIds[0]]: {
+                            isComplete: true,
+                            value: 2
+                        },
+                        [criteriaIds[1]]: {
+                            isComplete: true,
+                            value: 600
+                        }
+                    },
+                    isComplete: true
+                }
+            }
+        });
+
+    }).timeout(15000);
 });
