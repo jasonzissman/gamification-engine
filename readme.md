@@ -47,7 +47,7 @@ First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows
 }
 ```
 
-Our API section will provide further detail the request payload, but `events` are the basic currency of the engine. You can read this goal as *A badge that is completed for a given `userId` after the gamification system receives 5 events with `action=log-in`, `platform=mobile`, and `userId=*`*.
+Our API section will provide further detail about the request payload, but `events` are the basic currency of the engine. You can read this goal as *A badge that is completed for a given `userId` after the gamification system receives 5 events with `action=log-in`, `platform=mobile`, and `userId=*`*.
 
 ### Sending Usage Events
 Next, as users log into our application, we invoke an HTTP POST against the jz-gamification-engine `/event` API:
@@ -62,7 +62,7 @@ Next, as users log into our application, we invoke an HTTP POST against the jz-g
 }
 ```
 
-This API is very generic. The events that you send should include enough information to match the `goal.criteria` and `targetEntityIdField` that you provided when creating your goal. 
+This API is very generic and **has no globally required fields**. However to be valuable, the events that you send should include enough information to match the `goal.criteria` and `targetEntityIdField` fields that you provided when creating your goal. In our case, our example event includes `action`, `platform`, and `userId`, as our "Power User" goal requires.
 
 ### Checking Goal Progress
 Finally, as needed, we invoke an HTTP GET against the `/entity/<entityId>/progress` API to see how users are tracking towards their goals.
