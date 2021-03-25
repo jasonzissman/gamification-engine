@@ -27,8 +27,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -48,8 +50,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -68,8 +72,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -89,8 +95,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -132,8 +140,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -153,8 +163,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -174,8 +186,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "@@@"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -196,8 +210,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             [weirdFieldName]: "mobile"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -213,8 +229,10 @@ describe('Goal Helper', () => {
                 targetEntityIdField: "userId",
                 criteria: [
                     {
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -231,27 +249,9 @@ describe('Goal Helper', () => {
                 criteria: [
                     {
                         qualifyingEvent: {},
-                        aggregation: "count",
-                        aggregationValue: 2,
-                        threshold: 5
-                    }
-                ]
-            }
-            let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
-        });
-
-        it('should fail if no aggregation in 1 criteria', () => {
-            let newGoal = {
-                name: "Mobile Power User",
-                targetEntityIdField: "userId",
-                criteria: [
-                    {
-                        qualifyingEvent: {
-                            action: "log-in",
-                            aggregationValue: 2,
-                            platform: "mobile"
+                        aggregation: {
+                            type: "count",
+                            value: 2
                         },
                         threshold: 5
                     }
@@ -262,7 +262,7 @@ describe('Goal Helper', () => {
             assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
-        it('should fail if empty aggregation in 1 criteria', () => {
+        it('should fail if no aggregation type in 1 criteria', () => {
             let newGoal = {
                 name: "Mobile Power User",
                 targetEntityIdField: "userId",
@@ -272,8 +272,32 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile"
                         },
-                        aggregation: "",
-                        aggregationValue: 2,
+                        aggregation: {
+                            value: 2
+                        },
+                        threshold: 5
+                    }
+                ]
+            }
+            let goalValidation = goalHelper.validateGoal(newGoal);
+            assert.strictEqual(goalValidation.status, "failed validation");
+            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
+        });
+
+        it('should fail if empty aggregation type in 1 criteria', () => {
+            let newGoal = {
+                name: "Mobile Power User",
+                targetEntityIdField: "userId",
+                criteria: [
+                    {
+                        qualifyingEvent: {
+                            action: "log-in",
+                            platform: "mobile"
+                        },
+                        aggregation: {
+                            type: "",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -293,8 +317,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile",
                         },
-                        aggregation: "count",
-                        aggregationValue: 2
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                     }
                 ]
             }
@@ -313,8 +339,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 0
                     }
                 ]
@@ -323,47 +351,8 @@ describe('Goal Helper', () => {
             assert.strictEqual(goalValidation.status, "failed validation");
             assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
-
-        it('should fail if no aggregationValue in criteria', () => {
-            let newGoal = {
-                name: "Mobile Power User",
-                targetEntityIdField: "userId",
-                criteria: [
-                    {
-                        qualifyingEvent: {
-                            action: "log-in",
-                            platform: "mobile",
-                        },
-                        aggregation: "count",
-                        threshold: 2
-                    }
-                ]
-            }
-            let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
-        });
-
-        it('should fail if "0" aggregation value', () => {
-            let newGoal = {
-                name: "Mobile Power User",
-                targetEntityIdField: "userId",
-                criteria: [
-                    {
-                        qualifyingEvent: {
-                            action: "log-in",
-                            platform: "mobile"
-                        },
-                        aggregation: "count",
-                        aggregationValue: 0,
-                        threshold: 2
-                    }
-                ]
-            }
-            let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
-        });
+        
+      
 
         it('should fail if one of multiple criteria is invalid', () => {
             let newGoal = {
@@ -375,8 +364,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     },
                     {
@@ -399,8 +390,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -419,16 +412,20 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "mobile"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     },
                     {
                         qualifyingEvent: {
                             action: "log-out",
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 2
                     }
                 ]
@@ -447,8 +444,10 @@ describe('Goal Helper', () => {
                             action: "log-in",
                             platform: "some new device"
                         },
-                        aggregation: "count",
-                        aggregationValue: 2,
+                        aggregation: {
+                            type: "count",
+                            value: 2
+                        },
                         threshold: 5
                     }
                 ]
@@ -456,8 +455,6 @@ describe('Goal Helper', () => {
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "ok");
         });
-
-        
 
     });
 
@@ -475,23 +472,27 @@ describe('Goal Helper', () => {
                         action: "log-in",
                         platform: "mobile"
                     },
-                    aggregation: "count",
-                    aggregationValue: 2,
+                    aggregation: {
+                        type: "count",
+                        value: 2
+                    },
                     threshold: 5
                 },
                 {
                     qualifyingEvent: {
                         action: "log-out",
                     },
-                    aggregation: "count",
-                    aggregationValue: 1,
+                    aggregation: {
+                        type: "count",
+                        value: 1
+                    },
                     threshold: 2
                 }
             ]
-        };    
+        };
 
         it("should only include necessary fields", () => {
-        
+
             assert.strictEqual(newGoal.id, undefined);
             assert.strictEqual(newGoal.name, "Mobile Power User");
             assert.strictEqual(newGoal.description, "Log in at least 3 times on a mobile device");

@@ -2,6 +2,17 @@ const eventCriteriaHelper = require('../event/event-criteria-matcher');
 const dbHelper = require('../database/db-helper');
 const eventFieldsHelper = require('../event/event-fields-helper');
 
+function isAggregationValid(aggregation) {
+    let isValid = aggregation && aggregation.type;
+
+    if (isValid && aggregation.type === "sum") {
+        // For sum aggregations, must provide value to add or field from which to pull value
+        isValid = (aggregation.valueField) || (aggregation.value && Number(aggregation.value)); // 0 is not a valid value
+    }
+
+    return isValid;
+}
+
 function isSingleCriteriaValid(criteria) {
     let isValid = false;
 
@@ -9,15 +20,15 @@ function isSingleCriteriaValid(criteria) {
     if (criteria &&
         criteria.qualifyingEvent &&
         Object.keys(criteria.qualifyingEvent).length > 0 &&
-        criteria.aggregation &&
-        criteria.aggregationValue && // 0 is not a valid agg value!
-        criteria.threshold) { // 0 is not a valid threshold!
+        isAggregationValid(criteria.aggregation) &&
+        criteria.threshold) {// 0 is not a valid threshld!
 
         isValid = true;
     }
 
     return isValid;
 }
+
 
 function areAllCriteriaValid(newGoal) {
 
@@ -53,7 +64,7 @@ function validateGoal(newGoal) {
 function createGoalEntityFromRequestGoal(newGoal) {
     let retVal = {
         name: eventFieldsHelper.generateCleanField(newGoal.name),
-        targetEntityIdField: eventFieldsHelper.generateCleanField(newGoal.targetEntityIdField)        
+        targetEntityIdField: eventFieldsHelper.generateCleanField(newGoal.targetEntityIdField)
     };
     if (newGoal.description) {
         retVal.description = eventFieldsHelper.generateCleanField(newGoal.description);
@@ -65,13 +76,13 @@ function createCriteriaEntityFromRequestGoal(newGoal) {
     const criteriaToPersist = [];
 
     for (const criteria of newGoal.criteria) {
-        criteriaToPersist.push({
+        const cleanCriteria = {
             targetEntityIdField: eventFieldsHelper.generateCleanField(newGoal.targetEntityIdField),
             qualifyingEvent: eventFieldsHelper.generateObjectWithCleanFields(criteria.qualifyingEvent),
-            aggregation: eventFieldsHelper.generateCleanField(criteria.aggregation),
-            aggregationValue: Number(criteria.aggregationValue),
+            aggregation: eventFieldsHelper.generateObjectWithCleanFields(criteria.aggregation),
             threshold: Number(criteria.threshold)
-        });
+        };
+        criteriaToPersist.push(cleanCriteria);
     }
 
     return criteriaToPersist;
@@ -93,13 +104,13 @@ async function persistGoal(newGoal) {
         try {
             let insertedGoalId = await dbHelper.persistGoal(goalEntity);
             criteriaEntities.forEach(criterion => { criterion.goalId = insertedGoalId });
-            
+
             let insertedCriteriaIds = await dbHelper.persistCriteria(criteriaEntities);
             let resultingGoal = await dbHelper.updateGoalCriteria(insertedGoalId, insertedCriteriaIds);
-            
+
             eventCriteriaHelper.addNewCriteriaToLookupMap(criteriaEntities);
-            retVal = { status: "ok", goal: resultingGoal};
-        } catch(err) {
+            retVal = { status: "ok", goal: resultingGoal };
+        } catch (err) {
             retVal = { status: "failed", message: "Failed to add goal to database." };
         }
     }

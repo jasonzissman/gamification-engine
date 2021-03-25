@@ -41,5 +41,5 @@ More info coming
 * Can we support a broader character set for goals and events? Feels needlessly restrictive right now.
 * Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
 * Cache calls to database
-* General authorization approach
+* General authorization approach. Access tokens?
 * Put in timing/profiling options to warn if things are going too slow

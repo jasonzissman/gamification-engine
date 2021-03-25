@@ -2,6 +2,7 @@
 const eventCriteriaMatcher = require('./event-criteria-matcher');
 const eventFieldsHelper = require('./event-fields-helper');
 const dbHelper = require('../database/db-helper');
+const logger = require('../utility/logger');
 
 async function processEvent(receivedEvent) {
     // TODO authorize request - put in middleware?
@@ -41,14 +42,29 @@ function computeProgressUpdatesToMake(event, criteria) {
             const entityIdField = criterion.targetEntityIdField;
             const entityId = event[entityIdField];
             if (entityId && entityId.length > 0) {
-                progressUpdates.push({
+                let progressUpdate = {
                     entityId: entityId,
                     goalId: criterion.goalId,
                     criterionId: criterion.id,
-                    aggregation: criterion.aggregation,
-                    aggregationValue: criterion.aggregationValue,
                     threshold: criterion.threshold
-                });
+                };
+
+                if (criterion.aggregation.type === "count") {
+                    progressUpdate.aggregationValueToAdd = 1;
+                } else if (criterion.aggregation.type === "sum") {
+                    if (criterion.aggregation.value) {
+                        progressUpdate.aggregationValueToAdd = criterion.aggregation.value;
+                    } else if (event[criterion.aggregation.valueField]) {
+                        progressUpdate.aggregationValueToAdd = event[criterion.aggregation.valueField];
+                    } else {
+                        logger.error(`Cannot compute sum aggregation value for criteria ${criterion.id} given for event[criterion.aggregation.valueField]=${event[criterion.aggregation.valueField]}. Using value of '1'.`);
+                        progressUpdate.aggregationValueToAdd = 1;
+                    }
+                } else {
+                    logger.error(`Unsupported aggregation type: ${criterion.aggregation.type}.`);
+                }
+
+                progressUpdates.push(progressUpdate);
 
             }
         }
@@ -99,17 +115,12 @@ function updateEntityProgressForCriterion(entityProgress, progressUpdate) {
     const entityId = progressUpdate.entityId;
     const goalId = progressUpdate.goalId;
     const criterionId = progressUpdate.criterionId;
-    const aggregation = progressUpdate.aggregation;
-    const aggregationValue = progressUpdate.aggregationValue;
     const threshold = progressUpdate.threshold;
 
     initEntityProgressTowardsCriterion(entityProgress, entityId, goalId, criterionId);
 
-    if (aggregation === "count") {
-        entityProgress[entityId].goals[goalId].criteriaIds[criterionId].value += 1;
-    } else if (aggregation === "sum") {
-        entityProgress[entityId].goals[goalId].criteriaIds[criterionId].value += aggregationValue;
-    }
+    entityProgress[entityId].goals[goalId].criteriaIds[criterionId].value += progressUpdate.aggregationValueToAdd;
+    
     let hasMetThreshold = entityProgress[entityId].goals[goalId].criteriaIds[criterionId].value >= threshold;
     if (hasMetThreshold) {
         entityProgress[entityId].goals[goalId].criteriaIds[criterionId].isComplete = true;
@@ -143,14 +154,6 @@ async function updateEntityProgressTowardsGoals(progressUpdatesToMake) {
     const relevantGoals = arrayToObjectWithIdKey(dbInvocations[1], "id");
 
     for (progressUpdate of progressUpdatesToMake) {
-
-        const entityId = progressUpdate.entityId;
-        const goalId = progressUpdate.goalId;
-        const criterionId = progressUpdate.criterionId;
-        const aggregation = progressUpdate.aggregation;
-        const aggregationValue = progressUpdate.aggregationValue;
-        const threshold = progressUpdate.threshold;
-
         updateEntityProgressForCriterion(relevantEntityProgress, progressUpdate);
         updateEntityProgressForGoal(relevantEntityProgress, progressUpdate, relevantGoals)
     }

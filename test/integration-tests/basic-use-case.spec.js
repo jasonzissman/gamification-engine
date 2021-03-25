@@ -38,8 +38,9 @@ describe('Basic Use Cases', function () {
                         "action": "log-in",
                         "platform": "mobile"
                     },
-                    "aggregation": "count",
-                    "aggregationValue": 1,
+                    aggregation: {
+                        type: "count",
+                     },
                     "threshold": 3
                 }
             ]
@@ -120,8 +121,9 @@ describe('Basic Use Cases', function () {
                         "action": "log-in",
                         "platform": "mobile"
                     },
-                    "aggregation": "count",
-                    "aggregationValue": 1,
+                    aggregation: {
+                        type: "count",
+                     },
                     "threshold": 3
                 }
             ]
@@ -139,8 +141,9 @@ describe('Basic Use Cases', function () {
                     "qualifyingEvent": {
                         "action": "log-in",
                     },
-                    "aggregation": "count",
-                    "aggregationValue": 1,
+                    aggregation: {
+                        type: "count",
+                     },
                     "threshold": 3
                 }
             ]
@@ -245,8 +248,9 @@ describe('Basic Use Cases', function () {
                         "action": "log-in",
                         "platform": "mobile"
                     },
-                    "aggregation": "count",
-                    "aggregationValue": 1,
+                    aggregation: {
+                        type: "count",
+                     },
                     "threshold": 3
                 }
             ]
@@ -264,8 +268,9 @@ describe('Basic Use Cases', function () {
                     "qualifyingEvent": {
                         "action": "log-in",
                     },
-                    "aggregation": "count",
-                    "aggregationValue": 1,
+                    aggregation: {
+                        type: "count",
+                     },
                     "threshold": 3
                 }
             ]

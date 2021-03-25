@@ -14,7 +14,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -37,7 +39,9 @@ describe('Criteria Matching', () => {
                 qualifyingEvent: {
                     var1: "aaa"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -60,7 +64,9 @@ describe('Criteria Matching', () => {
                 qualifyingEvent: {
                     var1: "ccc"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -83,7 +89,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -108,7 +116,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 id: "criterion-2",
@@ -117,7 +127,9 @@ describe('Criteria Matching', () => {
                     var1: "ccc",
                     var2: "ddd"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -141,7 +153,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 id: "criterion-2",
@@ -150,7 +164,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "ddd"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -174,7 +190,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 id: "criterion-2",
@@ -183,7 +201,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -208,7 +228,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 id: "criterion-2",
@@ -218,7 +240,9 @@ describe('Criteria Matching', () => {
                     var2: "bbb",
                     var3: "ccc"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -243,7 +267,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 id: "criterion-2",
@@ -251,7 +277,9 @@ describe('Criteria Matching', () => {
                 qualifyingEvent: {
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -276,7 +304,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 id: "criterion-2",
@@ -284,7 +314,9 @@ describe('Criteria Matching', () => {
                 qualifyingEvent: {
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 id: "criterion-3",
@@ -292,7 +324,9 @@ describe('Criteria Matching', () => {
                 qualifyingEvent: {
                     var1: "aaa"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -318,7 +352,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 id: "criterion-2",
@@ -326,7 +362,9 @@ describe('Criteria Matching', () => {
                 qualifyingEvent: {
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 id: "criterion-3",
@@ -334,9 +372,11 @@ describe('Criteria Matching', () => {
                 qualifyingEvent: {
                     var1: "aaa"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
-            },{
+            }, {
                 id: "criterion-4",
                 targetEntityIdField: "userId",
                 qualifyingEvent: {
@@ -344,7 +384,9 @@ describe('Criteria Matching', () => {
                     var2: "bbb",
                     var3: "ccc"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -371,7 +413,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 id: "criterion-2",
@@ -379,7 +423,9 @@ describe('Criteria Matching', () => {
                 qualifyingEvent: {
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 id: "criterion-3",
@@ -387,9 +433,11 @@ describe('Criteria Matching', () => {
                 qualifyingEvent: {
                     var1: "aaa"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
-            },{
+            }, {
                 id: "criterion-4",
                 targetEntityIdField: "userId",
                 qualifyingEvent: {
@@ -397,7 +445,9 @@ describe('Criteria Matching', () => {
                     var2: "bbb",
                     var3: "ccc"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -429,7 +479,9 @@ describe('Criteria Matching', () => {
                     var1: "aaa",
                     var2: "bbb"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             eventCriteriaHelper.initCriteriaLookupMap(criteria);
@@ -451,7 +503,9 @@ describe('Criteria Matching', () => {
                     var2: "bbb",
                     var3: "ccc"
                 },
-                aggregation: "count",
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             };
             eventCriteriaHelper.addNewCriterionToLookupMap(newCriteria);

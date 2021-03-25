@@ -128,8 +128,10 @@ describe("event processing", () => {
                 goalId: "goal-1234",
                 id: "criterion-9999",
                 targetEntityIdField: "userId",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregation: {
+                    type: "count",
+                    value: 2
+                },
                 threshold: 5
             }];
             const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
@@ -137,8 +139,7 @@ describe("event processing", () => {
                 goalId: "goal-1234",
                 entityId: "john-doe-123",
                 criterionId: "criterion-9999",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregationValueToAdd: 1,
                 threshold: 5
             }]);
         });
@@ -151,8 +152,10 @@ describe("event processing", () => {
                 goalId: "goal-1234",
                 id: "criterion-9999",
                 targetEntityIdField: "someUnknownField",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregation: {
+                    type: "count",
+                    value: 2
+                },
                 threshold: 5
             }];
             const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
@@ -167,8 +170,10 @@ describe("event processing", () => {
                 goalId: "goal-1234",
                 id: "criterion-9999",
                 targetEntityIdField: "userId",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregation: {
+                    type: "count",
+                    value: 2
+                },
                 threshold: 5
             }];
             const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
@@ -184,15 +189,19 @@ describe("event processing", () => {
                 goalId: "goal-1234",
                 id: "criterion-9999",
                 targetEntityIdField: "userId",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregation: {
+                    type: "count",
+                    value: 2
+                },
                 threshold: 5
             }, {
                 goalId: "goal-5678",
                 id: "criterion-0000",
                 targetEntityIdField: "userId",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregation: {
+                    type: "count",
+                    value: 2
+                },
                 threshold: 5
             }];
             const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
@@ -200,15 +209,13 @@ describe("event processing", () => {
                 goalId: "goal-1234",
                 entityId: "john-doe-123",
                 criterionId: "criterion-9999",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregationValueToAdd: 1,
                 threshold: 5
             }, {
                 goalId: "goal-5678",
                 entityId: "john-doe-123",
                 criterionId: "criterion-0000",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregationValueToAdd: 1,
                 threshold: 5
             }]);
         });
@@ -222,15 +229,17 @@ describe("event processing", () => {
                 goalId: "goal-1234",
                 id: "criterion-9999",
                 targetEntityIdField: "userId",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }, {
                 goalId: "goal-5678",
                 id: "criterion-0000",
                 targetEntityIdField: "someUnknownField",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
@@ -238,8 +247,7 @@ describe("event processing", () => {
                 goalId: "goal-1234",
                 entityId: "john-doe-123",
                 criterionId: "criterion-9999",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregationValueToAdd: 1,
                 threshold: 5
             }]);
         });
@@ -254,15 +262,17 @@ describe("event processing", () => {
                 goalId: "goal-1234",
                 id: "criterion-9999",
                 targetEntityIdField: "groupId",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregation: {
+                    type: "count"
+                },
                 threshold: 5
             }, {
                 goalId: "goal-5678",
                 id: "criterion-0000",
                 targetEntityIdField: "userId",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregation: {
+                    type: "count",
+                },
                 threshold: 5
             }];
             const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
@@ -270,15 +280,13 @@ describe("event processing", () => {
                 goalId: "goal-1234",
                 entityId: "the-group-456",
                 criterionId: "criterion-9999",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregationValueToAdd: 1,
                 threshold: 5
             }, {
                 goalId: "goal-5678",
                 entityId: "john-doe-123",
                 criterionId: "criterion-0000",
-                aggregation: "count",
-                aggregationValue: 2,
+                aggregationValueToAdd: 1,
                 threshold: 5
             }]);
         });
