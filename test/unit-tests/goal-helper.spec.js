@@ -230,7 +230,7 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
+            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
         it('should fail if empty qualifyingEvent in 1 criteria', () => {
@@ -249,7 +249,7 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
+            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
         it('should fail if no aggregation type in 1 criteria', () => {
@@ -271,7 +271,7 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
+            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
         it('should fail if empty aggregation type in 1 criteria', () => {
@@ -294,7 +294,7 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
+            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
         it('should fail if no threshold in 1 criteria', () => {
@@ -315,7 +315,7 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
+            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
         it('should fail if "0" aggregation in 1 criteria', () => {
@@ -337,10 +337,8 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
+            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
-
-
 
         it('should fail if one of multiple criteria is invalid', () => {
             let newGoal = {
@@ -364,10 +362,10 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
+            assert.strictEqual(goalValidation.message, "All criteria should have a valid aggregation, a valid threshold, and non-nested qualifying events with at least one name/value attribute.");
         });
 
-        it('should succeed if all requirements met', () => {
+        it('should succeed if all requirements met (no points specified)', () => {
             let newGoal = {
                 name: "Mobile Power User",
                 targetEntityIdField: "userId",
@@ -386,6 +384,95 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "ok");
+        });
+
+        it('should succeed if all requirements met (points specified)', () => {
+            let newGoal = {
+                name: "Mobile Power User",
+                targetEntityIdField: "userId",
+                points: 10,
+                criteria: [
+                    {
+                        qualifyingEvent: {
+                            action: "log-in",
+                            platform: "mobile"
+                        },
+                        aggregation: {
+                            type: "count",
+                        },
+                        threshold: 5
+                    }
+                ]
+            }
+            let goalValidation = goalHelper.validateGoal(newGoal);
+            assert.strictEqual(goalValidation.status, "ok");
+        });
+
+        it('should succeed if all requirements met (0 points)', () => {
+            let newGoal = {
+                name: "Mobile Power User",
+                targetEntityIdField: "userId",
+                points: 0,
+                criteria: [
+                    {
+                        qualifyingEvent: {
+                            action: "log-in",
+                            platform: "mobile"
+                        },
+                        aggregation: {
+                            type: "count",
+                        },
+                        threshold: 5
+                    }
+                ]
+            }
+            let goalValidation = goalHelper.validateGoal(newGoal);
+            assert.strictEqual(goalValidation.status, "ok");
+        });
+
+        it('should succeed if all requirements met (negative points)', () => {
+            let newGoal = {
+                name: "Mobile Power User",
+                targetEntityIdField: "userId",
+                points: 0,
+                criteria: [
+                    {
+                        qualifyingEvent: {
+                            action: "log-in",
+                            platform: "mobile"
+                        },
+                        aggregation: {
+                            type: "count",
+                        },
+                        threshold: 5
+                    }
+                ]
+            }
+            let goalValidation = goalHelper.validateGoal(newGoal);
+            assert.strictEqual(goalValidation.status, "ok");
+        });
+
+        it('should fail if non-numeric points provided', () => {
+            let newGoal = {
+                name: "Mobile Power User",
+                targetEntityIdField: "userId",
+                points: "what",
+                criteria: [
+                    {
+                        qualifyingEvent: {
+                            action: "log-in",
+                            platform: "mobile"
+                        },
+                        aggregation: {
+                            type: "count",
+                        },
+                        threshold: 5
+                    }
+                ]
+            }
+            let goalValidation = goalHelper.validateGoal(newGoal);
+            assert.strictEqual(goalValidation.status, "failed validation");
+            assert.strictEqual(goalValidation.message, "If specifying a point value for a goal, it must be a number. Assigned invalid value: 'what'.");
         });
 
         it('should succeed if all requirements met on multi-criteria goal', () => {

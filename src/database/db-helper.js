@@ -112,7 +112,24 @@ async function getSpecificEntitiesProgress(entityIds) {
     return entitiesProgress;
 }
 
-async function updateSpecificEntityProgress(entityProgressMap) {
+async function updateEntityProgress(entity) {
+
+    logger.info(`Updating entity progress for entity '${entity.entityId}'.`);
+    const entityProgressCollection = DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME);
+
+    let resultingEntity = await entityProgressCollection.findOneAndUpdate(
+        { "entityId": entity.entityId },
+        { "$set": entity },
+        { upsert: true, returnOriginal: false }
+    );
+
+    logger.info(`Successfully updated entity with id '${entity.entityId}'.`);
+    mongoIdHelper.stripOutMongoObjectId(resultingEntity.value);
+    return resultingEntity.value;
+}
+
+async function updateMultipleEntityProgress(entityProgressMap) {
+
     logger.info(`Updating entity progress for entities ${Object.keys(entityProgressMap)}.`);
     const entityProgressCollection = DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME);
 
@@ -192,7 +209,8 @@ module.exports = {
     getSpecificGoals,
     getSpecificEntityProgress,
     getSpecificEntitiesProgress,
-    updateSpecificEntityProgress,
+    updateEntityProgress,
+    updateMultipleEntityProgress,
     persistGoal,
     updateGoalCriteria,
     persistCriteria,

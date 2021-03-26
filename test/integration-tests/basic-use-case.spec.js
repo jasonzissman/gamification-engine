@@ -32,6 +32,7 @@ describe('Basic Use Cases', function () {
             name: "Mobile Power User",
             description: "Log in at least 3 times on a mobile device",
             targetEntityIdField: "userId",
+            points: 10,
             criteria: [
                 {
                     qualifyingEvent: {
@@ -61,6 +62,7 @@ describe('Basic Use Cases', function () {
 
         assert.deepStrictEqual(progress.data, {
             entityId: 'john-doe-1234',
+            points: 0,
             goals: {
                 [goalId]: {
                     criteriaIds: {
@@ -94,6 +96,7 @@ describe('Basic Use Cases', function () {
 
         assert.deepStrictEqual(progress2.data, {
             entityId: 'john-doe-1234',
+            points: 10,
             goals: {
                 [goalId]: {
                     criteriaIds: {
@@ -182,6 +185,7 @@ describe('Basic Use Cases', function () {
         let johnProgress = await entityProgressTestHelper.getProgress("john-doe-1234");
         assert.deepStrictEqual(johnProgress.data, {
             entityId: 'john-doe-1234',
+            points: 0,
             goals: {
                 [goal1Id]: {
                     criteriaIds: {
@@ -198,6 +202,7 @@ describe('Basic Use Cases', function () {
         let mikeProgress = await entityProgressTestHelper.getProgress("mike-smith-1234");
         assert.deepStrictEqual(mikeProgress.data, {
             entityId: 'mike-smith-1234',
+            points: 0,
             goals: {
                 [goal1Id]: {
                     criteriaIds: {
@@ -221,6 +226,7 @@ describe('Basic Use Cases', function () {
         let groupProgress = await entityProgressTestHelper.getProgress("the-wildcats");
         assert.deepStrictEqual(groupProgress.data, {
             entityId: 'the-wildcats',
+            points: 0,
             goals: {
                 [goal2Id]: {
                     criteriaIds: {
@@ -335,6 +341,7 @@ describe('Basic Use Cases', function () {
 
         assert.deepStrictEqual(progress.data, {
             entityId: 'john-doe-1234',
+            points: 0,
             goals: {
                 [goalId]: {
                     criteriaIds: {
@@ -360,6 +367,7 @@ describe('Basic Use Cases', function () {
 
         assert.deepStrictEqual(progress2.data, {
             entityId: 'john-doe-1234',
+            points: 0,
             goals: {
                 [goalId]: {
                     criteriaIds: {
@@ -408,6 +416,7 @@ describe('Basic Use Cases', function () {
 
         assert.deepStrictEqual(progress.data, {
             entityId: 'john-doe-1234',
+            points: 0,
             goals: {
                 [goalId]: {
                     criteriaIds: {
@@ -437,6 +446,7 @@ describe('Basic Use Cases', function () {
 
         assert.deepStrictEqual(progress2.data, {
             entityId: 'john-doe-1234',
+            points: 0,
             goals: {
                 [goalId]: {
                     criteriaIds: {
@@ -504,6 +514,7 @@ describe('Basic Use Cases', function () {
 
         assert.deepStrictEqual(progress1.data, {
             entityId: 'john-doe-1234',
+            points: 0,
             goals: {
                 [goalId]: {
                     criteriaIds: {
@@ -531,6 +542,7 @@ describe('Basic Use Cases', function () {
 
         assert.deepStrictEqual(progress2.data, {
             entityId: 'john-doe-1234',
+            points: 0,
             goals: {
                 [goalId]: {
                     criteriaIds: {
@@ -549,4 +561,47 @@ describe('Basic Use Cases', function () {
         });
 
     }).timeout(15000);
+
+    it('should allow manipulation of points via API', async () => {
+
+        await goalTestHelper.addGoal({
+            name: "Mobile Power User",
+            description: "Log in at least 3 times on a mobile device",
+            targetEntityIdField: "userId",
+            points: 10,
+            criteria: [
+                {
+                    qualifyingEvent: {
+                        action: "log-in",
+                        platform: "mobile"
+                    },
+                    aggregation: {
+                        type: "count",
+                    },
+                    threshold: 1
+                }
+            ]
+        });
+
+        await eventTestHelper.sendEvent({
+            action: "log-in",
+            platform: "mobile",
+            userId: "john-doe-1234",
+        });
+
+        let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
+        assert.deepStrictEqual(progress.data.points, 10);
+
+        await entityProgressTestHelper.updatePoints("john-doe-1234", 5);
+
+        let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
+        assert.deepStrictEqual(progress2.data.points, 15);
+
+        await entityProgressTestHelper.updatePoints("john-doe-1234", -12);
+
+        let progress3 = await entityProgressTestHelper.getProgress("john-doe-1234");
+        assert.deepStrictEqual(progress3.data.points, 3);
+
+    }).timeout(15000);
+
 });

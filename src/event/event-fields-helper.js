@@ -6,7 +6,7 @@ function generateCleanField(field) {
     if (isNaN(field) && field) {
         return field.replace(FORBIDDEN_CHARS_GLOBAL, '');
     } else if (!isNaN(field)) {
-        return field;
+        return field; 
     } else {
         return;
     }

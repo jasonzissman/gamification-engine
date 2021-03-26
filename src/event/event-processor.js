@@ -2,6 +2,8 @@
 const eventCriteriaMatcher = require('./event-criteria-matcher');
 const eventFieldsHelper = require('./event-fields-helper');
 const dbHelper = require('../database/db-helper');
+const entityHelper = require('../entity/entity-helper');
+
 const logger = require('../utility/logger');
 
 async function processEvent(receivedEvent) {
@@ -89,26 +91,6 @@ function arrayToObjectWithIdKey(array, idField) {
     }, {});
 }
 
-function initEntityProgressTowardsCriterion(relevantEntityProgress, entityId, goalId, criterionId) {
-    if (!relevantEntityProgress[entityId]) {
-        relevantEntityProgress[entityId] = {
-            entityId: entityId,
-            goals: {}
-        };
-    }
-    if (!relevantEntityProgress[entityId].goals[goalId]) {
-        relevantEntityProgress[entityId].goals[goalId] = {
-            isComplete: false,
-            criteriaIds: {}
-        };
-    }
-    if (!relevantEntityProgress[entityId].goals[goalId].criteriaIds[criterionId]) {
-        relevantEntityProgress[entityId].goals[goalId].criteriaIds[criterionId] = {
-            isComplete: false,
-            value: 0
-        };
-    }
-}
 
 function updateEntityProgressForCriterion(entityProgress, progressUpdate) {
 
@@ -117,7 +99,7 @@ function updateEntityProgressForCriterion(entityProgress, progressUpdate) {
     const criterionId = progressUpdate.criterionId;
     const threshold = progressUpdate.threshold;
 
-    initEntityProgressTowardsCriterion(entityProgress, entityId, goalId, criterionId);
+    entityHelper.initEntityProgressTowardsCriterion(entityProgress, entityId, goalId, criterionId);
 
     entityProgress[entityId].goals[goalId].criteriaIds[criterionId].value += progressUpdate.aggregationValueToAdd;
     
@@ -143,11 +125,19 @@ function updateEntityProgressForGoal(entityProgress, progressUpdate, goals) {
         }
         if (markGoalAsComplete) {
             entityProgress[entityId].goals[goalId].isComplete = true;
+            if ((goals[goalId].points != undefined) && !isNaN(goals[goalId].points)) {
+                entityProgress[entityId].points += goals[goalId].points;
+            }
         }
     }
 }
 
 async function updateEntityProgressTowardsGoals(progressUpdatesToMake) {
+
+    // This update routine will introduce a race condition in a multi-node
+    // setup. If two nodes invoke updateEntityProgress(), the second one will
+    // win. This may be acceptable but needs to be documented and/or a 
+    // good solution that doesn't compromise effiency should be researched.
 
     const dbInvocations = await getReleventGoalsAndEntityProgressFromDb(progressUpdatesToMake);
     const relevantEntityProgress = arrayToObjectWithIdKey(dbInvocations[0], "entityId");
@@ -157,9 +147,8 @@ async function updateEntityProgressTowardsGoals(progressUpdatesToMake) {
         updateEntityProgressForCriterion(relevantEntityProgress, progressUpdate);
         updateEntityProgressForGoal(relevantEntityProgress, progressUpdate, relevantGoals)
     }
-
-    // reinsert relevantEntityProgress into DB
-    await dbHelper.updateSpecificEntityProgress(relevantEntityProgress);
+    
+    await dbHelper.updateMultipleEntityProgress(relevantEntityProgress);
 }
 
 function createCleanVersionOfEvent(receivedEvent, knownCriteriaKeyValuePairs, knownSystemFields) {

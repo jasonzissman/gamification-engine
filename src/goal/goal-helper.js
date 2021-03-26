@@ -43,6 +43,10 @@ function areAllCriteriaValid(newGoal) {
     return allCriteriaValid;
 }
 
+function isGoalPointsValueValid(newGoal) {
+    return ((newGoal.points == undefined) || !isNaN(newGoal.points));
+}
+
 function validateGoal(newGoal) {
     let retVal = {
         status: "failed validation",
@@ -53,7 +57,9 @@ function validateGoal(newGoal) {
     } else if (!eventFieldsHelper.areAllFieldsAndValuesInSafeCharSet(newGoal)) {
         retVal.message = "Goal fields can only contain dashes (-), underscores (_), and alpha-numeric characters.";
     } else if (!areAllCriteriaValid(newGoal)) {
-        retVal.message = "All criteria should have a valid aggregation, and a valid threshold, and non-nested qualifying events with at least one name/value attribute.";
+        retVal.message = "All criteria should have a valid aggregation, a valid threshold, and non-nested qualifying events with at least one name/value attribute.";
+    } else if (!isGoalPointsValueValid(newGoal)) {
+        retVal.message = `If specifying a point value for a goal, it must be a number. Assigned invalid value: '${newGoal.points}'.`;
     } else {
         retVal.status = "ok";
     }
@@ -68,6 +74,9 @@ function createGoalEntityFromRequestGoal(newGoal) {
     };
     if (newGoal.description) {
         retVal.description = eventFieldsHelper.generateCleanField(newGoal.description);
+    }
+    if (newGoal.points) {
+        retVal.points = Number(newGoal.points);
     }
     return retVal;
 }

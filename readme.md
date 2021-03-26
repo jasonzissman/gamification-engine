@@ -7,10 +7,9 @@ Think about the following features. All of them are made possible with jz-gamifi
 * The ability to define, enable, and disable custom badges. For example:
     * A "Mobile Power User" badge that users receive after logging into your mobile app 5 times.
     * A "Bookworm" badge that users receive after spending at least 20 minutes reading content on your website.
-* The ability to define journeys that tie together disparate actions. For example:
-    * A "Newcomer" journey that a user completes after visiting 3 tutorial pages and writing a first blog post. After completion additional functionality is unlocked.
-* The ability to define goals for more than just users. For example:
     * A "Best Seller" badge that a **blog post** is awarded after it is read 100 times.
+* The ability to define journeys that tie together disparate actions. For example:
+    * A "Newcomer" journey that a user completes after visiting 3 tutorial pages and writing a first blog post. After completion additional functionality is unlocked.    
 * The ability for goals to be defined and updated dynamically during run time, even by your end-users themselves. 
 * An in-app store that allows users to choose custom profile images and flair using points earned from completing goals.
 
@@ -27,7 +26,8 @@ Let's walk through the creation and usage of a simple "Mobile Power User" badge.
 First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows:
 
 ```
-// HTTP POST <host>:<port>/goal
+// HTTP POST 
+// https://<host>/goal
 {
   "name": "Mobile Power User",
   "description": "Log in at least 5 times on a mobile device",
@@ -53,7 +53,8 @@ Our API section will provide further detail about the request payload, but `even
 Next, as users log into our application, we invoke an HTTP POST against the jz-gamification-engine `/event` API:
 
 ```
-// HTTP POST <host>:<port>/event
+// HTTP POST 
+// https://<host>/event
 {
   "action": "log-in",
   "platform": "mobile",
@@ -65,10 +66,11 @@ Next, as users log into our application, we invoke an HTTP POST against the jz-g
 This API is very generic and **has no globally required fields**. However to be valuable, the events that you send should include enough information to match the `goal.criteria` and `targetEntityIdField` fields that you provided when creating your goal. In our case, our example event includes `action`, `platform`, and `userId`, as our "Power User" goal requires.
 
 ### Checking Goal Progress
-Finally, as needed, we invoke an HTTP GET against the `/entity/<entityId>/progress` API to see how users are tracking towards their goals.
+Finally, as needed, we invoke an HTTP GET against the `/entity/<entityId>` API to see how users are tracking towards their goals.
 
 ```
-// HTTP GET <host>:<port>/entity/<entity-id>/progress
+// HTTP GET 
+// https://<host>/entity/<entity-id>
 ```
 
 This will return a breakdown of each user's progress towards all goals, including our Power User badge. Note that this API will return empty/missing if no progress has been made towards a specific goal or goal criteria.
@@ -110,13 +112,11 @@ More info coming
 More info coming
 
 ## TODO!!!!
-* Push notifications when goal completed.
-* allow assignment of 'points' after an individual completes a goal. Have a balance? e.g. like a wallet for purchasing features.
-* event processing should be locked down. Don't want two updates to overwrite each other. 
-* More unit and integration tests
-* Update readme
 * Can we support a broader character set for goals and events? Feels needlessly restrictive right now.
 * Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
+* Push notifications when goal completed.
+* More unit and integration tests
+* Update readme
 * Cache calls to database
 * General authorization approach. Access tokens?
 * Put in timing/profiling options to warn if things are going too slow
