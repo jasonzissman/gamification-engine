@@ -145,6 +145,7 @@ PORT // port this application listens on
 [Detailed API documentation](docs/api.md)
 
 ## TODO!!!!
+* Provide easier startup instructions with references to Mongo. Can we make this Docker friendly?
 * Make sample application with UI (for docs)
 * Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
 * Swagger
