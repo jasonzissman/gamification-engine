@@ -108,6 +108,17 @@ Our [Detailed API documentation](docs/api.md) provides further detail.
 * [Badge for users who log in 5 times](docs/use-case-simple-badge.md)
 * [Badge tracking time spent reading a page](docs/use-case-track-time-on-page.md)
 
+## Running the sample application
+
+There is a fully functional sample app bundled in this repository at `docs/sample_app`. Navigate to that directory and execute the following command to test it out! It demonstrates a client app relying on the gamification engine for 3 goals.
+
+```
+// navigate to docs/sample_app
+npm install
+npm start
+// Launch http://localhost:31854/static/ in your browser.
+```
+
 ## Development Overview
 
 ### Setup

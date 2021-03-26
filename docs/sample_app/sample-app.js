@@ -16,7 +16,7 @@ function startExpressApp() {
     app.use('/static', express.static('static'))
     app.use(express.json());
 
-    const port = 31854;
+    const SAMPLE_APP_PORT = 31854;
 
     app.get("/log-in", async (request, response) => {
         // your application's login code here...
@@ -53,12 +53,12 @@ function startExpressApp() {
         });
     });
 
-    app.listen(port, (err) => {
+    app.listen(SAMPLE_APP_PORT, (err) => {
         if (err) {
             console.log(err);
         }
 
-        console.log(`Sample app listening on ${port}.`);
+        console.log(`Sample app listening on ${SAMPLE_APP_PORT}.`);
     });
 }
 
