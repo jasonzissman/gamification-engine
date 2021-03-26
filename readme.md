@@ -1,8 +1,11 @@
 # JZ Gamification Engine
 jz-gamification-engine is a robust platform for managing gamification features such as badges, awards, user assignments, and point systems. It is meant to be run alongside existing applications that want to support gamification features in a decoupled, performant fashion.
 
+## Stability and Version
+This project is very young! I welcome feedback and suggestions from everyone, but keep in mind that this implementation is young and not yet battle tested.
+
 ## Some Example Features 
-Think about the following features. All of them are made possible with jz-gamification-platform:
+Think about the following features which are enabled by the jz-gamification-platform:
 
 * The ability to define, enable, and disable custom badges. For example:
     * A "Mobile Power User" badge that users receive after logging into your mobile app 5 times.
@@ -25,7 +28,7 @@ Let's walk through the creation and usage of a simple "Mobile Power User" badge.
 ### Creating the Badge
 First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows:
 
-** Request **
+**Request**
 ```
 // HTTP POST 
 // https://<host>/goal
@@ -55,7 +58,7 @@ Our [Detailed API documentation](docs/api.md) provides further detail.
 ### Sending Usage Events
 Next, as users log into our application, we invoke an HTTP POST against the jz-gamification-engine `/event` API:
 
-** Request **
+**Request**
 ```
 // HTTP POST 
 // https://<host>/event
@@ -72,13 +75,13 @@ To track progress towards your goal, the events that you send should include eno
 ### Checking Goal Progress
 Finally, as needed, we invoke an HTTP GET against the `/entity/<entityId>` API to see how users are tracking towards their goals.
 
-** Request **
+**Request**
 ```
 // HTTP GET 
 // https://<host>/entity/john-doe-1234
 ```
 
-** Response **
+**Response**
 ```
 {
     entityId: 'john-doe-1234',
@@ -142,12 +145,12 @@ PORT // port this application listens on
 [Detailed API documentation](docs/api.md)
 
 ## TODO!!!!
+* Make sample application with UI (for docs)
+* Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
 * Swagger
 * Can we support a broader character set for goals and events? Feels needlessly restrictive right now.
-* Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
 * Push notifications when goal completed.
 * More unit and integration tests
-* Update readme
 * Cache calls to database
 * General authorization approach. Access tokens?
 * Put in timing/profiling options to warn if things are going too slow

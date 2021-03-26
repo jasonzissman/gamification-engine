@@ -383,7 +383,7 @@ describe('Basic Use Cases', function () {
 
     }).timeout(15000);
 
-    it('should support count aggregations with predefined value', async () => {
+    it('should support sum aggregations with predefined value', async () => {
 
         let createdGoal = await goalTestHelper.addGoal({
             name: "Social Butterfly",
