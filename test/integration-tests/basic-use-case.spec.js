@@ -306,7 +306,7 @@ describe('Basic Use Cases', function () {
 
     }).timeout(15000);
 
-    it('should support count aggregations on specific event fields', async () => {
+    it('should support sum aggregations on specific event fields', async () => {
 
         let createdGoal = await goalTestHelper.addGoal({
             name: "Frequent Flyer",

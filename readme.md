@@ -13,7 +13,7 @@ Think about the following features. All of them are made possible with jz-gamifi
 * The ability for goals to be defined and updated dynamically during run time, even by your end-users themselves. 
 * An in-app store that allows users to choose custom profile images and flair using points earned from completing goals.
 
-## Example: The 'Mobile Power User' Badge
+## Simple Example: The 'Mobile Power User' Badge
 All of the features above are enabled via three flows made available via the gamification-engine APIs:
 
 1. Client defines a `goal`
@@ -25,6 +25,7 @@ Let's walk through the creation and usage of a simple "Mobile Power User" badge.
 ### Creating the Badge
 First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows:
 
+** Request **
 ```
 // HTTP POST 
 // https://<host>/goal
@@ -47,11 +48,14 @@ First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows
 }
 ```
 
-Our API section will provide further detail about the request payload, but `events` are the basic currency of the engine. You can read this goal as *A badge that is completed for a given `userId` after the gamification system receives 5 events with `action=log-in`, `platform=mobile`, and `userId=*`*.
+You can read this goal as *A badge that is completed for a given `userId` after the gamification system receives 5 events with `action=log-in`, `platform=mobile`, and `userId=*`*.
+
+Our [Detailed API documentation](docs/api.md) provides further detail. 
 
 ### Sending Usage Events
 Next, as users log into our application, we invoke an HTTP POST against the jz-gamification-engine `/event` API:
 
+** Request **
 ```
 // HTTP POST 
 // https://<host>/event
@@ -63,17 +67,43 @@ Next, as users log into our application, we invoke an HTTP POST against the jz-g
 }
 ```
 
-This API is very generic and **has no globally required fields**. However to be valuable, the events that you send should include enough information to match the `goal.criteria` and `targetEntityIdField` fields that you provided when creating your goal. In our case, our example event includes `action`, `platform`, and `userId`, as our "Power User" goal requires.
+To track progress towards your goal, the events that you send should include enough information to match the `criteria.[].qualifyingEvent` and `targetEntityIdField` fields that you provided when creating your goal. In our case, our example event includes `action=log-in`, `platform=mobile`, and `userId`, which is what our "Power User" goal requires.
 
 ### Checking Goal Progress
 Finally, as needed, we invoke an HTTP GET against the `/entity/<entityId>` API to see how users are tracking towards their goals.
 
+** Request **
 ```
 // HTTP GET 
-// https://<host>/entity/<entity-id>
+// https://<host>/entity/john-doe-1234
 ```
 
-This will return a breakdown of each user's progress towards all goals, including our Power User badge. Note that this API will return empty/missing if no progress has been made towards a specific goal or goal criteria.
+** Response **
+```
+{
+    entityId: 'john-doe-1234',
+    points: 0, // no points accumulated yet since goal no completed
+    goals: {
+        goal-1234-5678: {
+            criteriaIds: {
+                criteria-9999: {
+                    isComplete: false, // criteria conditions have not been met yet
+                    value: 1 // needs to be 5 to meet goal criteria
+                }
+            },
+            isComplete: false // goal criteria have not been met yet
+        }
+    }
+}
+```
+This will return a breakdown of the user's progress towards all goals, including our Power User badge. 
+
+Our [Detailed API documentation](docs/api.md) provides further detail.
+
+## More Example Use Cases
+
+* [Badge for users who log in 5 times](docs/use-case-simple-badge.md)
+* [Badge tracking time spent reading a page](docs/use-case-track-time-on-page.md)
 
 ## Development Overview
 
@@ -106,12 +136,13 @@ PORT // port this application listens on
 ```
 
 ### System Architecture
-More info coming
+[Detailed system architecture documentation](docs/system-architecture.md)
 
 ### Detailed APIs
-More info coming
+[Detailed API documentation](docs/api.md)
 
 ## TODO!!!!
+* Swagger
 * Can we support a broader character set for goals and events? Feels needlessly restrictive right now.
 * Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
 * Push notifications when goal completed.
