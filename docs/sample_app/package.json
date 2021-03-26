@@ -4,11 +4,12 @@
   "description": "test of jz-gamification-engine",
   "main": "sample-app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx run-func ./sample-app.js start"
   },
   "author": "jason zissman",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.21.1",
     "express": "^4.17.1"
   }
 }

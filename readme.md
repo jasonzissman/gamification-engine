@@ -129,6 +129,7 @@ npm run integration-test
 
 ### Running the app
 ```
+// requires locally running Mongo!
 npm start
 ```
 

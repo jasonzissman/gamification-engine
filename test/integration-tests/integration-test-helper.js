@@ -56,7 +56,7 @@ async function startAppServer(mongoConnString) {
             if (healthRequest.status === 200) {
                 logger.info(`App server has started. Proceeding.`);
                 clearInterval(checkServerIntervalId);
-                resolve();
+                resolve(process.env.PORT);
             } else if (attempt > maxAttempts) {
                 logger.info(`Exceeded maximum attempts (${maxAttempts}). Exiting.`);
                 clearInterval(checkServerIntervalId);

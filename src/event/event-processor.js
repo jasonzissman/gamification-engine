@@ -101,7 +101,7 @@ function updateEntityProgressForCriterion(entityProgress, progressUpdate) {
 
     entityHelper.initEntityProgressTowardsCriterion(entityProgress, entityId, goalId, criterionId);
 
-    entityProgress[entityId].goals[goalId].criteriaIds[criterionId].value += progressUpdate.aggregationValueToAdd;
+    entityProgress[entityId].goals[goalId].criteriaIds[criterionId].value += Number(progressUpdate.aggregationValueToAdd);
     
     let hasMetThreshold = entityProgress[entityId].goals[goalId].criteriaIds[criterionId].value >= threshold;
     if (hasMetThreshold) {

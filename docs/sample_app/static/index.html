@@ -1,41 +1,152 @@
 <html>
-    <head>
-        <title>Hello World!</title>
-    </head>
-    <body>
-        <h1>Testing the jz-gamification-engine</h1>
-        <section id="created-goals">
-            <ul>
-                <li>Power User - Goal 123 - Log into the app 5 times</li>
-                <li>Been Doing This Forever  - Goal 456 - Perform an activity for 100 seconds</li>
-                <li>Newcomer Tutorial - Goal 789 - Log in, view all pages, and log out</li>
+
+<head>
+    <title>Hello World!</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.5/build/pure-min.css"
+        integrity="sha384-LTIDeidl25h2dPxrB2Ekgc9c7sEC3CWGM6HeFmuDNUjX76Ert4Z4IY714dhZHPLd" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.5/build/grids-responsive-min.css">
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/base-min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            margin: 20px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0px;
+        }
+
+        li {
+            padding: 5px;
+            display: inline-block;
+            zoom: 1;
+            *display: inline;
+        }
+
+        .not-inline {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Testing the jz-gamification-engine</h1>
+    <div class="pure-g">
+        <section id="created-goals" class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-3">
+            <h2>Goals</h2>
+            <div id="points">Points: 0</div>
+            <ul id="all-goals-list">
             </ul>
             <!-- TODO - add ability to create new goals-->
         </section>
-        <section id="actions-to-take">
+        <section id="actions-to-take" class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-3">
             <h2>Actions you can take</h2>
             <ul>
                 <li>
-                    <button id="">log in</button>
+                    <button id="btn-log-in" class="pure-button">log in</button>
                 </li>
                 <li>
-                    <button id="">log out</button>
+                    <button id="btn-log-out" class="pure-button">log out</button>
                 </li>
                 <li>
-                    <button id="">view page 1</button>
+                    <button id="btn-view-page-1" class="pure-button">view page 1</button>
                 </li>
                 <li>
-                    <button id="">view page 2</button>
+                    <button id="btn-view-page-2" class="pure-button">view page 2</button>
                 </li>
                 <li>
-                    <button id="">perform an activity</button>
+                    <button id="btn-perform-activity" class="pure-button">perform activity</button>
+                </li>
+                <li>
                     <label for="time-performing-activity">Seconds spent performing activity</label>
-                    <input id="time-performing-activity" type="number" value="10"/>
+                    <input id="time-performing-activity" type="number" value="10" class="pure-input" />
                 </li>
             </ul>
         </section>
-        <section id="goal-progress">
-            <h2>Goal Progress</h2>
+        <section id="log" class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-3">
+            <h2>Log</h2>
+            <ul id="log-list">
+
+            </ul>
         </section>
-    </body>
+    </div>
+
+    <script type="text/javascript">
+        function issueSynchronousHttpGet(url) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, false); // false for synchronous request
+            xmlHttp.send(null);
+            return xmlHttp.responseText;
+        }
+
+        function appendToLog(message) {
+            let list = document.getElementById('log-list');
+            let newEntry = document.createElement('li');
+            newEntry.innerHTML = new Date().toLocaleTimeString() + ": " + message;
+            list.insertBefore(newEntry, list.firstChild);
+        }
+
+        function updateListOfGoalsAndProgress() {
+            let list = document.getElementById("all-goals-list");
+            list.innerHTML = "";
+            let response = issueSynchronousHttpGet("/goal-progress");
+            let goals = JSON.parse(response).message.goals;
+            let progress = JSON.parse(response).message.progress;
+
+            let progressJson;
+            if (progress["entityId"] === "john-doe-1234") {
+                progressJson = progress["goals"];
+                document.getElementById("points").innerHTML = "Points: " + progress["points"]
+            }
+
+
+            goals.forEach(goal => {
+                let newListEntry = document.createElement('li');
+                newListEntry.classList.add("not-inline");
+                let progressHtml = "<br/>Goal Complete: false";
+                if(progressJson && progressJson[goal.id]) {
+                    progressHtml = "<br/>Goal Complete: " + progressJson[goal.id].isComplete;
+                }
+                newListEntry.innerHTML = `<h3>${goal.name}</h3>${goal.description}${progressHtml}`;
+                list.appendChild(newListEntry);
+            });
+
+        }
+
+        window.onload = function () {
+
+            updateListOfGoalsAndProgress();
+
+            document.getElementById("btn-log-in").onclick = function fun() {
+                let response = issueSynchronousHttpGet("/log-in");
+                appendToLog(JSON.parse(response).message);
+                updateListOfGoalsAndProgress();
+            };
+            document.getElementById("btn-log-out").onclick = function fun() {
+                let response = issueSynchronousHttpGet("/log-out");
+                appendToLog(JSON.parse(response).message);
+                updateListOfGoalsAndProgress();
+            };
+            document.getElementById("btn-view-page-1").onclick = function fun() {
+                let response = issueSynchronousHttpGet("/view-page/page-1");
+                appendToLog(JSON.parse(response).message);
+                updateListOfGoalsAndProgress();
+            };
+            document.getElementById("btn-view-page-2").onclick = function fun() {
+                let response = issueSynchronousHttpGet("/view-page/page-2");
+                appendToLog(JSON.parse(response).message);
+                updateListOfGoalsAndProgress();
+            };
+            document.getElementById("btn-perform-activity").onclick = function fun() {
+                let response = issueSynchronousHttpGet("/perform-activity?timePerformingActivity=" + document.getElementById("time-performing-activity").value);
+                appendToLog(JSON.parse(response).message);
+                updateListOfGoalsAndProgress();
+            };
+        }
+
+
+    </script>
+</body>
+
 </html>
