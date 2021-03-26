@@ -53,7 +53,7 @@ function areUpdateBalanceRequestParamsValid(entityId, amount) {
     return entityId && (amount != undefined) && !isNaN(amount);
 }
 
-async function updatePointsBalance(entityId, amount) {
+async function modifyPointsBalance(entityId, amount) {
     let retVal = {};
     if (!areUpdateBalanceRequestParamsValid(entityId, amount)) {
         retVal.status = "invalid arguments";
@@ -74,5 +74,5 @@ async function updatePointsBalance(entityId, amount) {
 module.exports = {
     getEntityProgress,
     initEntityProgressTowardsCriterion,
-    updatePointsBalance
+    modifyPointsBalance
 };

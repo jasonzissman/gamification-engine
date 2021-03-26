@@ -5,7 +5,7 @@ async function getProgress(entityId) {
     return integrationTestHelper.issueHttpGet(pathAndParams);
 }
 
-async function updatePoints(entityId, amount) {
+async function modifyPoints(entityId, amount) {
     let pathAndParams = `entity/${entityId}/points`;
     const headers = { "Content-Type": "application/json" };
     return integrationTestHelper.issueHttpPost(pathAndParams, { amount: amount }, headers);
@@ -13,5 +13,5 @@ async function updatePoints(entityId, amount) {
 
 module.exports = {
     getProgress,
-    updatePoints
+    modifyPoints
 };

@@ -592,15 +592,32 @@ describe('Basic Use Cases', function () {
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
         assert.deepStrictEqual(progress.data.points, 10);
 
-        await entityProgressTestHelper.updatePoints("john-doe-1234", 5);
+        await entityProgressTestHelper.modifyPoints("john-doe-1234", 5);
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
         assert.deepStrictEqual(progress2.data.points, 15);
 
-        await entityProgressTestHelper.updatePoints("john-doe-1234", -12);
+        await entityProgressTestHelper.modifyPoints("john-doe-1234", -12);
 
         let progress3 = await entityProgressTestHelper.getProgress("john-doe-1234");
         assert.deepStrictEqual(progress3.data.points, 3);
+
+    }).timeout(15000);
+
+    it('should allow manipulation of points via API for untracked entities', async () => {
+
+        let progress = await entityProgressTestHelper.getProgress("new-user-1234");
+        assert.deepStrictEqual(progress.data.message, 'no progress found for entity new-user-1234.');
+
+        await entityProgressTestHelper.modifyPoints("new-user-1234", 5);
+
+        let progress2 = await entityProgressTestHelper.getProgress("new-user-1234");
+        assert.deepStrictEqual(progress2.data.points, 5);
+
+        await entityProgressTestHelper.modifyPoints("new-user-1234", -12);
+
+        let progress3 = await entityProgressTestHelper.getProgress("new-user-1234");
+        assert.deepStrictEqual(progress3.data.points, -7);
 
     }).timeout(15000);
 

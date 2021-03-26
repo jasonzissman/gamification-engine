@@ -16,7 +16,7 @@ router.get("/:entityId", async (request, response) => {
 // increment/decrement points for entity
 router.post("/:entityId/points", async (request, response) => {
     // TODO authorize request - put in common middleware?
-    const result = await entityHelper.updatePointsBalance(request.params.entityId, request.body.amount);
+    const result = await entityHelper.modifyPointsBalance(request.params.entityId, request.body.amount);
     if (result.status === "invalid arguments") {
         response.status(400).send(result.message);
     } else {
