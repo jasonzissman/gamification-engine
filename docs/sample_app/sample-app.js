@@ -2,119 +2,25 @@ const express = require('express');
 const axios = require('axios');
 const integrationTestHelper = require('../../test/integration-tests/integration-test-helper');
 
-let gamificationServerHost = "http://localhost:";
+let GAMIFICATION_ENGINE_PORT;
+const SAMPLE_APP_PORT = 31854;
 
 async function start() {
     await startGamificationEngine();
-    await addInitialGoals();
-    await startExpressApp();
-}
-
-function startExpressApp() {
-    const app = express();
-
-    app.use('/static', express.static('static'))
-    app.use(express.json());
-
-    const SAMPLE_APP_PORT = 31854;
-
-    app.get("/log-in", async (request, response) => {
-        // your application's login code here...
-        await reportLoginEvent("john-doe-1234");
-        response.status(200).send({ message: "successfully logged in" });
-    });
-
-    app.get("/log-out", async (request, response) => {
-        // your application's logout code here...
-        await reportLogoutEvent("john-doe-1234");
-        response.status(200).send({ message: "successfully logged out" });
-    });
-
-    app.get("/view-page/:pageName", async (request, response) => {
-        // your application's page rendering code here...
-        await reportPageViewEvent("john-doe-1234", request.params.pageName);
-        response.status(200).send({ message: `successfully viewed page ${request.params.pageName}` });
-    });
-
-    app.get("/perform-activity", async (request, response) => {
-        // your application's perform-activity code here...
-        await reportActivityPerformedEvent("john-doe-1234", request.query.timePerformingActivity);
-        response.status(200).send({ message: `successfully performed activity for ${request.query.timePerformingActivity} seconds.` });
-    });
-
-    app.get("/goal-progress", async (request, response) => {
-        let gamificationEngineGoalResponse = await issueHttpGet(gamificationServerHost + "/goal");
-        let gamificationEngineProgressResponse = await issueHttpGet(gamificationServerHost + "/entity/john-doe-1234");
-        response.status(200).send({
-            message: {
-                goals: gamificationEngineGoalResponse.data,
-                progress: gamificationEngineProgressResponse.data
-            }
-        });
-    });
-
-    app.listen(SAMPLE_APP_PORT, (err) => {
-        if (err) {
-            console.log(err);
-        }
-
-        console.log(`Sample app listening on ${SAMPLE_APP_PORT}.`);
-    });
-}
-
-async function issueHttpGet(url) {
-    return axios.get(url, { validateStatus: false });
-};
-
-async function issueHttpPost(url, body) {
-    return axios.post(url, body, { headers: { "Content-Type": "application/json" }, validateStatus: false });
-};
-
-async function reportActivityPerformedEvent(userId, timeDoingActivity) {
-    let eventPayload = {
-        action: "perform-activity",
-        timeDoingActivity: timeDoingActivity,
-        userId: userId
-    };
-    await issueHttpPost(gamificationServerHost + "/event", eventPayload);
-}
-
-async function reportPageViewEvent(userId, page) {
-    let eventPayload = {
-        action: "view-page",
-        page: page,
-        userId: userId
-    };
-    await issueHttpPost(gamificationServerHost + "/event", eventPayload);
-}
-
-async function reportLogoutEvent(userId) {
-    let eventPayload = {
-        action: "log-out",
-        userId: userId
-    };
-    await issueHttpPost(gamificationServerHost + "/event", eventPayload);
-}
-
-async function reportLoginEvent(userId) {
-    let eventPayload = {
-        action: "log-in",
-        userId: userId
-    };
-    await issueHttpPost(gamificationServerHost + "/event", eventPayload);
+    await addInitialGoalsToGamificationEngine();
+    await startExpressSampleApp();
 }
 
 async function startGamificationEngine() {
     let inMemoryMongo = await integrationTestHelper.startInMemoryMongo();
     let gamificationEnginePort = await integrationTestHelper.startAppServer(inMemoryMongo.uri);
-    gamificationServerHost = gamificationServerHost + gamificationEnginePort;
+    GAMIFICATION_ENGINE_PORT = gamificationEnginePort;
 }
 
-async function addInitialGoals() {
-    let url = gamificationServerHost + "/goal";
+async function addInitialGoalsToGamificationEngine() {
 
     // Create power-user goal
-    issueHttpPost(url, {
+    issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goal`, {
         name: "Power User",
         description: "Log in at least 3 times",
         targetEntityIdField: "userId",
@@ -132,28 +38,8 @@ async function addInitialGoals() {
         ]
     });
 
-    // Create been-doing-this-forever goal
-    issueHttpPost(url, {
-        name: "Been Doing This Forever",
-        description: "Perform an activity for 100 seconds",
-        targetEntityIdField: "userId",
-        points: 100,
-        criteria: [
-            {
-                qualifyingEvent: {
-                    action: "perform-activity"
-                },
-                aggregation: {
-                    type: "sum",
-                    valueField: "timeDoingActivity"
-                },
-                threshold: 100
-            }
-        ]
-    });
-
     // Create newcomer tutorial
-    issueHttpPost(url, {
+    issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goal`, {
         name: "Newcomer Tutorial",
         description: "Log in, view all pages, and log out",
         targetEntityIdField: "userId",
@@ -195,6 +81,119 @@ async function addInitialGoals() {
                 threshold: 1
             }
         ]
+    });
+
+    // Create been-doing-this-forever goal
+    issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goal`, {
+        name: "Been Doing This Forever",
+        description: "Perform an activity for 100 seconds",
+        targetEntityIdField: "userId",
+        points: 100,
+        criteria: [
+            {
+                qualifyingEvent: {
+                    action: "perform-activity"
+                },
+                aggregation: {
+                    type: "sum",
+                    valueField: "timeDoingActivity"
+                },
+                threshold: 100
+            }
+        ]
+    });
+}
+
+async function issueHttpGet(url) {
+    return axios.get(url, { validateStatus: false });
+};
+
+async function issueHttpPost(url, body) {
+    return axios.post(url, body, { headers: { "Content-Type": "application/json" }, validateStatus: false });
+};
+
+async function reportActivityPerformedEvent(userId, timeDoingActivity) {
+    let eventPayload = {
+        action: "perform-activity",
+        timeDoingActivity: timeDoingActivity,
+        userId: userId
+    };
+    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/event`, eventPayload);
+}
+
+async function reportPageViewEvent(userId, page) {
+    let eventPayload = {
+        action: "view-page",
+        page: page,
+        userId: userId
+    };
+    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/event`, eventPayload);
+}
+
+async function reportLogoutEvent(userId) {
+    let eventPayload = {
+        action: "log-out",
+        userId: userId
+    };
+    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/event`, eventPayload);
+}
+
+async function reportLoginEvent(userId) {
+    let eventPayload = {
+        action: "log-in",
+        userId: userId
+    };
+    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/event`, eventPayload);
+}
+
+function startExpressSampleApp() {
+    const app = express();
+
+    app.use('/static', express.static('static'))
+    app.use(express.json());
+
+
+    app.get("/log-in", async (request, response) => {
+        // your application's login code here...
+        await reportLoginEvent(request.query.userId);
+        response.status(200).send({ message: "successfully logged in" });
+    });
+
+    app.get("/log-out", async (request, response) => {
+        // your application's logout code here...
+        await reportLogoutEvent(request.query.userId);
+        response.status(200).send({ message: "successfully logged out" });
+    });
+
+    app.get("/view-page/:pageName", async (request, response) => {
+        // your application's page rendering code here...
+        await reportPageViewEvent(request.query.userId, request.params.pageName);
+        response.status(200).send({ message: `successfully viewed page ${request.params.pageName}` });
+    });
+
+    app.get("/perform-activity", async (request, response) => {
+        // your application's perform-activity code here...
+        await reportActivityPerformedEvent(request.query.userId, request.query.timePerformingActivity);
+        response.status(200).send({ message: `successfully performed activity for ${request.query.timePerformingActivity} seconds.` });
+    });
+
+    app.get("/goal-progress", async (request, response) => {
+        let gamificationEngineGoalResponse = await issueHttpGet(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goal`);
+        let gamificationEngineProgressResponse = await issueHttpGet(`http://localhost:${GAMIFICATION_ENGINE_PORT}/entity/${request.query.userId}`);
+        response.status(200).send({
+            message: {
+                goals: gamificationEngineGoalResponse.data,
+                progress: gamificationEngineProgressResponse.data
+            }
+        });
+    });
+
+    app.listen(SAMPLE_APP_PORT, (err) => {
+        if (err) {
+            console.log(err);
+        }
+
+        console.log(`Sample app listening on ${SAMPLE_APP_PORT}.`);
     });
 }
 

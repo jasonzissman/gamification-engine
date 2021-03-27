@@ -110,13 +110,17 @@ Our [Detailed API documentation](docs/api.md) provides further detail.
 
 ## Running the sample application
 
-There is a fully functional sample app bundled in this repository at `docs/sample_app`. Navigate to that directory and execute the following command to test it out! It demonstrates a client app relying on the gamification engine for 3 goals.
+There is a fully functional sample app bundled in this repository at `docs/sample_app`. It demonstrates a client app using the gamification engine to track user progress towards 3 goals.
 
+To run the sample app, perform the following steps:
 ```
-// navigate to docs/sample_app
+cd ROOT_DIR
+npm install // run this at root project directory, not sample_app directory!
+cd docs/sample_app
 npm install
 npm start
-// Launch http://localhost:31854/static/ in your browser.
+// ... wait to start and then
+// navigate to http://localhost:31854/static
 ```
 
 ## Development Overview
