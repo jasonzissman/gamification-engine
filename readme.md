@@ -1,5 +1,5 @@
 # JZ Gamification Engine
-jz-gamification-engine is a robust platform for managing gamification features such as badges, awards, user assignments, and point systems. It is meant to be run alongside existing applications that want to support gamification features in a decoupled, performant fashion.
+jz-gamification-engine is a platform for managing gamification features such as badges, awards, user assignments, and point systems. It is meant to be run alongside existing applications that want to support gamification features in a decoupled, performant fashion.
 
 ## Stability and Version
 As of March 2021, this project is very young. I welcome feedback and suggestions from everyone, but keep in mind that this platform is not yet battle tested.
