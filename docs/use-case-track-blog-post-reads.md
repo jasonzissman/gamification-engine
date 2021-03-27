@@ -27,7 +27,7 @@ First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows
 }
 ```
 
-You can read this goal as *A badge that is completed for a given `authorId` after the gamification system receives 1000 events with `action=view-blog-post` and `authorId=*`*.
+You can read this goal as *A badge that is completed for a given `blogAuthorId` after the gamification system receives 1000 events with `action=view-blog-post` and `blogAuthorId=*`*.
 
 ## Sending Usage Events
 Next, as users view any blog post, we invoke an HTTP POST against the jz-gamification-engine `/event` API:
