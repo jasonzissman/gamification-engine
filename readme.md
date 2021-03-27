@@ -74,7 +74,7 @@ Next, as users log into our application, we invoke an HTTP POST against the jz-g
 To track progress towards your goal, the events that you send should include enough information to match the `criteria.[].qualifyingEvent` and `targetEntityIdField` fields that you provided when creating your goal. In our case, our example event includes `action=log-in`, `platform=mobile`, and `userId`, which is what our "Power User" goal requires.
 
 ### Checking Goal Progress
-Finally, as needed, we invoke an HTTP GET against the `/entity/<entityId>` API to see how users are tracking towards their goals.
+Finally, as needed, we invoke an HTTP GET against the `/entity/<entityId>` API to see how users are tracking towards their goals. *Note that support for push notifications upon goal completion will come later*
 
 **Request**
 ```
@@ -146,26 +146,21 @@ npm run integration-test
 
 ### Running the app
 ```
-// requires locally running Mongo!
+// assumes locally running Mongo at "mongodb://localhost:27017".
+// Otherwise, override process.env.DB_CONN_STRING
 npm start
 ```
-
-### Optional ENV variables
-```
-DB_CONN_STRING // database connection string
-PORT // port this application listens on
-```
-
-### System Architecture
-[Detailed system architecture documentation](docs/system-architecture.md)
 
 ### Detailed APIs
 [Detailed API documentation](docs/api.md)
 
+### System Architecture and Design
+[Detailed system architecture documentation](docs/system-architecture.md)
+
+
 ## TODO!!!!
-* Provide easier startup instructions with references to Mongo. Can we make this Docker friendly?
-* Make sample application with UI (for docs)
 * Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
+* Provide easier startup instructions with references to Mongo. Can we make this Docker friendly?
 * Swagger
 * Can we support a broader character set for goals and events? Feels needlessly restrictive right now.
 * Push notifications when goal completed.
