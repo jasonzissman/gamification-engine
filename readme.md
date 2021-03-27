@@ -2,26 +2,27 @@
 jz-gamification-engine is a robust platform for managing gamification features such as badges, awards, user assignments, and point systems. It is meant to be run alongside existing applications that want to support gamification features in a decoupled, performant fashion.
 
 ## Stability and Version
-This project is very young! I welcome feedback and suggestions from everyone, but keep in mind that this implementation is young and not yet battle tested.
+As of March 2021, this project is very young. I welcome feedback and suggestions from everyone, but keep in mind that this platform is not yet battle tested.
 
 ## Some Example Features 
-Think about the following features which are enabled by the jz-gamification-platform:
+Think through the following features. All of them are enabled by jz-gamification-engine.
 
 * The ability to define, enable, and disable custom badges. For example:
     * A "Mobile Power User" badge that users receive after logging into your mobile app 5 times.
     * A "Bookworm" badge that users receive after spending at least 20 minutes reading content on your website.
-    * A "Best Seller" badge that a **blog post** is awarded after it is read 100 times.
+    * A "Best Seller" badge that a blog post author is awarded after his blogs are read 100 times.
 * The ability to define journeys that tie together disparate actions. For example:
     * A "Newcomer" journey that a user completes after visiting 3 tutorial pages and writing a first blog post. After completion additional functionality is unlocked.    
 * The ability for goals to be defined and updated dynamically during run time, even by your end-users themselves. 
 * An in-app store that allows users to choose custom profile images and flair using points earned from completing goals.
 
-## Simple Example: The 'Mobile Power User' Badge
-All of the features above are enabled via three flows made available via the gamification-engine APIs:
+All of the features above are enabled via three simple flows made available by the gamification-engine APIs:
 
-1. Client defines a `goal`
-2. Client sends usage `events` as actions are completed by entities 
-3. Client checks an `entity`s' progress towards goals (*push notifications coming later*)
+1. Define `goals` that are relevant to your application.
+2. Send usage `events` as users interact with your applcation.
+3. Check any `entity's` progress towards goals (*push notifications coming later*)
+
+## Simple Example: The 'Mobile Power User' Badge
 
 Let's walk through the creation and usage of a simple "Mobile Power User" badge. This badge will be awarded to users who log into our mobile app at least 5 times.
 
@@ -53,7 +54,7 @@ First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows
 
 You can read this goal as *A badge that is completed for a given `userId` after the gamification system receives 5 events with `action=log-in`, `platform=mobile`, and `userId=*`*.
 
-Our [Detailed API documentation](docs/api.md) provides further detail. 
+Our [API documentation](docs/api.md) provides much further detail. 
 
 ### Sending Usage Events
 Next, as users log into our application, we invoke an HTTP POST against the jz-gamification-engine `/event` API:
@@ -101,12 +102,13 @@ Finally, as needed, we invoke an HTTP GET against the `/entity/<entityId>` API t
 ```
 This will return a breakdown of the user's progress towards all goals, including our Power User badge. 
 
-Our [Detailed API documentation](docs/api.md) provides further detail.
+Our [API documentation](docs/api.md) provides further detail.
 
 ## More Example Use Cases
 
 * [Badge for users who log in 5 times](docs/use-case-simple-badge.md)
 * [Badge tracking time spent reading a page](docs/use-case-track-time-on-page.md)
+* [Badge that author receives when his blog posts are read 1000 times](docs/use-case-track-blog-post-reads.md)
 
 ## Running the sample application
 
