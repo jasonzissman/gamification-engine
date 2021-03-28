@@ -49,8 +49,8 @@
   &quot;criteria&quot;: [&#xd;
       {&#xd;
           &quot;qualifyingEvent&quot;: {&#xd;
-			&quot;field${__Random(0,12)}&quot;: &quot;value${__Random(0,25)}&quot;,&#xd;
-			&quot;field${__Random(12,25)}&quot;: &quot;value${__Random(0,25)}&quot;&#xd;
+			&quot;field${__Random(0,12)}&quot;: &quot;value${__Random(0,5)}&quot;,&#xd;
+			&quot;field${__Random(12,25)}&quot;: &quot;value${__Random(0,5)}&quot;&#xd;
           },&#xd;
           &quot;aggregation&quot;: {&#xd;
               &quot;type&quot;: &quot;count&quot;&#xd;
@@ -79,6 +79,10 @@
           <stringProp name="TestPlan.comments">HTTP POST request to create goal in gamification engine</stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait 250ms" enabled="true">
+          <stringProp name="ConstantTimer.delay">250</stringProp>
+        </ConstantTimer>
+        <hashTree/>
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Send Events" enabled="true">
         <stringProp name="TestPlan.comments">Requests that send event data to the gamification engine</stringProp>
@@ -87,7 +91,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">100</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">5</stringProp>
+        <stringProp name="ThreadGroup.num_threads">500</stringProp>
         <stringProp name="ThreadGroup.ramp_time">1</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -102,11 +106,11 @@
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.value">{&#xd;
-	&quot;field${__Random(0,5)}&quot;: &quot;value${__Random(0,25)}&quot;,&#xd;
-	&quot;field${__Random(5,10)}&quot;: &quot;value${__Random(0,25)}&quot;,&#xd;
-	&quot;field${__Random(10,15)}&quot;: &quot;value${__Random(0,25)}&quot;,&#xd;
-	&quot;field${__Random(15,20)}&quot;: &quot;value${__Random(0,25)}&quot;,&#xd;
-	&quot;field${__Random(20,25)}&quot;: &quot;value${__Random(0,25)}&quot;&#xd;
+	&quot;field${__Random(0,5)}&quot;: &quot;value${__Random(0,5)}&quot;,&#xd;
+	&quot;field${__Random(5,10)}&quot;: &quot;value${__Random(0,5)}&quot;,&#xd;
+	&quot;field${__Random(10,15)}&quot;: &quot;value${__Random(0,5)}&quot;,&#xd;
+	&quot;field${__Random(15,20)}&quot;: &quot;value${__Random(0,5)}&quot;,&#xd;
+	&quot;field${__Random(20,25)}&quot;: &quot;value${__Random(0,5)}&quot;&#xd;
 }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
@@ -128,9 +132,46 @@
           <stringProp name="TestPlan.comments">HTTP POST request to register event with gamification engine</stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait 400ms" enabled="true">
-          <stringProp name="ConstantTimer.delay">400</stringProp>
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait 50ms" enabled="false">
+          <stringProp name="ConstantTimer.delay">50</stringProp>
         </ConstantTimer>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
         <hashTree/>
       </hashTree>
     </hashTree>
