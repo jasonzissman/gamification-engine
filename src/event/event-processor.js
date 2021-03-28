@@ -135,6 +135,10 @@ function updateEntityProgressForGoal(entityProgress, progressUpdate, goals) {
     }
 }
 
+function isGoalActive(goal) {
+    return (goal && goal.state === "enabled");
+}
+
 async function updateEntityProgressTowardsGoals(progressUpdatesToMake) {
 
     // This update routine will introduce a race condition in a multi-node
@@ -147,8 +151,10 @@ async function updateEntityProgressTowardsGoals(progressUpdatesToMake) {
     const relevantGoals = arrayToObjectWithIdKey(dbInvocations[1], "id");
 
     for (progressUpdate of progressUpdatesToMake) {
-        updateEntityProgressForCriterion(relevantEntityProgress, progressUpdate);
-        updateEntityProgressForGoal(relevantEntityProgress, progressUpdate, relevantGoals)
+        if(isGoalActive(relevantGoals[progressUpdate.goalId])) {
+            updateEntityProgressForCriterion(relevantEntityProgress, progressUpdate);
+            updateEntityProgressForGoal(relevantEntityProgress, progressUpdate, relevantGoals)
+        }
     }
     
     await dbHelper.updateMultipleEntityProgress(relevantEntityProgress);

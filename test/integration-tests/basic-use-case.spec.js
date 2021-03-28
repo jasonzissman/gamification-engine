@@ -63,7 +63,7 @@ describe('Basic Use Cases', function () {
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assertEqualProgress(progress.data, {
+        integrationTestHelper.assertEqualProgress(progress.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -100,7 +100,7 @@ describe('Basic Use Cases', function () {
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assertEqualProgress(progress2.data, {
+        integrationTestHelper.assertEqualProgress(progress2.data, {
             entityId: 'john-doe-1234',
             points: 10,
             goals: {
@@ -203,7 +203,7 @@ describe('Basic Use Cases', function () {
         await new Promise(r => setTimeout(r, 500));
 
         let johnProgress = await entityProgressTestHelper.getProgress("john-doe-1234");
-        assertEqualProgress(johnProgress.data, {
+        integrationTestHelper.assertEqualProgress(johnProgress.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -220,7 +220,7 @@ describe('Basic Use Cases', function () {
         });
 
         let mikeProgress = await entityProgressTestHelper.getProgress("mike-smith-1234");
-        assertEqualProgress(mikeProgress.data, {
+        integrationTestHelper.assertEqualProgress(mikeProgress.data, {
             entityId: 'mike-smith-1234',
             points: 0,
             goals: {
@@ -244,7 +244,7 @@ describe('Basic Use Cases', function () {
         });
 
         let groupProgress = await entityProgressTestHelper.getProgress("the-wildcats");
-        assertEqualProgress(groupProgress.data, {
+        integrationTestHelper.assertEqualProgress(groupProgress.data, {
             entityId: 'the-wildcats',
             points: 0,
             goals: {
@@ -313,6 +313,7 @@ describe('Basic Use Cases', function () {
                 id: goal1Id,
                 description: "Log in at least 3 times on a mobile device",
                 name: 'Mobile Power User',
+                state: "enabled",
                 targetEntityIdField: 'userId'
             },
             {
@@ -320,6 +321,7 @@ describe('Basic Use Cases', function () {
                 id: goal2Id,
                 description: "Have members of your group log into at least 3 times",
                 name: 'The Popular Group',
+                state: "enabled",
                 targetEntityIdField: 'groupId'
             }
         ]);
@@ -362,7 +364,7 @@ describe('Basic Use Cases', function () {
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assertEqualProgress(progress.data, {
+        integrationTestHelper.assertEqualProgress(progress.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -391,7 +393,7 @@ describe('Basic Use Cases', function () {
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assertEqualProgress(progress2.data, {
+        integrationTestHelper.assertEqualProgress(progress2.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -443,7 +445,7 @@ describe('Basic Use Cases', function () {
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assertEqualProgress(progress.data, {
+        integrationTestHelper.assertEqualProgress(progress.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -476,7 +478,7 @@ describe('Basic Use Cases', function () {
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assertEqualProgress(progress2.data, {
+        integrationTestHelper.assertEqualProgress(progress2.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -544,7 +546,7 @@ describe('Basic Use Cases', function () {
 
         let progress1 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assertEqualProgress(progress1.data, {
+        integrationTestHelper.assertEqualProgress(progress1.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -575,7 +577,7 @@ describe('Basic Use Cases', function () {
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assertEqualProgress(progress2.data, {
+        integrationTestHelper.assertEqualProgress(progress2.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -660,20 +662,3 @@ describe('Basic Use Cases', function () {
     }).timeout(15000);
 
 });
-
-function assertEqualProgress(actualProgress, expectedProgress) {
-    let modifiedActualProgress = JSON.parse(JSON.stringify(actualProgress));
-    let modifiedExpectedProgress = JSON.parse(JSON.stringify(expectedProgress));
-    removeTimestampData(modifiedActualProgress);
-    removeTimestampData(modifiedExpectedProgress);
-    assert.deepStrictEqual(modifiedActualProgress, modifiedExpectedProgress);
-};
-function removeTimestampData(progress) {
-    for(key in progress) {
-      if (key === 'completionDate') {
-        delete progress[key];
-      } else if (typeof progress[key] === 'object') {
-        removeTimestampData(progress[key]);
-      }
-    }
-  }

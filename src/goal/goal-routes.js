@@ -21,6 +21,21 @@ router.post("/", async (request, response) => {
     }
 });
 
+// Update specific goal state
+// HTTP POST <host>/goals/<goalID>/state
+router.post("/:goalId/state", async (request, response) => {
+    let outcome = await goalHelper.updateGoalState(request.params.goalId, request.body.state);
+    if (outcome.status = "bad_arguments") {
+        response.status(400).send({ status: `Must provide valid goalId and state must be 'enabled' or 'disabled'.` });
+    } else if (outcome.status = "not_found") {
+        response.status(404).send({ status: `Goal ${request.params.goalId} not found.` });
+    } else if (outcome.status = "ok") {
+        response.status(200).send({status: "ok", message: `Goal ${request.params.goalId} set to ${request.body.state}.`});
+    } else {
+        response.status(500).send({ status: "server error" });
+    }
+});
+
 // // Update existing goal
 // // HTTP PUT <host>/goals/<goal-id>
 // router.put("/:goalId", (request, response) => {
@@ -42,7 +57,7 @@ router.get("/:goalId", async (request, response) => {
     if (goal) {
         response.status(200).send(goal);
     } else {
-        response.status(404).send({status: `Goal ${request.params.goalId} not found.`});
+        response.status(404).send({ status: `Goal ${request.params.goalId} not found.` });
     }
 });
 
@@ -53,7 +68,7 @@ router.get("/:goalId/criteria", async (request, response) => {
     if (allCriteriaForGoal) {
         response.status(200).send(allCriteriaForGoal);
     } else {
-        response.status(404).send({status: `Goal ${request.params.goalId} not found.`});
+        response.status(404).send({ status: `Goal ${request.params.goalId} not found.` });
     }
 });
 

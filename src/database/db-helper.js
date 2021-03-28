@@ -165,22 +165,27 @@ async function persistGoal(goal) {
     logger.info(`Successfully inserted goal with id '${insertionResult.insertedId}' into DB.`);
     return mongoIdHelper.convertMongoObjectIdToString(insertionResult.insertedId);
 }
-
-async function updateGoalCriteria(goalId, criteriaIds) {
-    logger.info(`Upserting goal criteria '${goalId}'.`);
+async function updateGoal(goalId, fieldsToSet) {
     const goalCollection = DB_CONNECTION.collection(COLLECTION_GOALS_NAME);
     let resultingGoal = await goalCollection.findOneAndUpdate({
         "_id": mongoIdHelper.generateMongoObjectId(goalId)
     }, {
-        $set: {
-            criteriaIds: criteriaIds
-        }
+        $set: fieldsToSet
     },
         { returnOriginal: false }
     );
-    logger.info(`Successfully updated criteria on goal with id '${goalId}'.`);
     mongoIdHelper.replaceMongoObjectIdWithNormalId(resultingGoal.value);
     return resultingGoal.value;
+}
+
+async function updateGoalState(goalId, state) {
+    logger.info(`Updating goal state '${goalId}' to be ${state}.`);
+    return updateGoal(goalId, {state:state});
+}
+
+async function updateGoalCriteria(goalId, criteriaIds) {
+    logger.info(`Upserting goal criteria '${goalId}'.`);
+    return await updateGoal(goalId, {criteriaIds: criteriaIds});
 }
 
 async function persistCriteria(criteria) {
@@ -214,5 +219,6 @@ module.exports = {
     persistGoal,
     updateGoalCriteria,
     persistCriteria,
-    closeAllDbConnections
+    closeAllDbConnections,
+    updateGoalState
 };

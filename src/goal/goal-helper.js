@@ -29,7 +29,31 @@ function isSingleCriteriaValid(criteria) {
     return isValid;
 }
 
+function isValidStateUpdateRequest(goalId, state) {
+    let isValid = false;
+    if (goalId && (state == "disabled" || state == "enabled")) {
+        isValid = true;        
+    }
+    return isValid;
+}
+async function updateGoalState(goalId, state) {
+    let retVal = {};
 
+    if (!isValidStateUpdateRequest(goalId, state)) {
+        retVal.status = "bad_arguments";
+    } else {
+        const goal = await getSpecificGoal(goalId);
+        if (!goal) {
+            retVal.status = "not_found";
+        } else {
+            await dbHelper.updateGoalState(goalId, state);
+            // TODO - optimization - insert or remove from lookup maps
+            retVal.status = "ok";
+        }
+    }
+
+    return retVal;
+}
 function areAllCriteriaValid(newGoal) {
 
     let allCriteriaValid = true;
@@ -70,7 +94,8 @@ function validateGoal(newGoal) {
 function createGoalEntityFromRequestGoal(newGoal) {
     let retVal = {
         name: eventFieldsHelper.generateCleanField(newGoal.name),
-        targetEntityIdField: eventFieldsHelper.generateCleanField(newGoal.targetEntityIdField)
+        targetEntityIdField: eventFieldsHelper.generateCleanField(newGoal.targetEntityIdField),
+        state: "enabled"
     };
     if (newGoal.description) {
         retVal.description = eventFieldsHelper.generateCleanField(newGoal.description);
@@ -158,5 +183,6 @@ module.exports = {
     createCriteriaEntityFromRequestGoal,
     getAllGoals,
     getSpecificGoal,
-    getAllCriteriaForGoal
+    getAllCriteriaForGoal,
+    updateGoalState
 };

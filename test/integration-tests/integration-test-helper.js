@@ -1,6 +1,7 @@
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
+const assert = require('assert');
 const logger = require('../../src/utility/logger');
 
 const ALL_MONGO_INSTANCES = {};
@@ -68,6 +69,23 @@ async function startAppServer(mongoConnString) {
     });
 }
 
+function assertEqualProgress(actualProgress, expectedProgress) {
+    let modifiedActualProgress = JSON.parse(JSON.stringify(actualProgress));
+    let modifiedExpectedProgress = JSON.parse(JSON.stringify(expectedProgress));
+    removeTimestampData(modifiedActualProgress);
+    removeTimestampData(modifiedExpectedProgress);
+    assert.deepStrictEqual(modifiedActualProgress, modifiedExpectedProgress);
+};
+
+function removeTimestampData(progress) {
+    for (key in progress) {
+        if (key === 'completionDate') {
+            delete progress[key];
+        } else if (typeof progress[key] === 'object') {
+            removeTimestampData(progress[key]);
+        }
+    }
+}
 async function startInMemoryMongo() {
     const mongoId = uuidv4();
     const mongoInstance = new MongoMemoryServer();
@@ -101,5 +119,6 @@ module.exports = {
     shutDownAppServer,
     issueHttpGet,
     issueHttpPost,
-    addGoal
+    addGoal,
+    assertEqualProgress
 };

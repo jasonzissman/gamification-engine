@@ -659,8 +659,9 @@ describe('Goal Helper', () => {
 
             const goalToPersist = goalHelper.createGoalEntityFromRequestGoal(newGoal);
 
-            assert.strictEqual(Object.keys(goalToPersist).length, 3);
+            assert.strictEqual(Object.keys(goalToPersist).length, 4);
             assert.strictEqual(goalToPersist.name, "Mobile Power User");
+            assert.strictEqual(goalToPersist.state, "enabled");
             assert.strictEqual(goalToPersist.description, "Log in at least 3 times on a mobile device");
             assert.strictEqual(goalToPersist.targetEntityIdField, "userId");
             assert.strictEqual(goalToPersist.foo, undefined);
