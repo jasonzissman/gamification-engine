@@ -15,7 +15,7 @@ Note that anything with a unique identifier can make progress towards a goal, no
 **Example Request**
 ```
 // HTTP POST 
-// https://<host>/goal
+// https://<host>/goals
 {
   "name": "Mobile Power User",
   "description": "Log in at least 5 times on a mobile device", //optional
@@ -61,7 +61,7 @@ Note that anything with a unique identifier can make progress towards a goal, no
 **Example Request**
 ```
 // HTTP POST 
-// https://<host>/event
+// https://<host>/events
 {
     "action": "log-in",
     "userId": "john-doe-1234"
@@ -73,7 +73,7 @@ Note that anything with a unique identifier can make progress towards a goal, no
 { status: "received" }
 ```
 
-The `/event` API is very generic and **has no required fields**. It accepts any JSON payload.
+The `/events` API is very generic and **has no required fields**. It accepts any JSON payload.
 
 For this endpoint to successfully track an entity's progress towards a goal, the event payload should include data points that match the `criteria.[].qualifyingEvent` and `targetEntityIdField` fields that are defined in corresponding goals. 
 
@@ -85,14 +85,14 @@ After an event is referenced against all defined goals, it is discarded.
 
 Note that this endpoint immediately returns 200 upon receiving a request even before it has finished processing.
 
-If possible, only include data in your /event requests that are relevant to goal completion. jz-gamification-engine will gracefully discard irrelevant data, but excessive amounts of irrelevant data will degrade performance.
+If possible, only include data in your /events requests that are relevant to goal completion. jz-gamification-engine will gracefully discard irrelevant data, but excessive amounts of irrelevant data will degrade performance.
 
 ## Get Entity Progress Towards Goals
 
 **Example Request**
 ```
 // HTTP GET 
-// https://<host>/entity/john-doe-1234
+// https://<host>/entities/john-doe-1234
 ```
 
 **Example Response**
@@ -120,7 +120,7 @@ This will return a breakdown of an entity's progress towards all goals, as well 
 **Example Request**
 ```
 // HTTP POST 
-// https://<host>/entity/<entityId>/points
+// https://<host>/entities/<entityId>/points
 {
     amount: -5
 }
@@ -134,6 +134,6 @@ This will return a breakdown of an entity's progress towards all goals, as well 
     goals: {}
 ```
 
-The `/entity/<entityId>/points` API allows you to increment or decrement the points that an entity has accumlated. This can be leveraged when implementing 'stores' and other systems that rely on the user accuring points over time. 
+The `/entities/<entityId>/points` API allows you to increment or decrement the points that an entity has accumlated. This can be leveraged when implementing 'stores' and other systems that rely on the user accuring points over time. 
 
 The only parameter in the POST payload is `amount`, which is a numeric value by which the tracked points will change. Note that it can be positive or negative.

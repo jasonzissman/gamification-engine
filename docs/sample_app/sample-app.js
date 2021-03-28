@@ -20,7 +20,7 @@ async function startGamificationEngine() {
 async function addInitialGoalsToGamificationEngine() {
 
     // Create power-user goal
-    issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goal`, {
+    issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goals`, {
         name: "Power User",
         description: "Log in at least 3 times",
         targetEntityIdField: "userId",
@@ -39,7 +39,7 @@ async function addInitialGoalsToGamificationEngine() {
     });
 
     // Create newcomer tutorial
-    issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goal`, {
+    issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goals`, {
         name: "Newcomer Tutorial",
         description: "Log in, view all pages, and log out",
         targetEntityIdField: "userId",
@@ -84,7 +84,7 @@ async function addInitialGoalsToGamificationEngine() {
     });
 
     // Create been-doing-this-forever goal
-    issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goal`, {
+    issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goals`, {
         name: "Been Doing This Forever",
         description: "Perform an activity for 100 seconds",
         targetEntityIdField: "userId",
@@ -118,7 +118,7 @@ async function reportActivityPerformedEvent(userId, timeDoingActivity) {
         timeDoingActivity: timeDoingActivity,
         userId: userId
     };
-    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/event`, eventPayload);
+    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/events`, eventPayload);
 }
 
 async function reportPageViewEvent(userId, page) {
@@ -127,7 +127,7 @@ async function reportPageViewEvent(userId, page) {
         page: page,
         userId: userId
     };
-    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/event`, eventPayload);
+    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/events`, eventPayload);
 }
 
 async function reportLogoutEvent(userId) {
@@ -135,7 +135,7 @@ async function reportLogoutEvent(userId) {
         action: "log-out",
         userId: userId
     };
-    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/event`, eventPayload);
+    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/events`, eventPayload);
 }
 
 async function reportLoginEvent(userId) {
@@ -143,7 +143,7 @@ async function reportLoginEvent(userId) {
         action: "log-in",
         userId: userId
     };
-    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/event`, eventPayload);
+    await issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/events`, eventPayload);
 }
 
 function startExpressSampleApp() {
@@ -178,8 +178,8 @@ function startExpressSampleApp() {
     });
 
     app.get("/goal-progress", async (request, response) => {
-        let gamificationEngineGoalResponse = await issueHttpGet(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goal`);
-        let gamificationEngineProgressResponse = await issueHttpGet(`http://localhost:${GAMIFICATION_ENGINE_PORT}/entity/${request.query.userId}`);
+        let gamificationEngineGoalResponse = await issueHttpGet(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goals`);
+        let gamificationEngineProgressResponse = await issueHttpGet(`http://localhost:${GAMIFICATION_ENGINE_PORT}/entities/${request.query.userId}`);
         response.status(200).send({
             message: {
                 goals: gamificationEngineGoalResponse.data,

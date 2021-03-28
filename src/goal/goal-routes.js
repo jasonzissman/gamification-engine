@@ -3,7 +3,7 @@ const router = express.Router();
 const goalHelper = require('./goal-helper.js');
 
 // Create a new goal
-// HTTP POST <host>/goal/
+// HTTP POST <host>/goals/
 router.post("/", async (request, response) => {
     // TODO validate payload not too big
     let outcome = await goalHelper.persistGoal(request.body);

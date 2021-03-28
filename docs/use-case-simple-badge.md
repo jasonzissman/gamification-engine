@@ -3,11 +3,11 @@
 Let's walk through the creation and usage of a simple "Mobile Power User" badge. This badge will be awarded to users who log into our mobile app at least 5 times. Anyone who completes the badge will be awarded 10 points.
 
 ## Creating the Badge
-First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows:
+First we invoke an HTTP POST to create the badge. Use the `/goals` API as follows:
 
 ```
 // HTTP POST 
-// https://<host>/goal
+// https://<host>/goals
 {
   "name": "Mobile Power User",
   "description": "Log in at least 5 times on a mobile device",
@@ -31,12 +31,12 @@ First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows
 You can read this goal as *A badge that is completed for a given `userId` after the gamification system receives 5 events with `action=log-in`, `platform=mobile`, and `userId=*`*.
 
 ## Sending Usage Events
-Next, as users log into our application, we invoke an HTTP POST against the jz-gamification-engine `/event` API:
+Next, as users log into our application, we invoke an HTTP POST against the jz-gamification-engine `/events` API:
 
 **Request**
 ```
 // HTTP POST 
-// https://<host>/event
+// https://<host>/events
 {
   "action": "log-in",
   "platform": "mobile",
@@ -47,12 +47,12 @@ Next, as users log into our application, we invoke an HTTP POST against the jz-g
 
 To track progress towards a goal, the events that we send must include enough information to match the `criteria.[].qualifyingEvent` and `targetEntityIdField` fields that were provided when creating your goal. In our case, our example event includes `action=log-in`, `platform=mobile`, and `userId`, as our "Mobile Power User" goal requires. 
 
-We see that user john-doe-1234 has made some initial progress towards the goal. We invoke an HTTP GET against the `/entity/<entityId>` API to see how far he has gotten:
+We see that user john-doe-1234 has made some initial progress towards the goal. We invoke an HTTP GET against the `/entities/<entityId>` API to see how far he has gotten:
 
 **Request**
 ```
 // HTTP GET 
-// https://<host>/entity/john-doe-1234
+// https://<host>/entities/john-doe-1234
 ```
 
 **Response**
@@ -80,7 +80,7 @@ Let's say John logs in again tomorrow but on his desktop instead of the mobile a
 **Request**
 ```
 // HTTP POST 
-// https://<host>/event
+// https://<host>/events
 {
   "action": "log-in",
   "platform": "desktop",
@@ -96,7 +96,7 @@ But, later that day, John logs into the mobile app 4 more times:
 **Request (x4)**
 ```
 // HTTP POST (x4)
-// https://<host>/event
+// https://<host>/events
 {
   "action": "log-in",
   "platform": "mobile",
@@ -110,7 +110,7 @@ We check John's progress one more time and see that he has now completed the goa
 **Request**
 ```
 // HTTP GET 
-// https://<host>/entity/john-doe-1234
+// https://<host>/entities/john-doe-1234
 ```
 
 **Response**

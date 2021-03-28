@@ -3,11 +3,11 @@
 Let's walk through the creation and usage of a "Best Selling Author" badge. This badge will be awarded to users whose blog articles are read 1000 times in aggregate. We'll craft the goal so that progress is counted any time any user reads any article from this author.
 
 ## Creating the Badge
-First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows:
+First we invoke an HTTP POST to create the badge. Use the `/goals` API as follows:
 
 ```
 // HTTP POST 
-// https://<host>/goal
+// https://<host>/goals
 {
   "name": "Best Selling Author",
   "description": "Be the author whose blog posts are read at least 1000 times.",
@@ -30,12 +30,12 @@ First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows
 You can read this goal as *A badge that is completed for a given `blogAuthorId` after the gamification system receives 1000 events with `action=view-blog-post` and `blogAuthorId=*`*.
 
 ## Sending Usage Events
-Next, as users view any blog post, we invoke an HTTP POST against the jz-gamification-engine `/event` API:
+Next, as users view any blog post, we invoke an HTTP POST against the jz-gamification-engine `/events` API:
 
 **Request**
 ```
 // HTTP POST 
-// https://<host>/event
+// https://<host>/events
 {
   "action": "view-blog-post",
   "blogAuthorId": "mark-twain-1234",
@@ -46,12 +46,12 @@ Next, as users view any blog post, we invoke an HTTP POST against the jz-gamific
 
 To track progress towards a goal, the events that we send must include enough information to match the `criteria.[].qualifyingEvent` and `targetEntityIdField` fields that were provided when creating your goal. In our case, our example event includes `action=view-blog-post` and `blogAuthorId`, as our "Best Selling Author" goal requires. 
 
-We see that author mark-twain-1234 has made some initial progress towards the goal. We invoke an HTTP GET against the `/entity/<entityId>` API to see how far he has gotten:
+We see that author mark-twain-1234 has made some initial progress towards the goal. We invoke an HTTP GET against the `/entities/<entityId>` API to see how far he has gotten:
 
 **Request**
 ```
 // HTTP GET 
-// https://<host>/entity/mark-twain-1234
+// https://<host>/entities/mark-twain-1234
 ```
 
 **Response**
@@ -79,7 +79,7 @@ Let's say throughout the week we see a lot more traffic on Mark Twain's blog pos
 **Request (x2400)**
 ```
 // HTTP POST (2400)
-// https://<host>/event
+// https://<host>/events
 {
   "action": "view-blog-post",
   "blogAuthorId": "mark-twain-1234",
@@ -93,7 +93,7 @@ We check Mark Twain's progress one more time and see that he has now completed t
 **Request**
 ```
 // HTTP GET 
-// https://<host>/entity/mark-twain-1234
+// https://<host>/entities/mark-twain-1234
 ```
 
 **Response**

@@ -58,6 +58,9 @@ describe('Basic Use Cases', function () {
             foo: "bar"
         });
 
+        // The /events API returns immediately, even if event still processing. So we wait a bit.
+        await new Promise(r => setTimeout(r, 500));
+
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
         assert.deepStrictEqual(progress.data, {
@@ -91,6 +94,9 @@ describe('Basic Use Cases', function () {
             userId: "john-doe-1234",
             foo: "bar"
         });
+
+        // The /events API returns immediately, even if event still processing. So we wait a bit.
+        await new Promise(r => setTimeout(r, 500));
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -181,6 +187,9 @@ describe('Basic Use Cases', function () {
             "groupId": "the-wildcats",
             foo: "bar"
         });
+
+        // The /events API returns immediately, even if event still processing. So we wait a bit.
+        await new Promise(r => setTimeout(r, 500));
 
         let johnProgress = await entityProgressTestHelper.getProgress("john-doe-1234");
         assert.deepStrictEqual(johnProgress.data, {
@@ -337,6 +346,9 @@ describe('Basic Use Cases', function () {
             foo: "bar"
         });
 
+        // The /events API returns immediately, even if event still processing. So we wait a bit.
+        await new Promise(r => setTimeout(r, 500));
+
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
         assert.deepStrictEqual(progress.data, {
@@ -362,6 +374,9 @@ describe('Basic Use Cases', function () {
             sessionDurationInSeconds: 120, // Spent another 2 minutes in app
             foo: "bar"
         });
+
+        // The /events API returns immediately, even if event still processing. So we wait a bit.
+        await new Promise(r => setTimeout(r, 500));
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -412,6 +427,9 @@ describe('Basic Use Cases', function () {
             userId: "john-doe-1234"
         });
 
+        // The /events API returns immediately, even if event still processing. So we wait a bit.
+        await new Promise(r => setTimeout(r, 500));
+
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
         assert.deepStrictEqual(progress.data, {
@@ -441,6 +459,9 @@ describe('Basic Use Cases', function () {
             action: "send-message",
             userId: "john-doe-1234"
         });
+
+        // The /events API returns immediately, even if event still processing. So we wait a bit.
+        await new Promise(r => setTimeout(r, 500));
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -499,16 +520,16 @@ describe('Basic Use Cases', function () {
             action: "log-in",
             userId: "john-doe-1234",
         });
-
-        // Some time elapses
-        await new Promise(r => setTimeout(r, 500));
-
+        
         // User session ends 10 minutes later
         await eventTestHelper.sendEvent({
             action: "session-ended",
             userId: "john-doe-1234",
             sessionDurationInSeconds: 600, // 10 minutes, well past requirements
         });
+        
+        // The /events API returns immediately, even if event still processing. So we wait a bit.
+        await new Promise(r => setTimeout(r, 500));
 
         let progress1 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -537,6 +558,9 @@ describe('Basic Use Cases', function () {
             action: "log-in",
             userId: "john-doe-1234",
         });
+
+        // The /events API returns immediately, even if event still processing. So we wait a bit.
+        await new Promise(r => setTimeout(r, 500));
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -589,6 +613,9 @@ describe('Basic Use Cases', function () {
             userId: "john-doe-1234",
         });
 
+        // The /events API returns immediately, even if event still processing. So we wait a bit.
+        await new Promise(r => setTimeout(r, 500));
+
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
         assert.deepStrictEqual(progress.data.points, 10);
 
@@ -621,6 +648,6 @@ describe('Basic Use Cases', function () {
 
     }).timeout(15000);
 
-    
+
 
 });

@@ -1,22 +1,22 @@
 # JZ Gamification Engine
-jz-gamification-engine is a platform for managing gamification features such as badges, awards, user assignments, and point systems. It is meant to be run alongside existing applications that want to support gamification features in a decoupled, performant fashion.
+jz-gamification-engine is a platform for managing gamification features such as badges, awards, user journeys, and point systems. It is meant to be run alongside existing applications that want to support these features in a decoupled, performant fashion.
 
 ## Stability and Version
 As of March 2021, this project is very young. I welcome feedback and suggestions from everyone, but keep in mind that this platform is not yet battle tested.
 
 ## Some Example Features 
-Think through the following features. All of them are enabled by jz-gamification-engine.
+Think through the following features which are enabled by jz-gamification-engine:
 
 * The ability to define, enable, and disable custom badges. For example:
     * A "Mobile Power User" badge that users receive after logging into your mobile app 5 times.
     * A "Bookworm" badge that users receive after spending at least 20 minutes reading content on your website.
-    * A "Best Seller" badge that a blog post author is awarded after his blogs are read 100 times.
+    * A "Best Seller" badge that a blog post author is awarded after his/her blogs are read 1000 times.
 * The ability to define journeys that tie together disparate actions. For example:
-    * A "Newcomer" journey that a user completes after visiting 3 tutorial pages and writing a first blog post. After completion additional functionality is unlocked.    
+    * A "Newcomer" journey that a user completes after visiting 3 tutorial pages and writing a first blog post. After completion additional functionality is unlocked.
 * The ability for goals to be defined and updated dynamically during run time, even by your end-users themselves. 
 * An in-app store that allows users to choose custom profile images and flair using points earned from completing goals.
 
-All of the features above are enabled via three simple flows made available by the gamification-engine APIs:
+All of the features above are enabled via three simple flows made available by the engine APIs:
 
 1. Define `goals` that are relevant to your application.
 2. Send usage `events` as users interact with your applcation.
@@ -27,12 +27,12 @@ All of the features above are enabled via three simple flows made available by t
 Let's walk through the creation and usage of a simple "Mobile Power User" badge. This badge will be awarded to users who log into our mobile app at least 5 times.
 
 ### Creating the Badge
-First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows:
+First we invoke an HTTP POST to create the badge. Use the jz-gamification-engine `/goals` API as follows:
 
 **Request**
 ```
 // HTTP POST 
-// https://<host>/goal
+// https://<host>/goals
 {
   "name": "Mobile Power User",
   "description": "Log in at least 5 times on a mobile device",
@@ -54,15 +54,13 @@ First we invoke an HTTP POST to create the badge. Use the `/goal` API as follows
 
 You can read this goal as *A badge that is completed for a given `userId` after the gamification system receives 5 events with `action=log-in`, `platform=mobile`, and `userId=*`*.
 
-Our [API documentation](docs/api.md) provides much further detail. 
-
 ### Sending Usage Events
-Next, as users log into our application, we invoke an HTTP POST against the jz-gamification-engine `/event` API:
+Next, as users log into our application, we invoke an HTTP POST against the jz-gamification-engine `/events` API:
 
 **Request**
 ```
 // HTTP POST 
-// https://<host>/event
+// https://<host>/events
 {
   "action": "log-in",
   "platform": "mobile",
@@ -74,12 +72,12 @@ Next, as users log into our application, we invoke an HTTP POST against the jz-g
 To track progress towards your goal, the events that you send should include enough information to match the `criteria.[].qualifyingEvent` and `targetEntityIdField` fields that you provided when creating your goal. In our case, our example event includes `action=log-in`, `platform=mobile`, and `userId`, which is what our "Power User" goal requires.
 
 ### Checking Goal Progress
-Finally, as needed, we invoke an HTTP GET against the `/entity/<entityId>` API to see how users are tracking towards their goals. *Note that support for push notifications upon goal completion will come later*
+Finally, we invoke an HTTP GET against the `/entities/<entityId>` API to see how users are tracking towards their goals. *Note that support for push notifications upon goal completion will come later*
 
 **Request**
 ```
 // HTTP GET 
-// https://<host>/entity/john-doe-1234
+// https://<host>/entities/john-doe-1234
 ```
 
 **Response**
@@ -112,7 +110,7 @@ Our [API documentation](docs/api.md) provides further detail.
 
 ## Running the sample application
 
-There is a fully functional sample app bundled in this repository at `docs/sample_app`. It demonstrates a client app using the gamification engine to track user progress towards 3 goals.
+There is a fully functional sample application bundled in this repository under `<root>/docs/sample_app`. It demonstrates a client app using the gamification engine to track user progress towards goals.
 
 To run the sample app, perform the following steps:
 ```
@@ -160,7 +158,8 @@ npm start
 
 ## TODO!!!!
 * Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
-* Provide easier startup instructions with references to Mongo. Can we make this Docker friendly?
+* Add support for enabling/disabling goals
+* Can we make this Docker friendly?
 * Swagger
 * Can we support a broader character set for goals and events? Feels needlessly restrictive right now.
 * Push notifications when goal completed.
