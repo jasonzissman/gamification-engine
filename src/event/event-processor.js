@@ -106,6 +106,7 @@ function updateEntityProgressForCriterion(entityProgress, progressUpdate) {
     let hasMetThreshold = entityProgress[entityId].goals[goalId].criteriaIds[criterionId].value >= threshold;
     if (hasMetThreshold) {
         entityProgress[entityId].goals[goalId].criteriaIds[criterionId].isComplete = true;
+        entityProgress[entityId].goals[goalId].criteriaIds[criterionId].completionDate = new Date().getTime();
     }
 }
 
@@ -126,7 +127,9 @@ function updateEntityProgressForGoal(entityProgress, progressUpdate, goals) {
         if (markGoalAsComplete) {
             entityProgress[entityId].goals[goalId].isComplete = true;
             if ((goals[goalId].points != undefined) && !isNaN(goals[goalId].points)) {
-                entityProgress[entityId].points += goals[goalId].points;
+                entityProgress[entityId].points += Number(goals[goalId].points);
+                entityProgress[entityId].goals[goalId].pointsAwarded = Number(goals[goalId].points);
+                entityProgress[entityId].goals[goalId].completionDate = new Date().getTime();
             }
         }
     }

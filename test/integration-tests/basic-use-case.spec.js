@@ -63,7 +63,7 @@ describe('Basic Use Cases', function () {
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assert.deepStrictEqual(progress.data, {
+        assertEqualProgress(progress.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -100,7 +100,7 @@ describe('Basic Use Cases', function () {
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assert.deepStrictEqual(progress2.data, {
+        assertEqualProgress(progress2.data, {
             entityId: 'john-doe-1234',
             points: 10,
             goals: {
@@ -111,11 +111,22 @@ describe('Basic Use Cases', function () {
                             value: 3
                         }
                     },
-                    isComplete: true
+                    isComplete: true,
+                    pointsAwarded: 10
                 }
             }
         });
-
+        
+        // Assert valid completion dates added
+        let goalCompletionDate = Number(progress2.data.goals[goalId].completionDate);
+        let criteriaCompletionDate = Number(progress2.data.goals[goalId].criteriaIds[criteriaIds[0]].completionDate);
+        assert.strictEqual(isNaN(goalCompletionDate), false);
+        assert.strictEqual(goalCompletionDate > 0, true);
+        assert.strictEqual(goalCompletionDate < new Date().getTime(), true);
+        assert.strictEqual(isNaN(criteriaCompletionDate), false);
+        assert.strictEqual(criteriaCompletionDate > 0, true);
+        assert.strictEqual(criteriaCompletionDate < new Date().getTime(), true);
+        
     }).timeout(15000);
 
     it('should let multiple entities benefit from the same event if multiple goals are applicable', async () => {
@@ -166,7 +177,7 @@ describe('Basic Use Cases', function () {
             action: "log-in",
             platform: "mobile",
             userId: "john-doe-1234",
-            "groupId": "the-wildcats",
+            groupId: "the-wildcats",
             foo: "bar"
         });
 
@@ -175,7 +186,7 @@ describe('Basic Use Cases', function () {
             action: "log-in",
             platform: "mobile",
             userId: "mike-smith-1234",
-            "groupId": "the-wildcats",
+            groupId: "the-wildcats",
             foo: "bar"
         });
 
@@ -184,7 +195,7 @@ describe('Basic Use Cases', function () {
             action: "log-in",
             platform: "desktop",
             userId: "sally-craig-1234",
-            "groupId": "the-wildcats",
+            groupId: "the-wildcats",
             foo: "bar"
         });
 
@@ -192,7 +203,7 @@ describe('Basic Use Cases', function () {
         await new Promise(r => setTimeout(r, 500));
 
         let johnProgress = await entityProgressTestHelper.getProgress("john-doe-1234");
-        assert.deepStrictEqual(johnProgress.data, {
+        assertEqualProgress(johnProgress.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -209,7 +220,7 @@ describe('Basic Use Cases', function () {
         });
 
         let mikeProgress = await entityProgressTestHelper.getProgress("mike-smith-1234");
-        assert.deepStrictEqual(mikeProgress.data, {
+        assertEqualProgress(mikeProgress.data, {
             entityId: 'mike-smith-1234',
             points: 0,
             goals: {
@@ -233,7 +244,7 @@ describe('Basic Use Cases', function () {
         });
 
         let groupProgress = await entityProgressTestHelper.getProgress("the-wildcats");
-        assert.deepStrictEqual(groupProgress.data, {
+        assertEqualProgress(groupProgress.data, {
             entityId: 'the-wildcats',
             points: 0,
             goals: {
@@ -351,7 +362,7 @@ describe('Basic Use Cases', function () {
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assert.deepStrictEqual(progress.data, {
+        assertEqualProgress(progress.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -380,7 +391,7 @@ describe('Basic Use Cases', function () {
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assert.deepStrictEqual(progress2.data, {
+        assertEqualProgress(progress2.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -432,7 +443,7 @@ describe('Basic Use Cases', function () {
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assert.deepStrictEqual(progress.data, {
+        assertEqualProgress(progress.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -465,7 +476,7 @@ describe('Basic Use Cases', function () {
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assert.deepStrictEqual(progress2.data, {
+        assertEqualProgress(progress2.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -533,7 +544,7 @@ describe('Basic Use Cases', function () {
 
         let progress1 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assert.deepStrictEqual(progress1.data, {
+        assertEqualProgress(progress1.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -564,7 +575,7 @@ describe('Basic Use Cases', function () {
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        assert.deepStrictEqual(progress2.data, {
+        assertEqualProgress(progress2.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -590,7 +601,7 @@ describe('Basic Use Cases', function () {
 
         await goalTestHelper.addGoal({
             name: "Mobile Power User",
-            description: "Log in at least 3 times on a mobile device",
+            description: "Log in at least 1 time on a mobile device",
             targetEntityIdField: "userId",
             points: 10,
             criteria: [
@@ -648,6 +659,21 @@ describe('Basic Use Cases', function () {
 
     }).timeout(15000);
 
-
-
 });
+
+function assertEqualProgress(actualProgress, expectedProgress) {
+    let modifiedActualProgress = JSON.parse(JSON.stringify(actualProgress));
+    let modifiedExpectedProgress = JSON.parse(JSON.stringify(expectedProgress));
+    removeTimestampData(modifiedActualProgress);
+    removeTimestampData(modifiedExpectedProgress);
+    assert.deepStrictEqual(modifiedActualProgress, modifiedExpectedProgress);
+};
+function removeTimestampData(progress) {
+    for(key in progress) {
+      if (key === 'completionDate') {
+        delete progress[key];
+      } else if (typeof progress[key] === 'object') {
+        removeTimestampData(progress[key]);
+      }
+    }
+  }
