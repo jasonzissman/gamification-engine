@@ -55,6 +55,27 @@ Note that anything with a unique identifier can make progress towards a goal, no
 * `criteria.[].aggregation.value`: (optional) If using a 'sum' aggregation, this value represents the quantity by which progress towards a goal will be incremented with each received qualifying event.
 * `criteria.[].aggregation.valueField`: (optional) If using a 'sum' aggregation, this value represents *the field in the received event* which contains the quantity by which progress towards a goal will be incremented with each received qualifying event.
 
+## Update Goal State
+
+**Example Request**
+```
+// HTTP POST 
+// https://<host>/goals/<goalId>/state
+{
+    state: "disabled"
+}
+```
+
+**Example Response**
+```
+{
+    status: "ok"
+}
+```
+
+The `/goals/<goalID>/state` API allows you to disable or enable goals. Progress is not tracked towards disabled goals even if matching events are received. Goals are enabled by default upon creation. 
+
+The only parameter in the POST payload is `state`, which must be equal to a value of either 'enabled' or 'disabled'.
 
 ## Send Event
 
@@ -137,3 +158,4 @@ This will return a breakdown of an entity's progress towards all goals, as well 
 The `/entities/<entityId>/points` API allows you to increment or decrement the points that an entity has accumlated. This can be leveraged when implementing 'stores' and other systems that rely on the user accuring points over time. 
 
 The only parameter in the POST payload is `amount`, which is a numeric value by which the tracked points will change. Note that it can be positive or negative.
+

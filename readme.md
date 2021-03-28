@@ -157,7 +157,6 @@ npm start
 
 
 ## TODO!!!!
-* Add support for enabling/disabling goals
 * Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
 * Can we make this Docker friendly?
 * Swagger
