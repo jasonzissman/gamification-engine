@@ -157,11 +157,11 @@ npm start
 
 
 ## TODO!!!!
-* Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
 * Can we make this Docker friendly?
 * Swagger
 * Can we support a broader character set for goals and events? Feels needlessly restrictive right now.
 * Push notifications when goal completed.
+* Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
 * More unit and integration tests
 * Cache calls to database
 * General authorization approach. Access tokens?
