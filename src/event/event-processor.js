@@ -12,6 +12,8 @@ async function processEvent(receivedEvent) {
     // We have ~10 nested if checks here.
     // TODO - put in instrumentation to track how far down this filter we typically go. Would help tweak perf.
 
+    let completedUpdates = [];
+
     if (receivedEvent) {
         const cleanEvent = createCleanVersionOfEvent(receivedEvent, eventCriteriaMatcher.KNOWN_CRITERIA_KEY_VALUE_PAIRS, eventCriteriaMatcher.KNOWN_SYSTEM_FIELDS);
 
@@ -26,13 +28,14 @@ async function processEvent(receivedEvent) {
                 const progressUpdatesToMake = computeProgressUpdatesToMake(cleanEvent, criteria);
                 if (progressUpdatesToMake && progressUpdatesToMake.length > 0) {
 
-                    updateEntityProgressTowardsGoals(progressUpdatesToMake);
+                    completedUpdates = await updateEntityProgressTowardsGoals(progressUpdatesToMake);
 
                 }
-
             }
         }
     }
+
+    return completedUpdates;
 }
 
 function computeProgressUpdatesToMake(event, criteria) {
@@ -145,6 +148,12 @@ async function updateEntityProgressTowardsGoals(progressUpdatesToMake) {
     // setup. If two nodes invoke updateEntityProgress(), the second one will
     // win. This may be acceptable but needs to be documented and/or a 
     // good solution that doesn't compromise effiency should be researched.
+    //
+    // TODO - We could work around this by performing increment commands on the individual
+    // fields of interest (value/points/etc.) instead of just updating the whole
+    // progress document.
+
+    let completedUpdates = [];
 
     const dbInvocations = await getReleventGoalsAndEntityProgressFromDb(progressUpdatesToMake);
     const relevantEntityProgress = arrayToObjectWithIdKey(dbInvocations[0], "entityId");
@@ -152,12 +161,14 @@ async function updateEntityProgressTowardsGoals(progressUpdatesToMake) {
 
     for (progressUpdate of progressUpdatesToMake) {
         if(isGoalActive(relevantGoals[progressUpdate.goalId])) {
+            completedUpdates.push(progressUpdate);
             updateEntityProgressForCriterion(relevantEntityProgress, progressUpdate);
             updateEntityProgressForGoal(relevantEntityProgress, progressUpdate, relevantGoals)
         }
     }
     
     await dbHelper.updateMultipleEntityProgress(relevantEntityProgress);
+    return completedUpdates;
 }
 
 function createCleanVersionOfEvent(receivedEvent, knownCriteriaKeyValuePairs, knownSystemFields) {

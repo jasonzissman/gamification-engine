@@ -82,7 +82,7 @@ The only parameter in the POST payload is `state`, which must be equal to a valu
 **Example Request**
 ```
 // HTTP POST 
-// https://<host>/events
+// https://<host>/events[?waitForEventToFinishProcessing=false]
 {
     "action": "log-in",
     "userId": "john-doe-1234"
@@ -91,7 +91,11 @@ The only parameter in the POST payload is `state`, which must be equal to a valu
 
 **Example Response**
 ```
-{ status: "received" }
+{ 
+    status: "received",
+    timingMs:, 10 //server-side ms taken to complete request
+    completedUpdates: [] // array of updates applied, only if waitForEventToFinishProcessing=true
+}
 ```
 
 The `/events` API is very generic and **has no required fields**. It accepts any JSON payload.
@@ -104,7 +108,7 @@ If a received event fails to match those required key/value pairs for a goal, pr
 
 After an event is referenced against all defined goals, it is discarded.
 
-Note that this endpoint immediately returns 200 upon receiving a request even before it has finished processing.
+For preformance reasons, this endpoint immediately returns 200 upon receiving a request even before it has fully processed the event. You can add the optional query parameter `waitForEventToFinishProcessing=true` to indicate that an http response should only be received after all processing has finished.
 
 If possible, only include data in your /events requests that are relevant to goal completion. jz-gamification-engine will gracefully discard irrelevant data, but excessive amounts of irrelevant data will degrade performance.
 

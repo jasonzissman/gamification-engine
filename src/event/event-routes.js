@@ -8,13 +8,22 @@ const eventProcessor = require('./event-processor');
  * and to speed up development. 
  */
 
- // Create a new event
+// Create a new event
 // HTTP POST <host>/events/
-router.post("/", (request, response) => {
-    // TODO validate payload not too big
-    eventProcessor.processEvent(request.body);
-    // Immediately return 200 regardless of result
-    response.status(200).send({ status: "received" });
+router.post("/", async (request, response) => {
+
+    let startTime = new Date().getTime();
+
+    let retVal = { status: "received" };
+    let promise = eventProcessor.processEvent(request.body);
+
+    if (request.query.waitForEventToFinishProcessing) {
+        retVal.completedUpdates = await promise;        
+    }
+
+    retVal.timingMs = (new Date().getTime() - startTime);
+
+    response.status(200).send(retVal);
 });
 
 module.exports = router;

@@ -56,10 +56,7 @@ describe('Basic Use Cases', function () {
             platform: "mobile",
             userId: "john-doe-1234",
             foo: "bar"
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -85,7 +82,7 @@ describe('Basic Use Cases', function () {
             platform: "mobile",
             userId: "john-doe-1234",
             foo: "bar"
-        });
+        }, true);
 
         await eventTestHelper.sendEvent({
             clientId: "client-app-1234",
@@ -93,10 +90,7 @@ describe('Basic Use Cases', function () {
             platform: "mobile",
             userId: "john-doe-1234",
             foo: "bar"
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -116,7 +110,7 @@ describe('Basic Use Cases', function () {
                 }
             }
         });
-        
+
         // Assert valid completion dates added
         let goalCompletionDate = Number(progress2.data.goals[goalId].completionDate);
         let criteriaCompletionDate = Number(progress2.data.goals[goalId].criteriaIds[criteriaIds[0]].completionDate);
@@ -126,7 +120,7 @@ describe('Basic Use Cases', function () {
         assert.strictEqual(isNaN(criteriaCompletionDate), false);
         assert.strictEqual(criteriaCompletionDate > 0, true);
         assert.strictEqual(criteriaCompletionDate < new Date().getTime(), true);
-        
+
     }).timeout(15000);
 
     it('should let multiple entities benefit from the same event if multiple goals are applicable', async () => {
@@ -179,7 +173,7 @@ describe('Basic Use Cases', function () {
             userId: "john-doe-1234",
             groupId: "the-wildcats",
             foo: "bar"
-        });
+        }, true);
 
         await eventTestHelper.sendEvent({
             clientId: "client-app-1234",
@@ -188,7 +182,7 @@ describe('Basic Use Cases', function () {
             userId: "mike-smith-1234",
             groupId: "the-wildcats",
             foo: "bar"
-        });
+        }, true);
 
         await eventTestHelper.sendEvent({
             clientId: "client-app-1234",
@@ -197,10 +191,7 @@ describe('Basic Use Cases', function () {
             userId: "sally-craig-1234",
             groupId: "the-wildcats",
             foo: "bar"
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let johnProgress = await entityProgressTestHelper.getProgress("john-doe-1234");
         integrationTestHelper.assertEqualProgress(johnProgress.data, {
@@ -357,10 +348,7 @@ describe('Basic Use Cases', function () {
             userId: "john-doe-1234",
             sessionDurationInSeconds: 240, // Only 4 minutes, just shy of our goal
             foo: "bar"
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -386,10 +374,7 @@ describe('Basic Use Cases', function () {
             userId: "john-doe-1234",
             sessionDurationInSeconds: 120, // Spent another 2 minutes in app
             foo: "bar"
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -438,10 +423,7 @@ describe('Basic Use Cases', function () {
             clientId: "client-app-1234",
             action: "send-message",
             userId: "john-doe-1234"
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -465,16 +447,13 @@ describe('Basic Use Cases', function () {
             clientId: "client-app-1234",
             action: "send-message",
             userId: "john-doe-1234"
-        });
+        }, true);
 
         await eventTestHelper.sendEvent({
             clientId: "client-app-1234",
             action: "send-message",
             userId: "john-doe-1234"
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -532,17 +511,14 @@ describe('Basic Use Cases', function () {
         await eventTestHelper.sendEvent({
             action: "log-in",
             userId: "john-doe-1234",
-        });
-        
+        }, true);
+
         // User session ends 10 minutes later
         await eventTestHelper.sendEvent({
             action: "session-ended",
             userId: "john-doe-1234",
             sessionDurationInSeconds: 600, // 10 minutes, well past requirements
-        });
-        
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress1 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -570,10 +546,7 @@ describe('Basic Use Cases', function () {
         await eventTestHelper.sendEvent({
             action: "log-in",
             userId: "john-doe-1234",
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -624,10 +597,7 @@ describe('Basic Use Cases', function () {
             action: "log-in",
             platform: "mobile",
             userId: "john-doe-1234",
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
         assert.deepStrictEqual(progress.data.points, 10);

@@ -56,10 +56,7 @@ describe('Enabling and Disabling Goals', function () {
             platform: "mobile",
             userId: "john-doe-1234",
             foo: "bar"
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -88,7 +85,7 @@ describe('Enabling and Disabling Goals', function () {
             platform: "mobile",
             userId: "john-doe-1234",
             foo: "bar"
-        });
+        }, true);
 
         await eventTestHelper.sendEvent({
             clientId: "client-app-1234",
@@ -96,10 +93,7 @@ describe('Enabling and Disabling Goals', function () {
             platform: "mobile",
             userId: "john-doe-1234",
             foo: "bar"
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
@@ -129,7 +123,7 @@ describe('Enabling and Disabling Goals', function () {
             platform: "mobile",
             userId: "john-doe-1234",
             foo: "bar"
-        });
+        }, true);
 
         await eventTestHelper.sendEvent({
             clientId: "client-app-1234",
@@ -137,10 +131,7 @@ describe('Enabling and Disabling Goals', function () {
             platform: "mobile",
             userId: "john-doe-1234",
             foo: "bar"
-        });
-
-        // The /events API returns immediately, even if event still processing. So we wait a bit.
-        await new Promise(r => setTimeout(r, 500));
+        }, true);
 
         let progress3 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
