@@ -142,11 +142,18 @@ npm run unit-test
 npm run integration-test
 ```
 
-### Running the app
+### Running the app (Node)
 ```
 // assumes locally running Mongo at "mongodb://localhost:27017".
 // Otherwise, override process.env.DB_CONN_STRING
 npm start
+```
+### Work-in-progress: Running the app (Docker)
+```
+// assumes locally running Mongo at "mongodb://localhost:27017".
+// Otherwise, override process.env.DB_CONN_STRING
+docker build -t jz-gamification-engine:latest .
+docker run -p 3000:3000  jz-gamification-engine
 ```
 
 ### Detailed APIs
@@ -163,7 +170,6 @@ npm start
 * Swagger
 * Push notifications when goal completed.
 * Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
-* More unit and integration tests
 * Cache calls to database
 * General authorization approach. Access tokens?
 * Put in timing/profiling options to warn if things are going too slow
