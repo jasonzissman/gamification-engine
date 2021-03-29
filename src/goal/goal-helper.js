@@ -78,8 +78,6 @@ function validateGoal(newGoal) {
 
     if (!newGoal || !newGoal.name || !newGoal.targetEntityIdField || !newGoal.criteria || !(newGoal.criteria.length > 0)) {
         retVal.message = "Must provide valid goal name, targetEntityIdField, and non-empty criteria.";
-    } else if (!eventFieldsHelper.areAllFieldsAndValuesInSafeCharSet(newGoal)) {
-        retVal.message = "Goal fields can only contain dashes (-), underscores (_), and alpha-numeric characters.";
     } else if (!areAllCriteriaValid(newGoal)) {
         retVal.message = "All criteria should have a valid aggregation, a valid threshold, and non-nested qualifying events with at least one name/value attribute.";
     } else if (!isGoalPointsValueValid(newGoal)) {

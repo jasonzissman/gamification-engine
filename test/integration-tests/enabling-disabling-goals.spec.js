@@ -60,7 +60,7 @@ describe('Enabling and Disabling Goals', function () {
 
         let progress = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        integrationTestHelper.assertEqualProgress(progress.data, {
+        integrationTestHelper.assertEqualEntityProgress(progress.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -98,7 +98,7 @@ describe('Enabling and Disabling Goals', function () {
         let progress2 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
         // Goal was disabled so no progress made
-        integrationTestHelper.assertEqualProgress(progress2.data, {
+        integrationTestHelper.assertEqualEntityProgress(progress2.data, {
             entityId: 'john-doe-1234',
             points: 0,
             goals: {
@@ -135,7 +135,7 @@ describe('Enabling and Disabling Goals', function () {
 
         let progress3 = await entityProgressTestHelper.getProgress("john-doe-1234");
 
-        integrationTestHelper.assertEqualProgress(progress3.data, {
+        integrationTestHelper.assertEqualEntityProgress(progress3.data, {
             entityId: 'john-doe-1234',
             points: 10,
             goals: {

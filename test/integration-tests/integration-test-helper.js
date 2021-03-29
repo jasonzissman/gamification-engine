@@ -69,7 +69,7 @@ async function startAppServer(mongoConnString) {
     });
 }
 
-function assertEqualProgress(actualProgress, expectedProgress) {
+function assertEqualEntityProgress(actualProgress, expectedProgress) {
     let modifiedActualProgress = JSON.parse(JSON.stringify(actualProgress));
     let modifiedExpectedProgress = JSON.parse(JSON.stringify(expectedProgress));
     removeTimestampData(modifiedActualProgress);
@@ -120,5 +120,5 @@ module.exports = {
     issueHttpGet,
     issueHttpPost,
     addGoal,
-    assertEqualProgress
+    assertEqualEntityProgress
 };

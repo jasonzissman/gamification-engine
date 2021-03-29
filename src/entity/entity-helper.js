@@ -63,7 +63,7 @@ async function modifyPointsBalance(entityId, amount) {
         if (!entity) {
             entity = createNewEntity(entityId);
         }
-        entity.points += amount;
+        entity.points += Number(amount);
         let updatedEntity = await dbHelper.updateEntityProgress(entity);
         retVal.status = "ok";
         retVal.message = { updatedEntity: updatedEntity };

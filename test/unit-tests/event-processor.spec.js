@@ -382,6 +382,5 @@ describe("event processing", () => {
                 threshold: 5
             }]);
         });
-    })
-
-})
+    });
+});
