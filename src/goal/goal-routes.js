@@ -21,29 +21,6 @@ router.post("/", async (request, response) => {
     }
 });
 
-// Update specific goal state
-// HTTP POST <host>/goals/<goalID>/state
-router.post("/:goalId/state", async (request, response) => {
-    let outcome = await goalHelper.updateGoalState(request.params.goalId, request.body.state);
-    if (outcome.status = "bad_arguments") {
-        response.status(400).send({ status: `Must provide valid goalId and state must be 'enabled' or 'disabled'.` });
-    } else if (outcome.status = "not_found") {
-        response.status(404).send({ status: `Goal ${request.params.goalId} not found.` });
-    } else if (outcome.status = "ok") {
-        response.status(200).send({status: "ok", message: `Goal ${request.params.goalId} set to ${request.body.state}.`});
-    } else {
-        response.status(500).send({ status: "server error" });
-    }
-});
-
-// // Update existing goal
-// // HTTP PUT <host>/goals/<goal-id>
-// TODO - anything changed here must be reflected in LOOKUP_MAPS during event processing!
-// router.put("/:goalId", (request, response) => {
-//     // TODO invoke goal update routine
-//     response.status(200).send({ status: "ok" });
-// });
-
 // Get goals
 // HTTP GET <host>/goals/
 router.get("/", async (request, response) => {

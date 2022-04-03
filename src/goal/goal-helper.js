@@ -1,3 +1,4 @@
+const { v4: uuidv4 } = require('uuid');
 const eventCriteriaHelper = require('../event/event-criteria-matcher');
 const dbHelper = require('../database/db-helper');
 const eventFieldsHelper = require('../event/event-fields-helper');
@@ -29,31 +30,6 @@ function isSingleCriteriaValid(criteria) {
     return isValid;
 }
 
-function isValidStateUpdateRequest(goalId, state) {
-    let isValid = false;
-    if (goalId && (state == "disabled" || state == "enabled")) {
-        isValid = true;        
-    }
-    return isValid;
-}
-async function updateGoalState(goalId, state) {
-    let retVal = {};
-
-    if (!isValidStateUpdateRequest(goalId, state)) {
-        retVal.status = "bad_arguments";
-    } else {
-        const goal = await getSpecificGoal(goalId);
-        if (!goal) {
-            retVal.status = "not_found";
-        } else {
-            await dbHelper.updateGoalState(goalId, state);
-            // TODO - optimization - insert or remove from lookup maps
-            retVal.status = "ok";
-        }
-    }
-
-    return retVal;
-}
 function areAllCriteriaValid(newGoal) {
 
     let allCriteriaValid = true;
@@ -91,6 +67,7 @@ function validateGoal(newGoal) {
 
 function createGoalEntityFromRequestGoal(newGoal) {
     let retVal = {
+        id: uuidv4(),
         name: eventFieldsHelper.generateCleanField(newGoal.name),
         targetEntityIdField: eventFieldsHelper.generateCleanField(newGoal.targetEntityIdField),
         state: "enabled"
@@ -109,6 +86,7 @@ function createCriteriaEntityFromRequestGoal(newGoal) {
 
     for (const criteria of newGoal.criteria) {
         const cleanCriteria = {
+            id: uuidv4(),
             targetEntityIdField: eventFieldsHelper.generateCleanField(newGoal.targetEntityIdField),
             qualifyingEvent: eventFieldsHelper.generateObjectWithCleanFields(criteria.qualifyingEvent),
             aggregation: eventFieldsHelper.generateObjectWithCleanFields(criteria.aggregation),
@@ -130,17 +108,16 @@ async function persistGoal(newGoal) {
         retVal = { status: "bad_request", message: validationResult.message };
     } else {
         const criteriaEntities = createCriteriaEntityFromRequestGoal(newGoal);
-
         const goalEntity = createGoalEntityFromRequestGoal(newGoal);
 
         try {
-            let insertedGoalId = await dbHelper.persistGoal(goalEntity);
-            criteriaEntities.forEach(criterion => { criterion.goalId = insertedGoalId });
+            await dbHelper.persistGoalAndCriteria(goalEntity, criteriaEntities);
+            // criteriaEntities.forEach(criterion => { criterion.goalId = goalEntity.id });
 
-            let insertedCriteriaIds = await dbHelper.persistCriteria(criteriaEntities);
-            let resultingGoal = await dbHelper.updateGoalCriteria(insertedGoalId, insertedCriteriaIds);
+            // let insertedCriteriaIds = await dbHelper.persistCriteria(goalEntity.id, criteriaEntities);
+            // let resultingGoal = await dbHelper.updateGoalCriteria(goalEntity.id, insertedCriteriaIds);
 
-            eventCriteriaHelper.addNewCriteriaToLookupMap(criteriaEntities);
+            // eventCriteriaHelper.addNewCriteriaToLookupMap(criteriaEntities);
             retVal = { status: "ok", goal: resultingGoal };
         } catch (err) {
             retVal = { status: "failed", message: "Failed to add goal to database." };

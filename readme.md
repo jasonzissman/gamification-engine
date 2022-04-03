@@ -23,7 +23,6 @@ All of the features above are enabled via three simple flows made available by t
 3. Check any `entity's` progress towards goals (*push notifications coming later*)
 
 ## Simple Example: The 'Mobile Power User' Badge
-
 Let's walk through the creation and usage of a simple "Mobile Power User" badge. This badge will be awarded to users who log into our mobile app at least 5 times.
 
 ### Creating the Badge
@@ -144,14 +143,10 @@ npm run integration-test
 
 ### Running the app (Node)
 ```
-// assumes locally running Mongo at "mongodb://localhost:27017".
-// Otherwise, override process.env.DB_CONN_STRING
 npm start
 ```
 ### Work-in-progress: Running the app (Docker)
 ```
-// assumes locally running Mongo at "mongodb://localhost:27017".
-// Otherwise, override process.env.DB_CONN_STRING
 docker build -t jz-gamification-engine:latest .
 docker run -p 3000:3000  jz-gamification-engine
 ```

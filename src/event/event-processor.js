@@ -19,6 +19,9 @@ async function processEvent(receivedEvent) {
 
         if (cleanEvent && Object.keys(cleanEvent).length > 0) {
 
+            // TODO - at this point, we can use our new graph algorithm instead of line below
+            // that determines which criteria are relevant
+
             const relevantCriteriaIds = eventCriteriaMatcher.lookupMatchingCriteria(cleanEvent);
 
             if (relevantCriteriaIds && relevantCriteriaIds.length > 0) {

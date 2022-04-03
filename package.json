@@ -4,7 +4,7 @@
   "description": "An engine that enables gamification",
   "main": "index.js",
   "scripts": {
-    "start": "npx run-func ./src/index.js start",
+    "start": "node src//index.js",
     "unit-test": "mocha \"test/unit-tests/**/*spec.js\"",
     "integration-test": "mocha \"test/integration-tests/**/*spec.js\""
   },
@@ -12,7 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "mongodb": "^3.6.5",
+    "neo4j-driver": "^4.4.5",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

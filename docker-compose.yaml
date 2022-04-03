@@ -1,0 +1,25 @@
+version: "3"
+services:
+  neo4j:
+    image: neo4j:4.0.11
+    mem_limit: 2500m
+    ports: 
+      - 7474:7474
+      - 7687:7687
+    volumes:
+      - C://data//neo4j/conf:/conf
+      - C://data//neo4j/data:/data
+      - C://data//neo4j/import:/var/lib/neo4j/import
+      - C://data//neo4j/logs:/logs
+      - C://data//neo4j/plugins:/var/lib/neo4j/plugins
+    environment:
+      - NEO4J_dbms_memory_pagecache_size=2048m
+      - NEO4J_dbms.memory.heap.initial__size=2048m
+      - NEO4J_dbms_memory_heap_max__size=2048m
+      - dbms.memory.pagecache.size=2048m
+      - dbms.memory.heap.max_size=2048m
+    networks:
+      - neo4j
+networks:
+  neo4j:
+    driver: bridge

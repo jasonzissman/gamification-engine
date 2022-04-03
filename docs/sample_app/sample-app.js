@@ -12,7 +12,8 @@ async function start() {
 }
 
 async function startGamificationEngine() {
-    let inMemoryMongo = await integrationTestHelper.startInMemoryMongo();
+    // TODO - need to replicate a graphDB in place of our old in-memory Mongo
+    // let inMemoryMongo = await integrationTestHelper.startInMemoryMongo();
     let gamificationEnginePort = await integrationTestHelper.startAppServer(inMemoryMongo.uri);
     GAMIFICATION_ENGINE_PORT = gamificationEnginePort;
 }
