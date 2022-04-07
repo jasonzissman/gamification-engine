@@ -35,9 +35,9 @@ First we invoke an HTTP POST to create the badge. Use the jz-gamification-engine
 {
   "name": "Mobile Power User",
   "description": "Log in at least 5 times on a mobile device",
-  "targetEntityIdField": "userId",
   "criteria": [
     {
+      "targetEntityIdField": "userId",
       "qualifyingEvent": {
         "action": "log-in",
         "platform": "mobile"
@@ -68,7 +68,7 @@ Next, as users log into our application, we invoke an HTTP POST against the jz-g
 }
 ```
 
-To track progress towards your goal, the events that you send should include enough information to match the `criteria.[].qualifyingEvent` and `targetEntityIdField` fields that you provided when creating your goal. In our case, our example event includes `action=log-in`, `platform=mobile`, and `userId`, which is what our "Power User" goal requires.
+To track progress towards your goal, the events that you send should include enough information to match the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields that you provided when creating your goal. In our case, our example event includes `action=log-in`, `platform=mobile`, and `userId`, which is what our "Power User" goal requires.
 
 ### Checking Goal Progress
 Finally, we invoke an HTTP GET against the `/entities/<entityId>` API to see how users are tracking towards their goals. *Note that support for push notifications upon goal completion will come later*

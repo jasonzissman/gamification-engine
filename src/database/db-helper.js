@@ -7,6 +7,8 @@ const NEO4J_HOST = process.env.NEO4J_HOST;
 const NEO4J_CYPHER_PORT = process.env.NEO4J_CYPHER_PORT || 7687;
 
 let neo4jDriver;
+let KNOWN_CRITERIA_KEY_VALUE_PAIRS = {};
+let KNOWN_SYSTEM_FIELDS = {};
 
 async function initDbConnection() {
 
@@ -15,7 +17,48 @@ async function initDbConnection() {
     neo4jDriver = neo4j.driver(`bolt://${NEO4J_HOST}:${NEO4J_CYPHER_PORT}/`, neo4jAuth, { encrypted: false });
 
     await runNeo4jCommand(`Create :Goal(id) index.`, `CREATE INDEX ON :Goal(id)`);
+    await runNeo4jCommand(`Create :Entity(id) index.`, `CREATE INDEX ON :Entity(id)`);
+    await runNeo4jCommand(`Create :Criteria(id) index.`, `CREATE INDEX ON :Criteria(id)`);
     await runNeo4jCommand(`Create :EventAttribute(expression) index.`, `CREATE INDEX ON :EventAttribute(expression)`);
+
+    setInterval(updateKnownFieldFilters, 30000);
+    updateKnownFieldFilters();
+}
+
+async function updateKnownFieldFilters() {
+
+    let batchSize = 500;
+
+    // Fetch updated copy of all possible key/value combos
+    let fieldValuePairBatch = [];
+    let fvpCounter = 0;
+    while (fvpCounter === 0 || fieldValuePairBatch.length > 0) {
+        let query = `MATCH (n:EventAttribute) RETURN n.expression SKIP ${fvpCounter * batchSize} LIMIT ${batchSize}`;
+        fieldValuePairBatch = await runNeo4jCommand(`Fetch known criteria key value pairs (iteration ${fvpCounter}).`, query);
+        fieldValuePairBatch.map(fvp => { if (fvp) { KNOWN_CRITERIA_KEY_VALUE_PAIRS[fvp] = true }} );
+        fvpCounter++;
+    }
+
+    // scan all values of criterion.targetEntityField and add them to KNOWN_SYSTEM_FIELDS
+    let targetEntityIdFieldsBatch = [];
+    let targetEntityIdFieldsCounter = 0;
+    while (targetEntityIdFieldsCounter === 0 || targetEntityIdFieldsBatch.length > 0) {
+        let query = `MATCH (c:Criteria) RETURN distinct c.targetEntityIdField SKIP ${targetEntityIdFieldsCounter * batchSize} LIMIT ${batchSize}`;
+        targetEntityIdFieldsBatch = await runNeo4jCommand(`Fetch targetEntityIdFields (iteration ${targetEntityIdFieldsCounter}).`, query);
+        targetEntityIdFieldsBatch.map(idField => { if (idField) { KNOWN_SYSTEM_FIELDS[idField] = true } });
+        targetEntityIdFieldsCounter++;
+    }
+
+    // scan all values of criterion.targetEntityField and add them to KNOWN_SYSTEM_FIELDS
+    let aggValueFieldBatch = [];
+    let aggValueFieldsCounter = 0;
+    while (aggValueFieldsCounter === 0 || aggValueFieldBatch.length > 0) {
+        let query = `MATCH (c:Criteria) RETURN distinct c.aggregation_value_field SKIP ${aggValueFieldsCounter * batchSize} LIMIT ${batchSize}`;
+        aggValueFieldBatch = await runNeo4jCommand(`Fetch aggValueFields (iteration ${aggValueFieldsCounter}).`, query);
+        aggValueFieldBatch.map(aggValueField => { if (aggValueField) { KNOWN_SYSTEM_FIELDS[aggValueField] = true } });
+        aggValueFieldsCounter++;
+    }
+
 }
 
 async function ping() {
@@ -27,100 +70,39 @@ async function ping() {
     }
 }
 
-async function getAllCriteriaForGoal(goalId) {
-    const query = `MATCH (g:Goal {id: $goalId}) -[:HAS_CRITERIA]-> (c:Criteria) RETURN c`;
-    return runNeo4jCommand(`Get all criteria for goal ${goalId}.`, query, { goalId });
-}
-
-async function getAllGoals(limit = 25) {
-    if (limit > 100) { 
-        limit = 100 
-    };
-    const query = `MATCH (g:Goal) RETURN g LIMIT $limit`;
-    return runNeo4jCommand(`Get all goals (limit ${limit}).`, query, { limit });
-}
-
 async function getSpecificGoal(goalId) {
-    const query = `MATCH (g:Goal {id: $goalId}) RETURN g`;
+    const query = `MATCH (g:Goal {id: $goalId}) -[:HAS_CRITERIA]-> (c:Criteria) -[:REQUIRES_EVENT_ATTRIBUTE]-> (ea:EventAttribute) RETURN g,c,ea`;
     const resultsArray = await runNeo4jCommand(`Get goal ${goalId}.`, query, { goalId });
     if (resultsArray && resultsArray.length > 0) {
         return resultsArray[0];
     }
 }
 
-async function getSpecificGoals(goalIds, limit = 25) {
-    if (limit > 100) { 
-        limit = 100 
-    };
-    const query = `MATCH (g:Goal) WHERE g.id IN $goalIds RETURN g LIMIT $limit`;
-    return await runNeo4jCommand(`Get goals ${goalIds} (limit ${limit}).`, query, { goalIds, limit });
-}
-
 async function getSpecificEntityProgress(entityId) {
+    const query = `MATCH (e:Entity {id: $entityId}) -[p:HAS_MADE_PROGRES]-> (c:Criteria) <-[:HAS_CRITERIA]- (g:Goal) RETURN p,c,g`;
+    const resultsArray = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId });
 
-    // TODO - finish this. Entities should be upserted, and then a "HAS_MADE_PROGRESS_TOWARDS" relationship
-    // created in between the entity and the criteria. The relationship will have properties representing
-    // the nature of that progress. Entities should also have a "HAS_FULFILLED" relationship to the parent goal,
-    // when applicable
-
-}
-
-async function getSpecificEntitiesProgress(entityIds) {
-
-    // TODO - finish this. Entities should be upserted, and then a "HAS_MADE_PROGRESS_TOWARDS" relationship
-    // created in between the entity and the criteria. The relationship will have properties representing
-    // the nature of that progress. Entities should also have a "HAS_FULFILLED" relationship to the parent goal,
-    // when applicable
+    // TODO - massage response into something useful
+    return resultsArray;
 
 }
 
-async function updateEntityProgress(entity) {
+async function updateEntityProgress(entityId, criterion, incrementValue) {
 
-    let command = `MERGE (e:Entity {id: $entity_id}) SET e.\n`;
+    const criterionId = criterion.id;
 
-    // TODO - finish this. Entities should be upserted, and then a "HAS_MADE_PROGRESS_TOWARDS" relationship
-    // created in between the entity and the criteria. The relationship will have properties representing
-    // the nature of that progress. Entities should also have a "HAS_FULFILLED" relationship to the parent goal,
-    // when applicable
+    const command = `
+        MATCH (c:Criteria {id:$criterionId})
+        MERGE (e:Entity {id: $entityId})
+        MERGE (e)-[r:HAS_MADE_PROGRESS]-> (c)
+        ON CREATE set r.value = $incrementValue
+        ON MATCH SET r.value = r.value+$incrementValue
+        RETURN r
+    `;
 
-}
+    const params = { entityId, criterionId, incrementValue }
 
-async function updateMultipleEntityProgress(entityProgressMap) {
-
-    // TODO - finish this. Entities should be upserted, and then a "HAS_MADE_PROGRESS_TOWARDS" relationship
-    // created in between the entity and the criteria. The relationship will have properties representing
-    // the nature of that progress. Entities should also have a "HAS_FULFILLED" relationship to the parent goal,
-    // when applicable
-
-    // logger.info(`Updating entity progress for entities ${Object.keys(entityProgressMap)}.`);
-    // const entityProgressCollection = DB_CONNECTION.collection(COLLECTION_ENTITY_PROGRESS_NAME);
-
-    // const operations = [];
-    // for (var entityId in entityProgressMap) {
-    //     operations.push({
-    //         replaceOne: {
-    //             "filter": {
-    //                 "entityId": entityId
-    //             },
-    //             "replacement": entityProgressMap[entityId],
-    //             "upsert": true
-    //         }
-    //     });
-    // }
-
-    // return entityProgressCollection.bulkWrite(operations)
-}
-
-async function getSpecificCriteria(criteriaIds, limit) {
-
-    // TODO - this function may not ever be needed. Delete if determined so.
-
-    if (limit > 100) { 
-        limit = 100 
-    };
-    const query = `MATCH (c:Criteria) WHERE c.id IN $criteriaIds RETURN c LIMIT $limit`;
-    return await runNeo4jCommand(`Get criteria ${criteriaIds} (limit ${limit}).`, query, { criteriaIds, limit });
-
+    return runNeo4jCommand(`Update entity ${entityId} progress to criterion ${criterionId}.`, command, params);
 }
 
 async function persistGoalAndCriteria(goal, criteria) {
@@ -136,15 +118,16 @@ async function persistGoalAndCriteria(goal, criteria) {
 
 function generateNeo4jInsertGoalTemplate(criteria) {
 
-    let command = `CREATE (goal:Goal {id: $goal_id, name: $goal_name, targetEntityIdField: $goal_targetEntityIdField, state: $goal_state, description: $goal_description, points: $goal_points})\n`;
+    let command = `CREATE (goal:Goal {id: $goal_id, name: $goal_name, state: $goal_state, description: $goal_description, points: $goal_points})\n`;
 
     for (let i = 0; i < criteria.length; i++) {
         const criteriaVariableName = `criteria_${i}`;
-        command += `CREATE (${criteriaVariableName}:Criteria {id: $${criteriaVariableName}_id, targetEntityIdField: $${criteriaVariableName}_targetEntityIdField, aggregation: $${criteriaVariableName}_aggregation, threshold: $${criteriaVariableName}_threshold })\nCREATE (goal) -[:HAS_CRITERIA]-> (${criteriaVariableName})\n`
+
+        command += `CREATE (${criteriaVariableName}:Criteria {id: $${criteriaVariableName}_id, targetEntityIdField: $${criteriaVariableName}_targetEntityIdField, aggregation_type: $${criteriaVariableName}_aggregation_type, aggregation_value: $${criteriaVariableName}_aggregation_value, aggregation_value_field: $${criteriaVariableName}_aggregation_value_field, threshold: $${criteriaVariableName}_threshold })\nCREATE (goal) -[:HAS_CRITERIA]-> (${criteriaVariableName})\n`
 
         for (let j = 0; j < Object.keys(criteria[i].qualifyingEvent).length; j++) {
             const eventAttrVariableName = `criteria_${i}_attr_${j}`;
-            command += `MERGE (${eventAttrVariableName}:EventAttribute { expression: $${eventAttrVariableName}_expression })\nCREATE (${criteriaVariableName}) -[:HAS_CRITERIA]-> (${eventAttrVariableName})\n`
+            command += `MERGE (${eventAttrVariableName}:EventAttribute { expression: $${eventAttrVariableName}_expression })\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
         }
     }
 
@@ -155,7 +138,6 @@ function createNeo4jFriendlyParams(goal, criteria) {
     const params = {
         goal_id: goal.id,
         goal_name: goal.name,
-        goal_targetEntityIdField: goal.targetEntityIdField,
         goal_state: goal.state,
         goal_description: goal.description,
         goal_points: goal.points
@@ -165,8 +147,11 @@ function createNeo4jFriendlyParams(goal, criteria) {
         const criterion = criteria[i];
         const criteriaVariableName = `criteria_${i}`;
         params[`${criteriaVariableName}_id`] = criterion.id;
-        params[`${criteriaVariableName}_aggregation`] = criterion.aggregation;
+        params[`${criteriaVariableName}_aggregation_type`] = criterion.aggregation.type;
+        params[`${criteriaVariableName}_aggregation_value`] = criterion.aggregation.value;
+        params[`${criteriaVariableName}_aggregation_value_field`] = criterion.aggregation.valueField;
         params[`${criteriaVariableName}_threshold`] = criterion.threshold;
+        params[`${criteriaVariableName}_targetEntityIdField`] = criterion.targetEntityIdField;
 
         const qualifyingEventKeys = Object.keys(criterion.qualifyingEvent);
         for (let j = 0; j < qualifyingEventKeys.length; j++) {
@@ -178,6 +163,23 @@ function createNeo4jFriendlyParams(goal, criteria) {
     }
 
     return params;
+
+}
+
+async function getCriteriaMatchingEvent(event) {
+
+    const receivedEventProps = Object.keys(event).map(k => `${k}=${event[k]}`);
+
+    let query = `
+        MATCH
+            (c:Criteria)-[:REQUIRES_EVENT_ATTRIBUTE]->(e:EventAttribute)
+        WHERE
+            ALL(candidateAttribute IN [(c)-[:REQUIRES_EVENT_ATTRIBUTE]->(candidateAttributes:EventAttribute) | candidateAttributes] WHERE candidateAttribute.expression IN $receivedEventProps)
+        RETURN
+            c
+    `;
+
+    return runNeo4jCommand(`get criteria for event`, query, { receivedEventProps })
 
 }
 
@@ -208,17 +210,12 @@ async function runNeo4jCommand(description, command, params = {}) {
 module.exports = {
     initDbConnection,
     ping,
-    getSpecificCriteria,
-    getAllCriteriaForGoal,
-    getAllGoals,
     getSpecificGoal,
-    getSpecificGoals,
     getSpecificEntityProgress,
-    getSpecificEntitiesProgress,
     updateEntityProgress,
-    updateMultipleEntityProgress,
     persistGoalAndCriteria,
     generateNeo4jInsertGoalTemplate,
     createNeo4jFriendlyParams,
+    getCriteriaMatchingEvent,
     closeAllDbConnections
 };

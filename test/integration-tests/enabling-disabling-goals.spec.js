@@ -31,10 +31,10 @@ describe('Enabling and Disabling Goals', function () {
         let createdGoal = await goalTestHelper.addGoal({
             name: "Mobile Power User",
             description: "Log in at least 3 times on a mobile device",
-            targetEntityIdField: "userId",
             points: 10,
             criteria: [
                 {
+                    targetEntityIdField: "userId",
                     qualifyingEvent: {
                         action: "log-in",
                         platform: "mobile"

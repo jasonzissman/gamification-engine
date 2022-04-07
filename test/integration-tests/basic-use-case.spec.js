@@ -31,10 +31,10 @@ describe('Basic Use Cases', function () {
         let createdGoal = await goalTestHelper.addGoal({
             name: "Mobile Power User",
             description: "Log in at least 3 times on a mobile device",
-            targetEntityIdField: "userId",
             points: 10,
             criteria: [
                 {
+                    targetEntityIdField: "userId",
                     qualifyingEvent: {
                         action: "log-in",
                         platform: "mobile"
@@ -128,9 +128,9 @@ describe('Basic Use Cases', function () {
         let goal1 = await goalTestHelper.addGoal({
             name: "Mobile Power User",
             description: "Log in at least 3 times on a mobile device",
-            targetEntityIdField: "userId",
             criteria: [
                 {
+                    targetEntityIdField: "userId",
                     qualifyingEvent: {
                         action: "log-in",
                         platform: "mobile"
@@ -149,9 +149,9 @@ describe('Basic Use Cases', function () {
         let goal2 = await goalTestHelper.addGoal({
             name: "The Popular Group",
             description: "Have members of your group log into at least 3 times",
-            targetEntityIdField: "groupId",
             criteria: [
                 {
+                    targetEntityIdField: "groupId",
                     qualifyingEvent: {
                         action: "log-in",
                     },
@@ -258,9 +258,9 @@ describe('Basic Use Cases', function () {
         let goal1 = await goalTestHelper.addGoal({
             name: "Mobile Power User",
             description: "Log in at least 3 times on a mobile device",
-            targetEntityIdField: "userId",
             criteria: [
                 {
+                    targetEntityIdField: "userId",
                     qualifyingEvent: {
                         action: "log-in",
                         platform: "mobile"
@@ -279,9 +279,9 @@ describe('Basic Use Cases', function () {
         let goal2 = await goalTestHelper.addGoal({
             name: "The Popular Group",
             description: "Have members of your group log into at least 3 times",
-            targetEntityIdField: "groupId",
             criteria: [
                 {
+                    targetEntityIdField: "groupId",
                     qualifyingEvent: {
                         action: "log-in",
                     },
@@ -304,16 +304,14 @@ describe('Basic Use Cases', function () {
                 id: goal1Id,
                 description: "Log in at least 3 times on a mobile device",
                 name: 'Mobile Power User',
-                state: "enabled",
-                targetEntityIdField: 'userId'
+                state: "enabled"
             },
             {
                 criteriaIds: goal2CriteriaIds,
                 id: goal2Id,
                 description: "Have members of your group log into at least 3 times",
                 name: 'The Popular Group',
-                state: "enabled",
-                targetEntityIdField: 'groupId'
+                state: "enabled"
             }
         ]);
 
@@ -324,9 +322,9 @@ describe('Basic Use Cases', function () {
         let createdGoal = await goalTestHelper.addGoal({
             name: "Frequent Flyer",
             description: "Spend at least 5 minutes in our app",
-            targetEntityIdField: "userId",
             criteria: [
                 {
+                    targetEntityIdField: "userId",
                     qualifyingEvent: {
                         action: "session-ended"
                     },
@@ -401,9 +399,9 @@ describe('Basic Use Cases', function () {
         let createdGoal = await goalTestHelper.addGoal({
             name: "Social Butterfly",
             description: "Talk with your friends",
-            targetEntityIdField: "userId",
             criteria: [
                 {
+                    targetEntityIdField: "userId",
                     qualifyingEvent: {
                         action: "send-message"
                     },
@@ -480,9 +478,9 @@ describe('Basic Use Cases', function () {
         let createdGoal = await goalTestHelper.addGoal({
             name: "Power User",
             description: "Log in 2 times AND spend at least 5 minutes in the app",
-            targetEntityIdField: "userId",
             criteria: [
                 {
+                    targetEntityIdField: "userId",
                     qualifyingEvent: {
                         action: "log-in",
                     },
@@ -492,6 +490,7 @@ describe('Basic Use Cases', function () {
                     threshold: 2
                 },
                 {
+                    targetEntityIdField: "userId",
                     qualifyingEvent: {
                         action: "session-ended"
                     },
@@ -577,10 +576,10 @@ describe('Basic Use Cases', function () {
         await goalTestHelper.addGoal({
             name: "Mobile Power User",
             description: "Log in at least 1 time on a mobile device",
-            targetEntityIdField: "userId",
             points: 10,
             criteria: [
                 {
+                    targetEntityIdField: "userId",
                     qualifyingEvent: {
                         action: "log-in",
                         platform: "mobile"

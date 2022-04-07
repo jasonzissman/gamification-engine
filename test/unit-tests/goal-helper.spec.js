@@ -9,56 +9,13 @@ describe('Goal Helper', () => {
             let newGoal = undefined;
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name and non-empty criteria.");
         });
 
         it('should fail if goal empty', () => {
             let newGoal = {};
             let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
-        });
-
-        it('should fail if no targetEntityIdField', () => {
-            let newGoal = {
-                name: "Mobile Power User",
-                criteria: [
-                    {
-                        qualifyingEvent: {
-                            action: "log-in",
-                            platform: "mobile"
-                        },
-                        aggregation: {
-                            type: "count",
-                        },
-                        threshold: 5
-                    }
-                ]
-            }
-            let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
-        });
-
-        it('should fail if empty targetEntityIdField', () => {
-            let newGoal = {
-                name: "Mobile Power User",
-                targetEntityIdField: "",
-                criteria: [
-                    {
-                        qualifyingEvent: {
-                            action: "log-in",
-                            platform: "mobile"
-                        },
-                        aggregation: {
-                            type: "count",
-                        },
-                        threshold: 5
-                    }
-                ]
-            }
-            let goalValidation = goalHelper.validateGoal(newGoal);
-            assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name and non-empty criteria.");
         });
 
         it('should fail if no name', () => {
@@ -79,7 +36,7 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name and non-empty criteria.");
         });
 
         it('should fail if empty name', () => {
@@ -101,7 +58,7 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name and non-empty criteria.");
         });
 
         it('should fail if no criteria', () => {
@@ -112,7 +69,7 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name and non-empty criteria.");
         });
 
         it('should fail if empty criteria', () => {
@@ -123,7 +80,7 @@ describe('Goal Helper', () => {
             }
             let goalValidation = goalHelper.validateGoal(newGoal);
             assert.strictEqual(goalValidation.status, "failed validation");
-            assert.strictEqual(goalValidation.message, "Must provide valid goal name, targetEntityIdField, and non-empty criteria.");
+            assert.strictEqual(goalValidation.message, "Must provide valid goal name and non-empty criteria.");
         });
 
         it('should fail if no qualifyingEvent in 1 criteria', () => {
@@ -563,18 +520,17 @@ describe('Goal Helper', () => {
             assert.strictEqual(newGoal.id, undefined);
             assert.strictEqual(newGoal.name, "Mobile Power User");
             assert.strictEqual(newGoal.description, "Log in at least 3 times on a mobile device");
-            assert.strictEqual(newGoal.targetEntityIdField, "userId");
             assert.strictEqual(newGoal.criteria.length, 2);
             assert.strictEqual(newGoal.foo, "bar");
             assert.strictEqual(newGoal.delete, "me");
 
             const goalToPersist = goalHelper.createGoalEntityFromRequestGoal(newGoal);
 
-            assert.strictEqual(Object.keys(goalToPersist).length, 4);
+            assert.strictEqual(Object.keys(goalToPersist).length, 5);
             assert.strictEqual(goalToPersist.name, "Mobile Power User");
             assert.strictEqual(goalToPersist.state, "enabled");
+            assert.strictEqual(goalToPersist.points, 1);
             assert.strictEqual(goalToPersist.description, "Log in at least 3 times on a mobile device");
-            assert.strictEqual(goalToPersist.targetEntityIdField, "userId");
             assert.strictEqual(goalToPersist.foo, undefined);
             assert.strictEqual(goalToPersist.bar, undefined);
         });

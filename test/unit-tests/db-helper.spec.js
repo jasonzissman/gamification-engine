@@ -18,13 +18,13 @@ describe('generateNeo4jInsertGoalTemplate', () => {
             }
         ];
         const actual = dbHelper.generateNeo4jInsertGoalTemplate(criteria);
-        assertNeo4jCommandIsEqual(actual, `CREATE (goal:Goal {id: $goal_id, name: $goal_name, targetEntityIdField: $goal_targetEntityIdField, state: $goal_state, description: $goal_description, points: $goal_points})
-            CREATE (criteria_0:Criteria {id: $criteria_0_id, targetEntityIdField: $criteria_0_targetEntityIdField, aggregation: $criteria_0_aggregation, threshold: $criteria_0_threshold })
+        assertNeo4jCommandIsEqual(actual, `CREATE (goal:Goal {id: $goal_id, name: $goal_name, state: $goal_state, description: $goal_description, points: $goal_points})
+            CREATE (criteria_0:Criteria {id: $criteria_0_id, targetEntityIdField: $criteria_0_targetEntityIdField, aggregation_type: $criteria_0_aggregation_type, aggregation_value: $criteria_0_aggregation_value, aggregation_value_field: $criteria_0_aggregation_value_field, threshold: $criteria_0_threshold })
             CREATE (goal) -[:HAS_CRITERIA]-> (criteria_0)
             MERGE (criteria_0_attr_0:EventAttribute { expression: $criteria_0_attr_0_expression })
-            CREATE (criteria_0) -[:HAS_CRITERIA]-> (criteria_0_attr_0)
+            CREATE (criteria_0) -[:REQUIRES_EVENT_ATTRIBUTE]-> (criteria_0_attr_0)
             MERGE (criteria_0_attr_1:EventAttribute { expression: $criteria_0_attr_1_expression })
-            CREATE (criteria_0) -[:HAS_CRITERIA]-> (criteria_0_attr_1)`);
+            CREATE (criteria_0) -[:REQUIRES_EVENT_ATTRIBUTE]-> (criteria_0_attr_1)`);
     });
 });
 
@@ -37,12 +37,12 @@ describe('createNeo4jFriendlyParams', () => {
             name: "Mobile Power User",
             description: "Log in at least 5 times on a mobile device",
             points: 10,
-            state: "enabled",
-            targetEntityIdField: "userId",
+            state: "enabled"
         };
-
+        
         const criteria = [
             {
+                targetEntityIdField: "userId",
                 id: "111",
                 qualifyingEvent: {
                     action: "log-in",
@@ -61,12 +61,12 @@ describe('createNeo4jFriendlyParams', () => {
             "goal_name": "Mobile Power User",
             "goal_points": 10,
             "goal_state": "enabled",
-            "goal_targetEntityIdField": "userId",
             "criteria_0_id": "111",
             "criteria_0_threshold": 5,
-            "criteria_0_aggregation": {
-                "type": "count"
-            },
+            "criteria_0_targetEntityIdField": "userId",
+            "criteria_0_aggregation_type": "count",
+            "criteria_0_aggregation_value": undefined,
+            "criteria_0_aggregation_value_field": undefined,
             "criteria_0_attr_0_expression": "action=log-in",
             "criteria_0_attr_1_expression": "platform=mobile",
         });

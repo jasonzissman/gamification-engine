@@ -12,9 +12,9 @@ First we invoke an HTTP POST to create the badge. Use the `/goals` API as follow
   "name": "Mobile Power User",
   "description": "Log in at least 5 times on a mobile device",
   "points": 10,
-  "targetEntityIdField": "userId",
   "criteria": [
     {
+      "targetEntityIdField": "userId",
       "qualifyingEvent": {
         "action": "log-in",
         "platform": "mobile"
@@ -45,7 +45,7 @@ Next, as users log into our application, we invoke an HTTP POST against the jz-g
 }
 ```
 
-To track progress towards a goal, the events that we send must include enough information to match the `criteria.[].qualifyingEvent` and `targetEntityIdField` fields that were provided when creating your goal. In our case, our example event includes `action=log-in`, `platform=mobile`, and `userId`, as our "Mobile Power User" goal requires. 
+To track progress towards a goal, the events that we send must include enough information to match the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields that were provided when creating your goal. In our case, our example event includes `action=log-in`, `platform=mobile`, and `userId`, as our "Mobile Power User" goal requires. 
 
 We see that user john-doe-1234 has made some initial progress towards the goal. We invoke an HTTP GET against the `/entities/<entityId>` API to see how far he has gotten:
 

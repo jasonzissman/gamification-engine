@@ -121,266 +121,271 @@ describe("event processing", () => {
             assert.strictEqual(cleanEvent.stringField, "123");
             assert.strictEqual(cleanEvent.numericField, 123);
         });
-        
+
     });
 
-    describe("computeProgressUpdatesToMake", () => {
+    describe("computeIncrementValue", () => {
 
-        it("should return empty array if undefined criteria", () => {
-            const event = {};
-            const criteria = undefined;
-            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
-            assert.deepStrictEqual(retVal, []);
-        });
-
-        it("should return empty array if empty criteria", () => {
-            const event = {};
-            const criteria = [];
-            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
-            assert.deepStrictEqual(retVal, []);
-        });
-
-        it("should return one update if everything valid", () => {
+        it("should return a value of 1 for count", () => {
             const event = {
-                userId: "john-doe-123",
-                var1: "aaa"
+                foo: "bar"
             };
-            const criteria = [{
-                goalId: "goal-1234",
-                id: "criterion-9999",
+            const criterion = {
+                id: "123",
                 targetEntityIdField: "userId",
-                aggregation: {
-                    type: "count"
-                },
-                threshold: 5
-            }];
-            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
-            assert.deepStrictEqual(retVal, [{
-                goalId: "goal-1234",
-                entityId: "john-doe-123",
-                criterionId: "criterion-9999",
-                aggregationValueToAdd: 1,
-                threshold: 5
-            }]);
-        });
-        it("should not return an update if criteria's entityID is not on event", () => {
-            const event = {
-                userId: "john-doe-123",
-                var1: "aaa"
-            };
-            const criteria = [{
-                goalId: "goal-1234",
-                id: "criterion-9999",
-                targetEntityIdField: "someUnknownField",
-                aggregation: {
-                    type: "count"
-                },
-                threshold: 5
-            }];
-            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
-            assert.deepStrictEqual(retVal, []);
-        });
-        it("should not return an update if criteria's entityID is empty on event", () => {
-            const event = {
-                userId: "",
-                var1: "aaa"
-            };
-            const criteria = [{
-                goalId: "goal-1234",
-                id: "criterion-9999",
-                targetEntityIdField: "userId",
-                aggregation: {
-                    type: "count"
-                },
-                threshold: 5
-            }];
-            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
-            assert.deepStrictEqual(retVal, []);
-        });
-
-        it("should return two updates if two criteria apply", () => {
-            const event = {
-                userId: "john-doe-123",
-                var1: "aaa"
-            };
-            const criteria = [{
-                goalId: "goal-1234",
-                id: "criterion-9999",
-                targetEntityIdField: "userId",
-                aggregation: {
-                    type: "count"
-                },
-                threshold: 5
-            }, {
-                goalId: "goal-5678",
-                id: "criterion-0000",
-                targetEntityIdField: "userId",
-                aggregation: {
-                    type: "count"
-                },
-                threshold: 5
-            }];
-            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
-            assert.deepStrictEqual(retVal, [{
-                goalId: "goal-1234",
-                entityId: "john-doe-123",
-                criterionId: "criterion-9999",
-                aggregationValueToAdd: 1,
-                threshold: 5
-            }, {
-                goalId: "goal-5678",
-                entityId: "john-doe-123",
-                criterionId: "criterion-0000",
-                aggregationValueToAdd: 1,
-                threshold: 5
-            }]);
-        });
-
-        it("should return one update if only one criteria matches", () => {
-            const event = {
-                userId: "john-doe-123",
-                var1: "aaa"
-            };
-            const criteria = [{
-                goalId: "goal-1234",
-                id: "criterion-9999",
-                targetEntityIdField: "userId",
+                threshold: 5,
                 aggregation: {
                     type: "count",
-                },
-                threshold: 5
-            }, {
-                goalId: "goal-5678",
-                id: "criterion-0000",
-                targetEntityIdField: "someUnknownField",
-                aggregation: {
-                    type: "count",
-                },
-                threshold: 5
-            }];
-            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
-            assert.deepStrictEqual(retVal, [{
-                goalId: "goal-1234",
-                entityId: "john-doe-123",
-                criterionId: "criterion-9999",
-                aggregationValueToAdd: 1,
-                threshold: 5
-            }]);
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 1);
         });
 
-        it("should return two updates if two criteria apply on different entity IDs", () => {
+        it("should return a value of 1 for count even if another value erroneously provided", () => {
             const event = {
-                userId: "john-doe-123",
-                groupId: "the-group-456",
-                var1: "aaa"
+                foo: "bar"
             };
-            const criteria = [{
-                goalId: "goal-1234",
-                id: "criterion-9999",
-                targetEntityIdField: "groupId",
-                aggregation: {
-                    type: "count"
-                },
-                threshold: 5
-            }, {
-                goalId: "goal-5678",
-                id: "criterion-0000",
+            const criterion = {
+                id: "123",
                 targetEntityIdField: "userId",
+                threshold: 5,
                 aggregation: {
                     type: "count",
-                },
-                threshold: 5
-            }];
-            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
-            assert.deepStrictEqual(retVal, [{
-                goalId: "goal-1234",
-                entityId: "the-group-456",
-                criterionId: "criterion-9999",
-                aggregationValueToAdd: 1,
-                threshold: 5
-            }, {
-                goalId: "goal-5678",
-                entityId: "john-doe-123",
-                criterionId: "criterion-0000",
-                aggregationValueToAdd: 1,
-                threshold: 5
-            }]);
+                    value: 4
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 1);
         });
 
-        it("should return update with appropriate agg value for sum agg", () => {
+        it("should default to a value of 1 for sum", () => {
             const event = {
-                userId: "john-doe-123",
-                var1: "aaa"
+                foo: "bar"
             };
-            const criteria = [{
-                goalId: "goal-1234",
-                id: "criterion-9999",
+            const criterion = {
+                id: "123",
                 targetEntityIdField: "userId",
+                threshold: 5,
+                aggregation: {
+                    type: "sum",
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 1);
+        });
+
+        it("should return a value of 1 for sum if a non-number 'value' is provided", () => {
+            const event = {
+                foo: "bar"
+            };
+            const criterion = {
+                id: "123",
+                targetEntityIdField: "userId",
+                threshold: 5,
+                aggregation: {
+                    type: "sum",
+                    value: "this-is-not-valid"
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 1);
+        });
+
+        it("should return a value of 1 for sum if a null 'value' is provided", () => {
+            const event = {
+                foo: "bar"
+            };
+            const criterion = {
+                id: "123",
+                targetEntityIdField: "userId",
+                threshold: 5,
+                aggregation: {
+                    type: "sum",
+                    value: null
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 1);
+        });
+
+        it("should return a value of 1 for sum if a empty string 'value' is provided", () => {
+            const event = {
+                foo: "bar"
+            };
+            const criterion = {
+                id: "123",
+                targetEntityIdField: "userId",
+                threshold: 5,
+                aggregation: {
+                    type: "sum",
+                    value: ''
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 1);
+        });
+
+        it("should return the value specified for sum", () => {
+            const event = {
+                foo: "bar"
+            };
+            const criterion = {
+                id: "123",
+                targetEntityIdField: "userId",
+                threshold: 5,
                 aggregation: {
                     type: "sum",
                     value: 3
-                },
-                threshold: 5
-            }];
-            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
-            assert.deepStrictEqual(retVal, [{
-                goalId: "goal-1234",
-                entityId: "john-doe-123",
-                criterionId: "criterion-9999",
-                aggregationValueToAdd: 3,
-                threshold: 5
-            }]);
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 3);
         });
 
-        it("should return update with appropriate agg value for sum agg", () => {
+        it("should return the value from the field specified for sum", () => {
             const event = {
-                userId: "john-doe-123",
-                var1: "aaa",
-                timeInMs: 3034
+                foo: 2
             };
-            const criteria = [{
-                goalId: "goal-1234",
-                id: "criterion-9999",
+            const criterion = {
+                id: "123",
                 targetEntityIdField: "userId",
+                threshold: 5,
                 aggregation: {
                     type: "sum",
-                    valueField: "timeInMs"
-                },
-                threshold: 5
-            }];
-            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
-            assert.deepStrictEqual(retVal, [{
-                goalId: "goal-1234",
-                entityId: "john-doe-123",
-                criterionId: "criterion-9999",
-                aggregationValueToAdd: 3034,
-                threshold: 5
-            }]);
+                    valueField: "foo"
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 2);
         });
 
-        it("should return update with agg of '1' for sum agg if agg field not found", () => {
+        it("should return the value from the field specified for sum even if fieldName has a space", () => {
             const event = {
-                userId: "john-doe-123",
-                var1: "aaa"
+                ["foo bar"]: 2
             };
-            const criteria = [{
-                goalId: "goal-1234",
-                id: "criterion-9999",
+            const criterion = {
+                id: "123",
                 targetEntityIdField: "userId",
+                threshold: 5,
                 aggregation: {
                     type: "sum",
-                    valueField: "timeInMs" // not found on event!
-                },
-                threshold: 5
-            }];
-            const retVal = eventProcessor.computeProgressUpdatesToMake(event, criteria);
-            assert.deepStrictEqual(retVal, [{
-                goalId: "goal-1234",
-                entityId: "john-doe-123",
-                criterionId: "criterion-9999",
-                aggregationValueToAdd: 1,
-                threshold: 5
-            }]);
+                    valueField: "foo bar"
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 2);
         });
-    });
+
+        it("should return the value from the field specified for sum even if fieldName has a hyphen", () => {
+            const event = {
+                ["foo-bar"]: 2
+            };
+            const criterion = {
+                id: "123",
+                targetEntityIdField: "userId",
+                threshold: 5,
+                aggregation: {
+                    type: "sum",
+                    valueField: "foo-bar"
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 2);
+        });
+
+        it("should default to 1 if the field specified for sum is missing", () => {
+            const event = {
+                foo: 2
+            };
+            const criterion = {
+                id: "123",
+                targetEntityIdField: "userId",
+                threshold: 5,
+                aggregation: {
+                    type: "sum",
+                    valueField: "this_does_not_exist"
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 1);
+        });
+
+        it("should default to 1 if the field specified for sum is not a number", () => {
+            const event = {
+                foo: "this-is-not-a-number"
+            };
+            const criterion = {
+                id: "123",
+                targetEntityIdField: "userId",
+                threshold: 5,
+                aggregation: {
+                    type: "sum",
+                    valueField: "foo"
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 1);
+        });
+
+        it("should default to 1 if the field specified for sum is null", () => {
+            const event = {
+                foo: 56
+            };
+            const criterion = {
+                id: "123",
+                targetEntityIdField: "userId",
+                threshold: 5,
+                aggregation: {
+                    type: "sum",
+                    valueField: null
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 1);
+        });
+        
+
+        it("should default to 1 if the value specified for sum is null", () => {
+            const event = {
+                foo: null
+            };
+            const criterion = {
+                id: "123",
+                targetEntityIdField: "userId",
+                threshold: 5,
+                aggregation: {
+                    type: "sum",
+                    valueField: "foo"
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 1);
+        });
+        
+        it("should default to 1 if the value specified for sum is empty string", () => {
+            const event = {
+                foo: 7
+            };
+            const criterion = {
+                id: "123",
+                targetEntityIdField: "userId",
+                threshold: 5,
+                aggregation: {
+                    type: "sum",
+                    valueField: ''
+                }
+            };
+            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            assert.deepStrictEqual(retVal, 1);
+        });
+
+        // null test
+        // invalid var name on field (e.g. has spaces or hyphens or something?)
+        // malformed criteria test
+        // when value and valueField are provided
+        // etc.
+
+    })
 });
+

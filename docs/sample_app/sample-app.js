@@ -24,10 +24,10 @@ async function addInitialGoalsToGamificationEngine() {
     issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goals`, {
         name: "Power User",
         description: "Log in at least 3 times",
-        targetEntityIdField: "userId",
         points: 10,
         criteria: [
             {
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     action: "log-in"
                 },
@@ -43,10 +43,10 @@ async function addInitialGoalsToGamificationEngine() {
     issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goals`, {
         name: "Newcomer Tutorial",
         description: "Log in, view all pages, and log out",
-        targetEntityIdField: "userId",
         points: 50,
         criteria: [
             {
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     action: "log-in"
                 },
@@ -55,6 +55,7 @@ async function addInitialGoalsToGamificationEngine() {
                 },
                 threshold: 1
             }, {
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     action: "view-page",
                     page: "page-1"
@@ -64,6 +65,7 @@ async function addInitialGoalsToGamificationEngine() {
                 },
                 threshold: 1
             }, {
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     action: "view-page",
                     page: "page-2"
@@ -73,6 +75,7 @@ async function addInitialGoalsToGamificationEngine() {
                 },
                 threshold: 1
             }, {
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     action: "log-out"
                 },
@@ -88,10 +91,10 @@ async function addInitialGoalsToGamificationEngine() {
     issueHttpPost(`http://localhost:${GAMIFICATION_ENGINE_PORT}/goals`, {
         name: "Been Doing This Forever",
         description: "Perform an activity for 100 seconds",
-        targetEntityIdField: "userId",
         points: 100,
         criteria: [
             {
+                targetEntityIdField: "userId",
                 qualifyingEvent: {
                     action: "perform-activity"
                 },

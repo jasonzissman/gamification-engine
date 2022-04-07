@@ -1,5 +1,4 @@
 const { v4: uuidv4 } = require('uuid');
-const eventCriteriaHelper = require('../event/event-criteria-matcher');
 const dbHelper = require('../database/db-helper');
 const eventFieldsHelper = require('../event/event-fields-helper');
 
@@ -52,8 +51,8 @@ function validateGoal(newGoal) {
         status: "failed validation",
     };
 
-    if (!newGoal || !newGoal.name || !newGoal.targetEntityIdField || !newGoal.criteria || !(newGoal.criteria.length > 0)) {
-        retVal.message = "Must provide valid goal name, targetEntityIdField, and non-empty criteria.";
+    if (!newGoal || !newGoal.name || !newGoal.criteria || !(newGoal.criteria.length > 0)) {
+        retVal.message = "Must provide valid goal name and non-empty criteria.";
     } else if (!areAllCriteriaValid(newGoal)) {
         retVal.message = "All criteria should have a valid aggregation, a valid threshold, and non-nested qualifying events with at least one name/value attribute.";
     } else if (!isGoalPointsValueValid(newGoal)) {
@@ -69,7 +68,6 @@ function createGoalEntityFromRequestGoal(newGoal) {
     let retVal = {
         id: uuidv4(),
         name: eventFieldsHelper.generateCleanField(newGoal.name),
-        targetEntityIdField: eventFieldsHelper.generateCleanField(newGoal.targetEntityIdField),
         state: "enabled"
     };
     if (newGoal.description) {
@@ -77,6 +75,8 @@ function createGoalEntityFromRequestGoal(newGoal) {
     }
     if (newGoal.points) {
         retVal.points = Number(newGoal.points);
+    } else {
+        retVal.points = 1;
     }
     return retVal;
 }
@@ -87,11 +87,18 @@ function createCriteriaEntityFromRequestGoal(newGoal) {
     for (const criteria of newGoal.criteria) {
         const cleanCriteria = {
             id: uuidv4(),
-            targetEntityIdField: eventFieldsHelper.generateCleanField(newGoal.targetEntityIdField),
+            targetEntityIdField: eventFieldsHelper.generateCleanField(criteria.targetEntityIdField),
             qualifyingEvent: eventFieldsHelper.generateObjectWithCleanFields(criteria.qualifyingEvent),
             aggregation: eventFieldsHelper.generateObjectWithCleanFields(criteria.aggregation),
             threshold: Number(criteria.threshold)
         };
+
+        if (!cleanCriteria.aggregation.value) {
+            cleanCriteria.aggregation.value = 1;
+        }
+        if (!cleanCriteria.aggregation.valueField) {
+            cleanCriteria.aggregation.valueField = ''
+        }
         criteriaToPersist.push(cleanCriteria);
     }
 
@@ -100,8 +107,6 @@ function createCriteriaEntityFromRequestGoal(newGoal) {
 
 async function persistGoal(newGoal) {
     let retVal = {};
-
-    // TODO authorize request - put in middleware?
 
     const validationResult = validateGoal(newGoal);
     if (validationResult.status !== "ok") {
@@ -112,12 +117,6 @@ async function persistGoal(newGoal) {
 
         try {
             await dbHelper.persistGoalAndCriteria(goalEntity, criteriaEntities);
-            // criteriaEntities.forEach(criterion => { criterion.goalId = goalEntity.id });
-
-            // let insertedCriteriaIds = await dbHelper.persistCriteria(goalEntity.id, criteriaEntities);
-            // let resultingGoal = await dbHelper.updateGoalCriteria(goalEntity.id, insertedCriteriaIds);
-
-            // eventCriteriaHelper.addNewCriteriaToLookupMap(criteriaEntities);
             retVal = { status: "ok", goal: resultingGoal };
         } catch (err) {
             retVal = { status: "failed", message: "Failed to add goal to database." };
@@ -127,9 +126,6 @@ async function persistGoal(newGoal) {
     return retVal;
 }
 
-async function getAllGoals() {
-    return dbHelper.getAllGoals();
-}
 
 async function getSpecificGoal(goalId) {
     let goal;
@@ -141,23 +137,10 @@ async function getSpecificGoal(goalId) {
     return goal;
 }
 
-async function getAllCriteriaForGoal(goalId) {
-    let relevantCriteria = [];
-
-    if (goalId && goalId.length > 0) {
-        relevantCriteria = await dbHelper.getAllCriteriaForGoal(goalId);
-    }
-
-    return relevantCriteria;
-}
-
 module.exports = {
     persistGoal,
     validateGoal,
     createGoalEntityFromRequestGoal,
     createCriteriaEntityFromRequestGoal,
-    getAllGoals,
-    getSpecificGoal,
-    getAllCriteriaForGoal,
-    updateGoalState
+    getSpecificGoal
 };

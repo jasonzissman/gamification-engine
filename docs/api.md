@@ -20,9 +20,9 @@ Note that anything with a unique identifier can make progress towards a goal, no
   "name": "Mobile Power User",
   "description": "Log in at least 5 times on a mobile device", //optional
   "points" 10, //optional
-  "targetEntityIdField": "userId",
   "criteria": [
     {
+      "targetEntityIdField": "userId",
       "qualifyingEvent": {
         "action": "log-in"
       },
@@ -45,8 +45,8 @@ Note that anything with a unique identifier can make progress towards a goal, no
 * `name`: (required) a human readable name for the goal.
 * `description`: (optional) a human readable description for the goal.
 * `points`: (optional) a numeric value that will be awarded to a user after completing the goal.
-* `targetEntityIdField`: (required) the field on inbound events that identifies the entity who is making progress towards this goal.
 * `criteria`: (required) an array of 1 or more requirements to complete this goal. The goal is only completed for an entity once all of this criteria are fulfilled.
+* `criteria.[].targetEntityIdField`: (required) the field on inbound events that identifies the entity who is making progress towards this criteria.
 * `criteria.[].qualifyingEvent`: (required) a JSON object describing the *bare minimum key/value pairs that must be present on an inbound event* for it to qualify towards a goal criteria. 
 * `criteria.[].aggregation`: (required) a JSON object describing how to increment/count each received event towards goal completion progress.
 * `criteria.[].aggregation.type`: (required) These are two values supported today -`count` and `sum`. 
@@ -100,7 +100,7 @@ The only parameter in the POST payload is `state`, which must be equal to a valu
 
 The `/events` API is very generic and **has no required fields**. It accepts any JSON payload.
 
-For this endpoint to successfully track an entity's progress towards a goal, the event payload should include data points that match the `criteria.[].qualifyingEvent` and `targetEntityIdField` fields that are defined in corresponding goals. 
+For this endpoint to successfully track an entity's progress towards a goal, the event payload should include data points that match the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields that are defined in corresponding goals. 
 
 When a received event *contains at least all of those key/value pairs*, progress is tracked towards that goal for the corresponding entityId. 
 

@@ -6,6 +6,8 @@ const goalHelper = require('./goal-helper.js');
 // HTTP POST <host>/goals/
 router.post("/", async (request, response) => {
     // TODO validate payload not too big
+    // TODO authorize request - put in middleware?
+
     let outcome = await goalHelper.persistGoal(request.body);
 
     if (outcome.status === "ok") {
@@ -21,16 +23,11 @@ router.post("/", async (request, response) => {
     }
 });
 
-// Get goals
-// HTTP GET <host>/goals/
-router.get("/", async (request, response) => {
-    const allGoals = await goalHelper.getAllGoals();
-    response.status(200).send(allGoals);
-});
-
-// Get specific goal metadata
+// Get specific goal
 // HTTP GET <host>/goals/<goalID>/
 router.get("/:goalId", async (request, response) => {
+    // TODO authorize request - put in middleware?
+
     const goal = await goalHelper.getSpecificGoal(request.params.goalId);
     if (goal) {
         response.status(200).send(goal);
@@ -39,15 +36,5 @@ router.get("/:goalId", async (request, response) => {
     }
 });
 
-// Get criteria for specific goal
-// HTTP GET <host>/goals/<goalID>/criteria
-router.get("/:goalId/criteria", async (request, response) => {
-    const allCriteriaForGoal = await goalHelper.getAllCriteriaForGoal(request.params.goalId);
-    if (allCriteriaForGoal) {
-        response.status(200).send(allCriteriaForGoal);
-    } else {
-        response.status(404).send({ status: `Goal ${request.params.goalId} not found.` });
-    }
-});
 
 module.exports = router;
