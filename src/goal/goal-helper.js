@@ -132,6 +132,7 @@ async function getSpecificGoal(goalId) {
 
     if (goalId && goalId.length > 0) {
         goal = await dbHelper.getSpecificGoal(goalId);
+        
     }
 
     return goal;
