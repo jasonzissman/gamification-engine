@@ -117,7 +117,7 @@ async function persistGoal(newGoal) {
 
         try {
             const resultingGoal = await dbHelper.persistGoalAndCriteria(goalEntity, criteriaEntities);
-            retVal = { status: "ok", goal: resultingGoal };
+            retVal = { status: "ok", goalId: resultingGoal[0] };
         } catch (err) {
             retVal = { status: "failed", message: "Failed to add goal to database." };
         }

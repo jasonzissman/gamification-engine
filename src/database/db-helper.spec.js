@@ -24,7 +24,9 @@ describe('generateNeo4jInsertGoalTemplate', () => {
             MERGE (criteria_0_attr_0:EventAttribute { expression: $criteria_0_attr_0_expression })
             CREATE (criteria_0) -[:REQUIRES_EVENT_ATTRIBUTE]-> (criteria_0_attr_0)
             MERGE (criteria_0_attr_1:EventAttribute { expression: $criteria_0_attr_1_expression })
-            CREATE (criteria_0) -[:REQUIRES_EVENT_ATTRIBUTE]-> (criteria_0_attr_1)`);
+            CREATE (criteria_0) -[:REQUIRES_EVENT_ATTRIBUTE]-> (criteria_0_attr_1)
+            RETURN goal.id
+            `);
     });
 });
 

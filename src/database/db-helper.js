@@ -81,11 +81,7 @@ async function getSpecificGoal(goalId) {
 async function getSpecificEntityProgress(entityIdField, entityIdValue) {
     const entityId = `${entityIdField}=${entityIdValue}`;
     const query = `MATCH (e:Entity {id: $entityId}) -[p:HAS_MADE_PROGRESS]-> (c:Criteria) <-[:HAS_CRITERIA]- (g:Goal) RETURN e{${entityIdField}:e.${entityIdField},goals:g{id:g.id,name:g.name,criteria:c{.*,progress:p{.*}}}}`;
-    const resultsArray = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId });
-
-    // TODO - massage response into something useful
-    return resultsArray;
-
+    return await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId });
 }
 
 async function updateEntityProgress(entityIdField, entityIdValue, criterion, incrementValue) {
@@ -134,6 +130,8 @@ function generateNeo4jInsertGoalTemplate(criteria) {
             command += `MERGE (${eventAttrVariableName}:EventAttribute { expression: $${eventAttrVariableName}_expression })\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
         }
     }
+
+    command += `RETURN goal.id\n`;
 
     return command;
 }
