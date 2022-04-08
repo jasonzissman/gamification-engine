@@ -71,7 +71,7 @@ async function ping() {
 }
 
 async function getSpecificGoal(goalId) {
-    const query = `MATCH (g:Goal {id: $goalId}) -[:HAS_CRITERIA]-> (c:Criteria) -[:REQUIRES_EVENT_ATTRIBUTE]-> (ea:EventAttribute) RETURN g{.*,criteria:c{.*,qualifyingEvents:ea{.*}}}`;
+    const query = `MATCH (g:Goal {id: $goalId}) -[:HAS_CRITERIA]-> (c:Criteria) -[:REQUIRES_EVENT_ATTRIBUTE]-> (ea:EventAttribute) RETURN g{criteria:c{.*,qualifyingEvents:ea{.*}},.*}`;
     const resultsArray = await runNeo4jCommand(`Get goal ${goalId}.`, query, { goalId });
     if (resultsArray && resultsArray.length > 0) {
         return resultsArray[0];
@@ -79,7 +79,7 @@ async function getSpecificGoal(goalId) {
 }
 
 async function getSpecificEntityProgress(entityId) {
-    const query = `MATCH (e:Entity {id: $entityId}) -[p:HAS_MADE_PROGRES]-> (c:Criteria) <-[:HAS_CRITERIA]- (g:Goal) RETURN p,c,g`;
+    const query = `MATCH (e:Entity {id: $entityId}) -[p:HAS_MADE_PROGRES]-> (c:Criteria) <-[:HAS_CRITERIA]- (g:Goal) RETURN e{id:id,g:goal{.*,criteria:c{.*,progress:p{.*}}}}`;
     const resultsArray = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId });
 
     // TODO - massage response into something useful
@@ -166,7 +166,7 @@ function createNeo4jFriendlyParams(goal, criteria) {
 
 }
 
-async function getCriteriaMatchingEvent(event) {
+async function getCriteriaFulfilledByEvent(event) {
 
     const receivedEventProps = Object.keys(event).map(k => `${k}=${event[k]}`);
 
@@ -176,10 +176,23 @@ async function getCriteriaMatchingEvent(event) {
         WHERE
             ALL(candidateAttribute IN [(c)-[:REQUIRES_EVENT_ATTRIBUTE]->(candidateAttributes:EventAttribute) | candidateAttributes] WHERE candidateAttribute.expression IN $receivedEventProps)
         RETURN
-            c
+            distinct c{.*}
     `;
 
-    return runNeo4jCommand(`get criteria for event`, query, { receivedEventProps })
+    const criteria = await runNeo4jCommand(`get criteria matching event`, query, { receivedEventProps })
+
+    criteria.forEach((c) => {
+        c.aggregation = {
+            type: c.aggregation_type,
+            value: c.aggregation_value,
+            valueField: c.aggregation_value_field
+        }
+        delete c["aggregation_type"];
+        delete c["aggregation_value"];
+        delete c["aggregation_value_field"];
+    });
+
+    return criteria;
 
 }
 
@@ -216,6 +229,8 @@ module.exports = {
     persistGoalAndCriteria,
     generateNeo4jInsertGoalTemplate,
     createNeo4jFriendlyParams,
-    getCriteriaMatchingEvent,
-    closeAllDbConnections
+    getCriteriaFulfilledByEvent,
+    closeAllDbConnections,
+    KNOWN_CRITERIA_KEY_VALUE_PAIRS,
+    KNOWN_SYSTEM_FIELDS
 };

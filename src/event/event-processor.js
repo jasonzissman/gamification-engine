@@ -12,7 +12,7 @@ async function processEvent(receivedEvent) {
 
         const cleanEvent = createCleanVersionOfEvent(receivedEvent, dbHelper.KNOWN_CRITERIA_KEY_VALUE_PAIRS, dbHelper.KNOWN_SYSTEM_FIELDS);
         if (cleanEvent && Object.keys(cleanEvent).length > 0) {
-            const criteria = dbHelper.getCriteriaMatchingEvent(cleanEvent);
+            const criteria = await dbHelper.getCriteriaFulfilledByEvent(cleanEvent);
 
             for (let criterion of criteria) {
 

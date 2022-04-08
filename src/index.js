@@ -19,7 +19,7 @@ async function start() {
 
     app.use("/health", require('./health/health-routes.js'));
     app.use("/goals", require('./goal/goal-routes.js'));
-    // app.use("/events", require('./event/event-routes.js'));
+    app.use("/events", require('./event/event-routes.js'));
     // app.use("/entities", require('./entity/entity-routes.js'));
 
     const port = process.env.PORT || 3000;
