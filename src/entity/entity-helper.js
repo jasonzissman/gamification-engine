@@ -1,14 +1,14 @@
 const logger = require('../utility/logger.js');
 const dbHelper = require('../database/db-helper');
 
-async function getEntityProgress(entityId) {
+async function getEntityProgress(entityIdField, entityIdValue) {
     let entityProgress;
 
-    if (entityId && entityId.length > 0) {
-        entityProgress = await dbHelper.getSpecificEntityProgress(entityId)
+    if (entityIdField && entityIdField.length > 0 && entityIdValue && entityIdValue.length > 0) {
+        entityProgress = await dbHelper.getSpecificEntityProgress(entityIdField, entityIdValue)
     }
     if (!entityProgress) {
-        logger.info(`Unable to find entity '${entityId}' in DB.`);
+        logger.info(`Unable to find entity '${entityIdField}=${entityIdValue}' in DB.`);
     }
 
     return entityProgress;

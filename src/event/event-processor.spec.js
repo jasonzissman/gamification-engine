@@ -1,5 +1,5 @@
 const assert = require('assert');
-const eventProcessor = require('../../src/event/event-processor');
+const eventProcessor = require('./event-processor');
 
 describe("event processing", () => {
 

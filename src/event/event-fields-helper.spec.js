@@ -1,5 +1,5 @@
 const assert = require('assert');
-const eventFieldsHelper = require('../../src/event/event-fields-helper');
+const eventFieldsHelper = require('./event-fields-helper');
 
 describe("event processing", () => {
     describe("generateCleanField", () => {

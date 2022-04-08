@@ -1,5 +1,5 @@
 const assert = require('assert');
-const dbHelper = require('../../src/database/db-helper');
+const dbHelper = require('./db-helper');
 
 describe('generateNeo4jInsertGoalTemplate', () => {
 

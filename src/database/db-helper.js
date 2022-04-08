@@ -35,7 +35,7 @@ async function updateKnownFieldFilters() {
     while (fvpCounter === 0 || fieldValuePairBatch.length > 0) {
         let query = `MATCH (n:EventAttribute) RETURN n.expression SKIP ${fvpCounter * batchSize} LIMIT ${batchSize}`;
         fieldValuePairBatch = await runNeo4jCommand(`Fetch known criteria key value pairs (iteration ${fvpCounter}).`, query);
-        fieldValuePairBatch.map(fvp => { if (fvp) { KNOWN_CRITERIA_KEY_VALUE_PAIRS[fvp] = true }} );
+        fieldValuePairBatch.forEach(fvp => { if (fvp) { KNOWN_CRITERIA_KEY_VALUE_PAIRS[fvp] = true }} );
         fvpCounter++;
     }
 
@@ -45,7 +45,7 @@ async function updateKnownFieldFilters() {
     while (targetEntityIdFieldsCounter === 0 || targetEntityIdFieldsBatch.length > 0) {
         let query = `MATCH (c:Criteria) RETURN distinct c.targetEntityIdField SKIP ${targetEntityIdFieldsCounter * batchSize} LIMIT ${batchSize}`;
         targetEntityIdFieldsBatch = await runNeo4jCommand(`Fetch targetEntityIdFields (iteration ${targetEntityIdFieldsCounter}).`, query);
-        targetEntityIdFieldsBatch.map(idField => { if (idField) { KNOWN_SYSTEM_FIELDS[idField] = true } });
+        targetEntityIdFieldsBatch.forEach(idField => { if (idField) { KNOWN_SYSTEM_FIELDS[idField] = true } });
         targetEntityIdFieldsCounter++;
     }
 
@@ -55,7 +55,7 @@ async function updateKnownFieldFilters() {
     while (aggValueFieldsCounter === 0 || aggValueFieldBatch.length > 0) {
         let query = `MATCH (c:Criteria) RETURN distinct c.aggregation_value_field SKIP ${aggValueFieldsCounter * batchSize} LIMIT ${batchSize}`;
         aggValueFieldBatch = await runNeo4jCommand(`Fetch aggValueFields (iteration ${aggValueFieldsCounter}).`, query);
-        aggValueFieldBatch.map(aggValueField => { if (aggValueField) { KNOWN_SYSTEM_FIELDS[aggValueField] = true } });
+        aggValueFieldBatch.forEach(aggValueField => { if (aggValueField) { KNOWN_SYSTEM_FIELDS[aggValueField] = true } });
         aggValueFieldsCounter++;
     }
 
@@ -78,8 +78,9 @@ async function getSpecificGoal(goalId) {
     }
 }
 
-async function getSpecificEntityProgress(entityId) {
-    const query = `MATCH (e:Entity {id: $entityId}) -[p:HAS_MADE_PROGRES]-> (c:Criteria) <-[:HAS_CRITERIA]- (g:Goal) RETURN e{id:id,g:goal{.*,criteria:c{.*,progress:p{.*}}}}`;
+async function getSpecificEntityProgress(entityIdField, entityIdValue) {
+    const entityId = `${entityIdField}=${entityIdValue}`;
+    const query = `MATCH (e:Entity {id: $entityId}) -[p:HAS_MADE_PROGRESS]-> (c:Criteria) <-[:HAS_CRITERIA]- (g:Goal) RETURN e{${entityIdField}:e.${entityIdField},goals:g{id:g.id,name:g.name,criteria:c{.*,progress:p{.*}}}}`;
     const resultsArray = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId });
 
     // TODO - massage response into something useful
@@ -87,20 +88,23 @@ async function getSpecificEntityProgress(entityId) {
 
 }
 
-async function updateEntityProgress(entityId, criterion, incrementValue) {
+async function updateEntityProgress(entityIdField, entityIdValue, criterion, incrementValue) {
 
     const criterionId = criterion.id;
+
+    const entityId = `${entityIdField}=${entityIdValue}`;
 
     const command = `
         MATCH (c:Criteria {id:$criterionId})
         MERGE (e:Entity {id: $entityId})
+        ON CREATE set e.\`${entityIdField}\`=$entityIdValue
         MERGE (e)-[r:HAS_MADE_PROGRESS]-> (c)
         ON CREATE set r.value = $incrementValue
         ON MATCH SET r.value = r.value+$incrementValue
         RETURN r
     `;
 
-    const params = { entityId, criterionId, incrementValue }
+    const params = { entityId, entityIdValue, criterionId, incrementValue }
 
     return runNeo4jCommand(`Update entity ${entityId} progress to criterion ${criterionId}.`, command, params);
 }
@@ -113,7 +117,7 @@ async function persistGoalAndCriteria(goal, criteria) {
 
     const params = createNeo4jFriendlyParams(goal, criteria);
 
-    runNeo4jCommand(`persist goal and criteria`, command, params);
+    return runNeo4jCommand(`persist goal and criteria`, command, params);
 }
 
 function generateNeo4jInsertGoalTemplate(criteria) {

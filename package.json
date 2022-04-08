@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src//index.js",
-    "unit-test": "mocha \"test/unit-tests/**/*spec.js\"",
+    "unit-test": "mocha \"src/**/*spec.js\"",
     "integration-test": "mocha \"test/integration-tests/**/*spec.js\""
   },
   "author": "Jason Zissman",
