@@ -94,6 +94,10 @@ async function updateEntityProgress(entityIdField, entityIdValue, criterion, inc
 
     const entityId = `${entityIdField}=${entityIdValue}`;
 
+    // TODO - almost! There is a bug here. This assumes that satisfying one criteria
+    // means all of a goal's criteria has been satisfied. In reality, a goal can have 
+    // multiple criteria.
+
     const command = `
         WITH datetime() as currentTime
         MATCH (c:Criteria {id:$criterionId}) <-[:HAS_CRITERIA]- (g:Goal)
