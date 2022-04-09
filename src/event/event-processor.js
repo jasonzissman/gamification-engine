@@ -19,10 +19,10 @@ async function processEvent(receivedEvent) {
                 const incrementValue = computeIncrementValue(criterion, cleanEvent);
                 const entityIdValue = cleanEvent[criterion.targetEntityIdField];
 
-                const criteriaProgress = await dbHelper.updateEntityProgress(criterion.targetEntityIdField, entityIdValue, criterion, incrementValue);
-
-                // TODO - here we can broadcast when an entity has finished all the criteria within a goal
-                // Inspect criteriaProgress
+                const hasCompleted = await dbHelper.updateEntityProgress(criterion.targetEntityIdField, entityIdValue, criterion, incrementValue);
+                if (hasCompleted && hasCompleted[0] === true) {
+                    // TODO - here we can broadcast that an entity has finished all the criteria within a goal
+                }
             }
 
         }

@@ -80,8 +80,12 @@ async function getSpecificGoal(goalId) {
 
 async function getSpecificEntityProgress(entityIdField, entityIdValue) {
     const entityId = `${entityIdField}=${entityIdValue}`;
-    const query = `MATCH (e:Entity {id: $entityId}) -[p:HAS_MADE_PROGRESS]-> (c:Criteria) <-[:HAS_CRITERIA]- (g:Goal) RETURN e{${entityIdField}:e.${entityIdField},goals:g{id:g.id,name:g.name,criteria:c{.*,progress:p{.*}}}}`;
-    return await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId });
+    const query = `MATCH (e:Entity {id: $entityId}) -[p:HAS_MADE_PROGRESS]-> (c:Criteria) <-[:HAS_CRITERIA]- (g:Goal) <-[hc:HAS_COMPLETED]- (e) RETURN e{goals:g{id:g.id,name:g.name,completionTimestamp:hc.completionTimestamp,criteria:collect(c{.*,progress:p{.*}})}}`;
+    const results = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId });
+    return {
+        [entityIdField]: entityIdValue,
+        goals: results.map(r => r.goals)
+    };
 }
 
 async function updateEntityProgress(entityIdField, entityIdValue, criterion, incrementValue) {
@@ -91,13 +95,20 @@ async function updateEntityProgress(entityIdField, entityIdValue, criterion, inc
     const entityId = `${entityIdField}=${entityIdValue}`;
 
     const command = `
-        MATCH (c:Criteria {id:$criterionId})
+        WITH datetime() as currentTime
+        MATCH (c:Criteria {id:$criterionId}) <-[:HAS_CRITERIA]- (g:Goal)
         MERGE (e:Entity {id: $entityId})
         ON CREATE set e.\`${entityIdField}\`=$entityIdValue
         MERGE (e)-[r:HAS_MADE_PROGRESS]-> (c)
         ON CREATE set r.value = $incrementValue
         ON MATCH SET r.value = r.value+$incrementValue
-        RETURN r
+        FOREACH (i in CASE WHEN r.value >= c.threshold THEN [1] ELSE [] END |
+            MERGE (e)-[hc:HAS_COMPLETED]-> (g)
+            ON CREATE SET hc.completionTimestamp = currentTime
+        )
+        WITH e,g, currentTime
+        MATCH (e) -[hc:HAS_COMPLETED]-> (g)
+        return hc.completionTimestamp = currentTime
     `;
 
     const params = { entityId, entityIdValue, criterionId, incrementValue }
@@ -113,7 +124,19 @@ async function persistGoalAndCriteria(goal, criteria) {
 
     const params = createNeo4jFriendlyParams(goal, criteria);
 
-    return runNeo4jCommand(`persist goal and criteria`, command, params);
+    const response = runNeo4jCommand(`persist goal and criteria`, command, params);
+
+    criteria.forEach(c => {
+        KNOWN_SYSTEM_FIELDS[c.targetEntityIdField] = true;
+        if (c.aggregation.valueField) {
+            KNOWN_SYSTEM_FIELDS[c.aggregation.valueField] = true;
+        }
+        Object.keys(c.qualifyingEvent).forEach(ea => {
+            KNOWN_CRITERIA_KEY_VALUE_PAIRS[`${ea}=${c.qualifyingEvent[ea]}`] = true;
+        })
+    });
+
+    return response;
 }
 
 function generateNeo4jInsertGoalTemplate(criteria) {

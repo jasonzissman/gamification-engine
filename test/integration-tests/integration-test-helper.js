@@ -1,11 +1,7 @@
-const { MongoMemoryServer } = require('mongodb-memory-server');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
 const assert = require('assert');
 const logger = require('../../src/utility/logger');
-
-const ALL_MONGO_INSTANCES = {};
-let APP_SERVER;
 
 const TEST_APP_SERVER_HOST = "localhost";
 const TEST_APP_SERVER_PORT = 10393;
@@ -33,18 +29,15 @@ async function addGoal(goal) {
     return issueHttpPost(pathAndParams, goal, headers);
 }
 
-async function shutDownAppServer() {
-    if (APP_SERVER) {
-        await APP_SERVER.shutDown();
-    }
-}
-
-async function startAppServer(mongoConnString) {
+async function startAppServer(dbHost, dbPort, dbUser, dbPassword) {
 
     process.env.PORT = TEST_APP_SERVER_PORT;
-    process.env.DB_CONN_STRING = mongoConnString;
+    process.env.NEO4J_HOST = dbHost;
+    process.env.NEO4J_PORT = dbPort;
+    process.env.NEO4J_USER = dbUser;
+    process.env.NEO4J_PW = dbPassword;
+
     APP_SERVER = require('../../src/index.js');
-    await APP_SERVER.start();
 
     let maxAttempts = 5;
     let attempt = 0;
@@ -72,51 +65,24 @@ async function startAppServer(mongoConnString) {
 function assertEqualEntityProgress(actualProgress, expectedProgress) {
     let modifiedActualProgress = JSON.parse(JSON.stringify(actualProgress));
     let modifiedExpectedProgress = JSON.parse(JSON.stringify(expectedProgress));
-    removeTimestampData(modifiedActualProgress);
-    removeTimestampData(modifiedExpectedProgress);
+    removeGeneratedIds(modifiedActualProgress);
+    removeGeneratedIds(modifiedExpectedProgress);
     assert.deepStrictEqual(modifiedActualProgress, modifiedExpectedProgress);
 };
 
-function removeTimestampData(progress) {
+function removeGeneratedIds(progress) {
     for (key in progress) {
-        if (key === 'completionDate') {
+        if (key === 'id') {
             delete progress[key];
         } else if (typeof progress[key] === 'object') {
-            removeTimestampData(progress[key]);
+            removeGeneratedIds(progress[key]);
         }
     }
 }
-async function startInMemoryMongo() {
-    const mongoId = uuidv4();
-    const mongoInstance = new MongoMemoryServer();
-    ALL_MONGO_INSTANCES[mongoId] = mongoInstance;
 
-    const uri = await mongoInstance.getUri();
-    const port = await mongoInstance.getPort();
-    const dbPath = await mongoInstance.getDbPath();
-    const dbName = await mongoInstance.getDbName();
-
-    return { mongoId, uri, port, dbPath, dbName };
-}
-
-async function stopInMemoryMongo(mongoId) {
-    return ALL_MONGO_INSTANCES[mongoId].stop();
-}
-
-async function stopAllInMemoryMongoInstances() {
-    const shutdownRequests = [];
-    for (mongoId in ALL_MONGO_INSTANCES) {
-        shutdownRequests.push(ALL_MONGO_INSTANCES[mongoId].stop());
-    }
-    return Promise.all(shutdownRequests);
-}
 
 module.exports = {
-    startInMemoryMongo,
-    stopInMemoryMongo,
-    stopAllInMemoryMongoInstances,
     startAppServer,
-    shutDownAppServer,
     issueHttpGet,
     issueHttpPost,
     addGoal,
