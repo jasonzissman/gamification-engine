@@ -94,10 +94,6 @@ async function updateEntityProgress(entityIdField, entityIdValue, criterion, inc
 
     const entityId = `${entityIdField}=${entityIdValue}`;
 
-    // TODO - almost! There is a bug here. This assumes that satisfying one criteria
-    // means all of a goal's criteria has been satisfied. In reality, a goal can have 
-    // multiple criteria.
-
     const command = `
         WITH datetime() as currentTime
         MATCH (c:Criteria {id:$criterionId}) <-[:HAS_CRITERIA]- (g:Goal)
@@ -107,12 +103,17 @@ async function updateEntityProgress(entityIdField, entityIdValue, criterion, inc
         ON CREATE set r.value = $incrementValue
         ON MATCH SET r.value = r.value+$incrementValue
         FOREACH (i in CASE WHEN r.value >= c.threshold THEN [1] ELSE [] END |
-            MERGE (e)-[hc:HAS_COMPLETED]-> (g)
+            MERGE (e)-[hc:HAS_COMPLETED]-> (c)
             ON CREATE SET hc.completionTimestamp = currentTime
         )
-        WITH e,g, currentTime
-        MATCH (e) -[hc:HAS_COMPLETED]-> (g)
-        return hc.completionTimestamp = currentTime
+        WITH e,g,currentTime
+        FOREACH (i in CASE WHEN all(c in [(g:Goal) -[:HAS_CRITERIA]-> (allGoalCriteria:Criteria) | allGoalCriteria] WHERE c IN [(e:Entity) -[:HAS_COMPLETED]-> (completedCriteria:Criteria) | completedCriteria]) THEN [1] ELSE [] END |
+            MERGE (e)-[hcg:HAS_COMPLETED]-> (g)
+            ON CREATE SET hcg.completionTimestamp = currentTime
+        )
+        WITH e,g,currentTime
+        MATCH (e) -[hcg:HAS_COMPLETED]-> (g)
+        return hcg.completionTimestamp = currentTime
     `;
 
     const params = { entityId, entityIdValue, criterionId, incrementValue }
