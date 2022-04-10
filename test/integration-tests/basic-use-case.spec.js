@@ -25,7 +25,7 @@ describe('Basic Use Cases', function () {
         await integrationTestHelper.startAppServer(NEO4J_PARAMS.dbHost, NEO4J_PARAMS.dbPort, NEO4J_PARAMS.dbUser, NEO4J_PARAMS.dbPassword);
     });
 
-    // TODO - shut down servers after test
+    // TODO - shut down servers after test. Requires us to end setIntervalId routine.
 
     it('should mark a goal as complete after enough relevant events received', async () => {
 
@@ -69,17 +69,12 @@ describe('Basic Use Cases', function () {
             userId: userId,
             goals: [{
                 id: goalId,
+                isComplete: false,
                 name: "Mobile Power User",
                 criteria: [{
-                    progress: {
-                        value: 1
-                    },
-                    targetEntityIdField: "userId",
+                    progress: 1,
                     id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
                     threshold: 3,
-                    aggregation_value_field: "",
-                    aggregation_type: "count",
-                    aggregation_value: 1
                 }]
             }]
         });
@@ -109,30 +104,14 @@ describe('Basic Use Cases', function () {
             goals: [{
                 id: goalId,
                 name: "Mobile Power User",
+                isComplete: true,
+                completionTimestamp: 'a-valid-timestamp',
                 criteria: [{
-                    progress: {
-                        value: 3
-                    },
-                    targetEntityIdField: "userId",
+                    progress: 3,
                     threshold: 3,
-                    aggregation_value_field: "",
-                    aggregation_type: "count",
-                    aggregation_value: 1
                 }]
             }]
         });
-
-        // TODO - Assert progress is marked as completed
-        // 
-        // let goalCompletionDate = Number(progress2.data.goals[goalId].completionDate);
-        // let criteriaCompletionDate = Number(progress2.data.goals[goalId].criteriaIds[criteriaIds[0]].completionDate);
-        // assert.strictEqual(isNaN(goalCompletionDate), false);
-        // assert.strictEqual(goalCompletionDate > 0, true);
-        // assert.strictEqual(goalCompletionDate < new Date().getTime(), true);
-        // assert.strictEqual(isNaN(criteriaCompletionDate), false);
-        // assert.strictEqual(criteriaCompletionDate > 0, true);
-        // assert.strictEqual(criteriaCompletionDate < new Date().getTime(), true);
-        // 
 
     }).timeout(15000);
 

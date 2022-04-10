@@ -80,11 +80,19 @@ async function getSpecificGoal(goalId) {
 
 async function getSpecificEntityProgress(entityIdField, entityIdValue) {
     const entityId = `${entityIdField}=${entityIdValue}`;
-    const query = `MATCH (e:Entity {id: $entityId}) -[p:HAS_MADE_PROGRESS]-> (c:Criteria) <-[:HAS_CRITERIA]- (g:Goal) <-[hc:HAS_COMPLETED]- (e) RETURN e{goals:g{id:g.id,name:g.name,completionTimestamp:hc.completionTimestamp,criteria:collect(c{.*,progress:p{.*}})}}`;
+    const query = `MATCH (e:Entity {id: $entityId}) -[p:HAS_MADE_PROGRESS]-> (c:Criteria) <-[:HAS_CRITERIA]- (g:Goal) OPTIONAL MATCH (g) <-[hc:HAS_COMPLETED]- (e) RETURN e{goal:g{id:g.id,name:g.name,completionTimestamp:toFloat(hc.completionTimestamp),criteria:collect(c{id:c.id,threshold:c.threshold,progress:p.value})}}`;
     const results = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId });
     return {
         [entityIdField]: entityIdValue,
-        goals: results.map(r => r.goals)
+        goals: results.map(r => { 
+            if (r.goal.completionTimestamp !== null && r.goal.completionTimestamp > 0) {
+                r.goal.isComplete = true;
+            } else {
+                r.goal.isComplete = false;
+                delete r.goal["completionTimestamp"];
+            }
+            return r.goal;
+        })
     };
 }
 
@@ -95,22 +103,32 @@ async function updateEntityProgress(entityIdField, entityIdValue, criterion, inc
     const entityId = `${entityIdField}=${entityIdValue}`;
 
     const command = `
-        WITH datetime() as currentTime
+        WITH datetime().epochMillis as currentTime
         MATCH (c:Criteria {id:$criterionId}) <-[:HAS_CRITERIA]- (g:Goal)
+
+        // Create the entity if does not exist yet
         MERGE (e:Entity {id: $entityId})
         ON CREATE set e.\`${entityIdField}\`=$entityIdValue
+
+        // Increment this entity's progress towards the criteria
         MERGE (e)-[r:HAS_MADE_PROGRESS]-> (c)
         ON CREATE set r.value = $incrementValue
         ON MATCH SET r.value = r.value+$incrementValue
+
+        // Mark this criteria as complete for the entity if threshold met 
         FOREACH (i in CASE WHEN r.value >= c.threshold THEN [1] ELSE [] END |
             MERGE (e)-[hc:HAS_COMPLETED]-> (c)
             ON CREATE SET hc.completionTimestamp = currentTime
         )
+        
+        // Mark this goal as complete if all criteria completed by this entity
         WITH e,g,currentTime
         FOREACH (i in CASE WHEN all(c in [(g:Goal) -[:HAS_CRITERIA]-> (allGoalCriteria:Criteria) | allGoalCriteria] WHERE c IN [(e:Entity) -[:HAS_COMPLETED]-> (completedCriteria:Criteria) | completedCriteria]) THEN [1] ELSE [] END |
             MERGE (e)-[hcg:HAS_COMPLETED]-> (g)
             ON CREATE SET hcg.completionTimestamp = currentTime
         )
+
+        // Return true if this event completed this goal for this entity
         WITH e,g,currentTime
         MATCH (e) -[hcg:HAS_COMPLETED]-> (g)
         return hcg.completionTimestamp = currentTime

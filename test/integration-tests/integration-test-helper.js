@@ -65,17 +65,21 @@ async function startAppServer(dbHost, dbPort, dbUser, dbPassword) {
 function assertEqualEntityProgress(actualProgress, expectedProgress) {
     let modifiedActualProgress = JSON.parse(JSON.stringify(actualProgress));
     let modifiedExpectedProgress = JSON.parse(JSON.stringify(expectedProgress));
-    removeGeneratedIds(modifiedActualProgress);
-    removeGeneratedIds(modifiedExpectedProgress);
+    normalizeGeneratedValues(modifiedActualProgress);
+    normalizeGeneratedValues(modifiedExpectedProgress);
     assert.deepStrictEqual(modifiedActualProgress, modifiedExpectedProgress);
 };
 
-function removeGeneratedIds(progress) {
+function normalizeGeneratedValues(progress) {
     for (key in progress) {
         if (key === 'id') {
             delete progress[key];
+        } else if (key === 'completionTimestamp') {
+            if (progress['completionTimestamp'] && progress['completionTimestamp'] !== null) {
+                progress['completionTimestamp'] = 'a-valid-timestamp'
+            }
         } else if (typeof progress[key] === 'object') {
-            removeGeneratedIds(progress[key]);
+            normalizeGeneratedValues(progress[key]);
         }
     }
 }
