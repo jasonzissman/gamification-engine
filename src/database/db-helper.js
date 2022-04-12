@@ -247,8 +247,6 @@ async function closeAllDbConnections() {
 async function runNeo4jCommand(description, command, params = {}) {
     let results = [];
 
-    log(`Executing neo4j command "${description}"`);
-
     let session;
 
     try {
