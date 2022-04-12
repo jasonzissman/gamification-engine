@@ -2,7 +2,7 @@ import axios  from 'axios';
 import assert from 'assert';
 import { log } from '../../src/utility/logger.js';
 
-import { startServer, stopServer } from '../../src/index.js';
+import { startServer, stopServer } from '../../src/server.js';
 
 const TEST_APP_SERVER_HOST = "localhost";
 const TEST_APP_SERVER_PORT = 10393;
