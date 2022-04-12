@@ -1,16 +1,15 @@
-const logger = require('../utility/logger.js');
-const dbHelper = require('../database/db-helper');
+import { getEntityProgress } from '../database/db-helper.js';
 
-async function getEntityProgress(entityIdField, entityIdValue) {
+async function getEntityProgressTowardsGoal(entityIdField, entityIdValue, goalId) {
     let entityProgress;
 
-    if (entityIdField && entityIdField.length > 0 && entityIdValue && entityIdValue.length > 0) {
-        entityProgress = await dbHelper.getSpecificEntityProgress(entityIdField, entityIdValue)
+    if (entityIdField?.length > 0 && entityIdValue?.length > 0 && goalId?.length > 0) {
+        entityProgress = await getEntityProgress(entityIdField, entityIdValue, goalId)
     }
-    
+
     return entityProgress;
 }
 
-module.exports = {
-    getEntityProgress
+export {
+    getEntityProgressTowardsGoal
 };

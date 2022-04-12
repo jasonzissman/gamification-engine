@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "An engine that enables gamification",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node src//index.js",
     "unit-test": "mocha \"src/**/*spec.js\"",
@@ -18,6 +19,6 @@
   "devDependencies": {
     "axios": "^0.26.1",
     "mocha": "^9.2.2",
-    "mongodb-memory-server": "^6.9.6"
+    "testcontainers": "^8.6.1"
   }
 }

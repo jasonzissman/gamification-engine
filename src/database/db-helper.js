@@ -1,27 +1,21 @@
-const neo4j = require('neo4j-driver');
-const logger = require('../utility/logger.js');
-
-const NEO4J_USER = process.env.NEO4J_USER;
-const NEO4J_PW = process.env.NEO4J_PW;
-const NEO4J_HOST = process.env.NEO4J_HOST;
-const NEO4J_CYPHER_PORT = process.env.NEO4J_CYPHER_PORT || 7687;
+import neo4j from "neo4j-driver";
+import { log } from "../utility/logger.js";
 
 let neo4jDriver;
 let KNOWN_CRITERIA_KEY_VALUE_PAIRS = {};
 let KNOWN_SYSTEM_FIELDS = {};
 
-async function initDbConnection() {
+async function initDbConnection(neo4jBoltUri, neo4jUser, neo4jPassword) {
 
-    logger.info(`Connecting to database.`);
-    let neo4jAuth = neo4j.auth.basic(NEO4J_USER, NEO4J_PW);
-    neo4jDriver = neo4j.driver(`bolt://${NEO4J_HOST}:${NEO4J_CYPHER_PORT}/`, neo4jAuth, { encrypted: false });
+    log(`Connecting to database.`);
+    let neo4jAuth = neo4j.auth.basic(neo4jUser, neo4jPassword);
+    neo4jDriver = neo4j.driver(neo4jBoltUri, neo4jAuth, { encrypted: false });
 
     await runNeo4jCommand(`Create :Goal(id) index.`, `CREATE INDEX ON :Goal(id)`);
     await runNeo4jCommand(`Create :Entity(id) index.`, `CREATE INDEX ON :Entity(id)`);
     await runNeo4jCommand(`Create :Criteria(id) index.`, `CREATE INDEX ON :Criteria(id)`);
     await runNeo4jCommand(`Create :EventAttribute(expression) index.`, `CREATE INDEX ON :EventAttribute(expression)`);
 
-    setInterval(updateKnownFieldFilters, 30000);
     updateKnownFieldFilters();
 }
 
@@ -35,7 +29,7 @@ async function updateKnownFieldFilters() {
     while (fvpCounter === 0 || fieldValuePairBatch.length > 0) {
         let query = `MATCH (n:EventAttribute) RETURN n.expression SKIP ${fvpCounter * batchSize} LIMIT ${batchSize}`;
         fieldValuePairBatch = await runNeo4jCommand(`Fetch known criteria key value pairs (iteration ${fvpCounter}).`, query);
-        fieldValuePairBatch.forEach(fvp => { if (fvp) { KNOWN_CRITERIA_KEY_VALUE_PAIRS[fvp] = true }} );
+        fieldValuePairBatch.forEach(fvp => { if (fvp) { KNOWN_CRITERIA_KEY_VALUE_PAIRS[fvp] = true } });
         fvpCounter++;
     }
 
@@ -78,20 +72,21 @@ async function getSpecificGoal(goalId) {
     }
 }
 
-async function getSpecificEntityProgress(entityIdField, entityIdValue) {
+async function getEntityProgress(entityIdField, entityIdValue, goalId) {
     const entityId = `${entityIdField}=${entityIdValue}`;
-    const query = `MATCH (e:Entity {id: $entityId}) -[p:HAS_MADE_PROGRESS]-> (c:Criteria) <-[:HAS_CRITERIA]- (g:Goal) OPTIONAL MATCH (g) <-[hc:HAS_COMPLETED]- (e) RETURN e{goal:g{id:g.id,name:g.name,completionTimestamp:toFloat(hc.completionTimestamp),criteria:collect(c{id:c.id,threshold:c.threshold,progress:p.value})}}`;
-    const results = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId });
+    const query = `MATCH (g:Goal {id: $goalId}) -[:HAS_CRITERIA]-> (c:Criteria) OPTIONAL MATCH (e:Entity {id: $entityId}) -[hmpc:HAS_MADE_PROGRESS]-> (c) OPTIONAL MATCH (g) <-[hcg:HAS_COMPLETED]- (e:Entity {id: $entityId}) RETURN g{id:g.id,name:g.name,completionTimestamp:toFloat(hcg.completionTimestamp),criteria:collect(c{id:c.id,description:c.description,threshold:c.threshold,progress:hmpc.value})}`;
+    const results = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId, goalId });
     return {
         [entityIdField]: entityIdValue,
-        goals: results.map(r => { 
-            if (r.goal.completionTimestamp !== null && r.goal.completionTimestamp > 0) {
-                r.goal.isComplete = true;
+        goals: results.map(r => {
+            if (r.completionTimestamp !== null && r.completionTimestamp > 0) {
+                r.isComplete = true;
             } else {
-                r.goal.isComplete = false;
-                delete r.goal["completionTimestamp"];
+                r.isComplete = false;
+                delete r["completionTimestamp"];
             }
-            return r.goal;
+            r.criteria?.filter(c => c?.progress === null).forEach(c => { c.progress = 0; });
+            return r;
         })
     };
 }
@@ -141,7 +136,7 @@ async function updateEntityProgress(entityIdField, entityIdValue, criterion, inc
 
 async function persistGoalAndCriteria(goal, criteria) {
 
-    logger.info(`Inserting goal ${goal.name} into DB with id ${goal.id}.`);
+    log(`Inserting goal ${goal.name} into DB with id ${goal.id}.`);
 
     const command = generateNeo4jInsertGoalTemplate(criteria);
 
@@ -169,7 +164,7 @@ function generateNeo4jInsertGoalTemplate(criteria) {
     for (let i = 0; i < criteria.length; i++) {
         const criteriaVariableName = `criteria_${i}`;
 
-        command += `CREATE (${criteriaVariableName}:Criteria {id: $${criteriaVariableName}_id, targetEntityIdField: $${criteriaVariableName}_targetEntityIdField, aggregation_type: $${criteriaVariableName}_aggregation_type, aggregation_value: $${criteriaVariableName}_aggregation_value, aggregation_value_field: $${criteriaVariableName}_aggregation_value_field, threshold: $${criteriaVariableName}_threshold })\nCREATE (goal) -[:HAS_CRITERIA]-> (${criteriaVariableName})\n`
+        command += `CREATE (${criteriaVariableName}:Criteria {id: $${criteriaVariableName}_id, description: $${criteriaVariableName}_description, targetEntityIdField: $${criteriaVariableName}_targetEntityIdField, aggregation_type: $${criteriaVariableName}_aggregation_type, aggregation_value: $${criteriaVariableName}_aggregation_value, aggregation_value_field: $${criteriaVariableName}_aggregation_value_field, threshold: $${criteriaVariableName}_threshold })\nCREATE (goal) -[:HAS_CRITERIA]-> (${criteriaVariableName})\n`
 
         for (let j = 0; j < Object.keys(criteria[i].qualifyingEvent).length; j++) {
             const eventAttrVariableName = `criteria_${i}_attr_${j}`;
@@ -195,6 +190,7 @@ function createNeo4jFriendlyParams(goal, criteria) {
         const criterion = criteria[i];
         const criteriaVariableName = `criteria_${i}`;
         params[`${criteriaVariableName}_id`] = criterion.id;
+        params[`${criteriaVariableName}_description`] = criterion.description;
         params[`${criteriaVariableName}_aggregation_type`] = criterion.aggregation.type;
         params[`${criteriaVariableName}_aggregation_value`] = criterion.aggregation.value;
         params[`${criteriaVariableName}_aggregation_value_field`] = criterion.aggregation.valueField;
@@ -251,16 +247,16 @@ async function closeAllDbConnections() {
 async function runNeo4jCommand(description, command, params = {}) {
     let results = [];
 
-    logger.info(`Executing neo4j command "${description}"`);
+    log(`Executing neo4j command "${description}"`);
 
     let session;
 
     try {
         session = await neo4jDriver.session();
-        let response = await session.readTransaction(tx => tx.run(command, params));
+        let response = await session.writeTransaction(tx => tx.run(command, params));
         results = response.records.map(r => r.get(0))
     } catch (err) {
-        logger.error(`Error during neo4j command "${description}": ${err.message} `);
+        log(`Error during neo4j command "${description}": ${err.message} `);
     } finally {
         session.close();
     }
@@ -268,11 +264,11 @@ async function runNeo4jCommand(description, command, params = {}) {
     return results;
 }
 
-module.exports = {
+export {
     initDbConnection,
     ping,
     getSpecificGoal,
-    getSpecificEntityProgress,
+    getEntityProgress,
     updateEntityProgress,
     persistGoalAndCriteria,
     generateNeo4jInsertGoalTemplate,

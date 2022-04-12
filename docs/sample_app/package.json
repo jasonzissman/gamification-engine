@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "test of jz-gamification-engine",
   "main": "sample-app.js",
+  "type": "module",
   "scripts": {
     "start": "npx run-func ./sample-app.js start"
   },

@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import { persistGoal, getGoal } from './goal-helper.js';
+
 const router = express.Router();
-const goalHelper = require('./goal-helper.js');
 
 // Create a new goal
 // HTTP POST <host>/goals/
@@ -8,7 +9,7 @@ router.post("/", async (request, response) => {
     // TODO validate payload not too big
     // TODO authorize request - put in middleware?
 
-    let outcome = await goalHelper.persistGoal(request.body);
+    let outcome = await persistGoal(request.body);
 
     if (outcome.status === "ok") {
         response.status(200).send(outcome);
@@ -28,7 +29,7 @@ router.post("/", async (request, response) => {
 router.get("/:goalId", async (request, response) => {
     // TODO authorize request - put in middleware?
 
-    const goal = await goalHelper.getSpecificGoal(request.params.goalId);
+    const goal = await getGoal(request.params.goalId);
     if (goal) {
         response.status(200).send(goal);
     } else {
@@ -37,4 +38,4 @@ router.get("/:goalId", async (request, response) => {
 });
 
 
-module.exports = router;
+export { router };

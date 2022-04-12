@@ -1,5 +1,5 @@
-const assert = require('assert');
-const eventProcessor = require('./event-processor');
+import assert from 'assert';
+import { createCleanVersionOfEvent, computeIncrementValue } from './event-processor.js';
 
 describe("event processing", () => {
 
@@ -15,7 +15,7 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
+            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
             assert.strictEqual(cleanEvent.var1, "aaa");
         });
 
@@ -31,7 +31,7 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
+            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
             assert.strictEqual(cleanEvent.var1, "aaa");
         });
 
@@ -45,7 +45,7 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
+            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
             assert.strictEqual(cleanEvent.var1, "some value with space");
         });
 
@@ -60,7 +60,7 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
+            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
             assert.strictEqual(cleanEvent.var1, "aaa");
             assert.strictEqual(cleanEvent.what, undefined);
         });
@@ -80,7 +80,7 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
+            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
             assert.strictEqual(cleanEvent.var1, "aaa");
             assert.strictEqual(cleanEvent.what, undefined);
         });
@@ -96,7 +96,7 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
+            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
 
             assert.strictEqual(cleanEvent.var1, "aaa");
             assert.strictEqual(cleanEvent.userGuid, "123");
@@ -115,7 +115,7 @@ describe("event processing", () => {
                 "stringField": true,
                 "numericField": true
             };
-            let cleanEvent = eventProcessor.createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
+            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
 
             assert.strictEqual(cleanEvent.var1, "aaa");
             assert.strictEqual(cleanEvent.stringField, "123");
@@ -138,7 +138,7 @@ describe("event processing", () => {
                     type: "count",
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 1);
         });
 
@@ -155,7 +155,7 @@ describe("event processing", () => {
                     value: 4
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 1);
         });
 
@@ -171,7 +171,7 @@ describe("event processing", () => {
                     type: "sum",
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 1);
         });
 
@@ -188,7 +188,7 @@ describe("event processing", () => {
                     value: "this-is-not-valid"
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 1);
         });
 
@@ -205,7 +205,7 @@ describe("event processing", () => {
                     value: null
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 1);
         });
 
@@ -222,7 +222,7 @@ describe("event processing", () => {
                     value: ''
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 1);
         });
 
@@ -239,7 +239,7 @@ describe("event processing", () => {
                     value: 3
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 3);
         });
 
@@ -256,7 +256,7 @@ describe("event processing", () => {
                     valueField: "foo"
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 2);
         });
 
@@ -273,7 +273,7 @@ describe("event processing", () => {
                     valueField: "foo bar"
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 2);
         });
 
@@ -290,7 +290,7 @@ describe("event processing", () => {
                     valueField: "foo-bar"
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 2);
         });
 
@@ -307,7 +307,7 @@ describe("event processing", () => {
                     valueField: "this_does_not_exist"
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 1);
         });
 
@@ -324,7 +324,7 @@ describe("event processing", () => {
                     valueField: "foo"
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 1);
         });
 
@@ -341,10 +341,10 @@ describe("event processing", () => {
                     valueField: null
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 1);
         });
-        
+
 
         it("should default to 1 if the value specified for sum is null", () => {
             const event = {
@@ -359,10 +359,10 @@ describe("event processing", () => {
                     valueField: "foo"
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 1);
         });
-        
+
         it("should default to 1 if the value specified for sum is empty string", () => {
             const event = {
                 foo: 7
@@ -376,7 +376,7 @@ describe("event processing", () => {
                     valueField: ''
                 }
             };
-            const retVal = eventProcessor.computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, event);
             assert.deepStrictEqual(retVal, 1);
         });
 

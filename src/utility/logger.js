@@ -1,7 +1,4 @@
-function info(message) {
-    console.log(`${new Date()}::: ${message}`);
+function log(message) {
+    console.log(JSON.stringify({ time: new Date(), message }));
 }
-function error(message) {
-    info(message);
-}
-module.exports = { info, error };
+export { log };

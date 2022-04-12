@@ -1,5 +1,5 @@
-const assert = require('assert');
-const dbHelper = require('./db-helper');
+import assert from 'assert';
+import { generateNeo4jInsertGoalTemplate, createNeo4jFriendlyParams } from './db-helper.js';
 
 describe('generateNeo4jInsertGoalTemplate', () => {
 
@@ -17,7 +17,7 @@ describe('generateNeo4jInsertGoalTemplate', () => {
                 "threshold": 5
             }
         ];
-        const actual = dbHelper.generateNeo4jInsertGoalTemplate(criteria);
+        const actual = generateNeo4jInsertGoalTemplate(criteria);
         assertNeo4jCommandIsEqual(actual, `CREATE (goal:Goal {id: $goal_id, name: $goal_name, state: $goal_state, description: $goal_description, points: $goal_points})
             CREATE (criteria_0:Criteria {id: $criteria_0_id, targetEntityIdField: $criteria_0_targetEntityIdField, aggregation_type: $criteria_0_aggregation_type, aggregation_value: $criteria_0_aggregation_value, aggregation_value_field: $criteria_0_aggregation_value_field, threshold: $criteria_0_threshold })
             CREATE (goal) -[:HAS_CRITERIA]-> (criteria_0)
@@ -41,7 +41,7 @@ describe('createNeo4jFriendlyParams', () => {
             points: 10,
             state: "enabled"
         };
-        
+
         const criteria = [
             {
                 targetEntityIdField: "userId",
@@ -56,7 +56,7 @@ describe('createNeo4jFriendlyParams', () => {
                 threshold: 5
             }
         ]
-        const actual = dbHelper.createNeo4jFriendlyParams(goal, criteria);
+        const actual = createNeo4jFriendlyParams(goal, criteria);
         assert.deepStrictEqual(actual, {
             "goal_description": "Log in at least 5 times on a mobile device",
             "goal_id": "123",

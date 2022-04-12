@@ -1,4 +1,4 @@
-const integrationTestHelper = require('./integration-test-helper');
+import { issueHttpPost } from './integration-test-helper.js';
 
 async function sendEvent(event, waitForEventToFinishProcessing) {
     let pathAndParams = "events";
@@ -6,9 +6,9 @@ async function sendEvent(event, waitForEventToFinishProcessing) {
         pathAndParams += "?waitForEventToFinishProcessing=true";
     }
     const headers = {"Content-Type": "application/json"};
-    return integrationTestHelper.issueHttpPost(pathAndParams, event, headers);    
+    return issueHttpPost(pathAndParams, event, headers);    
 }
 
-module.exports = {
+export {
     sendEvent
 };

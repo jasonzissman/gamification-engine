@@ -1,25 +1,23 @@
-
-const eventFieldsHelper = require('./event-fields-helper');
-const dbHelper = require('../database/db-helper');
-
-const logger = require('../utility/logger');
+import { generateCleanField, generateNormalizedFieldValueKey } from './event-fields-helper.js';
+import { KNOWN_CRITERIA_KEY_VALUE_PAIRS, KNOWN_SYSTEM_FIELDS, getCriteriaFulfilledByEvent, updateEntityProgress } from '../database/db-helper.js';
+import { log } from '../utility/logger.js';
 
 async function processEvent(receivedEvent) {
 
     if (receivedEvent) {
 
-        logger.info(`Processing event.`);
+        log(`Processing event.`);
 
-        const cleanEvent = createCleanVersionOfEvent(receivedEvent, dbHelper.KNOWN_CRITERIA_KEY_VALUE_PAIRS, dbHelper.KNOWN_SYSTEM_FIELDS);
+        const cleanEvent = createCleanVersionOfEvent(receivedEvent, KNOWN_CRITERIA_KEY_VALUE_PAIRS, KNOWN_SYSTEM_FIELDS);
         if (cleanEvent && Object.keys(cleanEvent).length > 0) {
-            const criteria = await dbHelper.getCriteriaFulfilledByEvent(cleanEvent);
+            const criteria = await getCriteriaFulfilledByEvent(cleanEvent);
 
             for (let criterion of criteria) {
 
                 const incrementValue = computeIncrementValue(criterion, cleanEvent);
                 const entityIdValue = cleanEvent[criterion.targetEntityIdField];
 
-                const hasCompleted = await dbHelper.updateEntityProgress(criterion.targetEntityIdField, entityIdValue, criterion, incrementValue);
+                const hasCompleted = await updateEntityProgress(criterion.targetEntityIdField, entityIdValue, criterion, incrementValue);
                 if (hasCompleted && hasCompleted[0] === true) {
                     // TODO - here we can broadcast that an entity has finished all the criteria within a goal
                 }
@@ -50,10 +48,10 @@ function createCleanVersionOfEvent(receivedEvent, knownCriteriaKeyValuePairs, kn
     let cleanEvent = {};
 
     for (let key in receivedEvent) {
-        let cleanKey = eventFieldsHelper.generateCleanField(key);
-        let cleanValue = eventFieldsHelper.generateCleanField(receivedEvent[key]);
+        let cleanKey = generateCleanField(key);
+        let cleanValue = generateCleanField(receivedEvent[key]);
 
-        let keyValueCombo = eventFieldsHelper.generateNormalizedFieldValueKey(cleanKey, cleanValue);
+        let keyValueCombo = generateNormalizedFieldValueKey(cleanKey, cleanValue);
         if (knownCriteriaKeyValuePairs[keyValueCombo] || knownSystemFields[cleanKey]) {
             cleanEvent[cleanKey] = cleanValue
         }
@@ -62,7 +60,7 @@ function createCleanVersionOfEvent(receivedEvent, knownCriteriaKeyValuePairs, kn
     return cleanEvent;
 }
 
-module.exports = {
+export {
     processEvent,
     createCleanVersionOfEvent,
     computeIncrementValue

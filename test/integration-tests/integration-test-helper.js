@@ -1,43 +1,40 @@
-const { v4: uuidv4 } = require('uuid');
-const axios = require('axios');
-const assert = require('assert');
-const logger = require('../../src/utility/logger');
+import axios  from 'axios';
+import assert from 'assert';
+import { log } from '../../src/utility/logger.js';
+
+import { startServer, stopServer } from '../../src/index.js';
 
 const TEST_APP_SERVER_HOST = "localhost";
 const TEST_APP_SERVER_PORT = 10393;
 const TEST_APP_BASE_URL = `http://${TEST_APP_SERVER_HOST}:${TEST_APP_SERVER_PORT}`;
 
+let APP_SERVER;
+
 async function issueHttpGet(pathAndParams) {
     const url = `${TEST_APP_BASE_URL}/${pathAndParams}`;
-    logger.info(`GET issued to ${url}.`);
-    let response = await axios.get(url, {validateStatus: false});
-    logger.info(`GET response received from ${url}.`);
+    log(`GET issued to ${url}.`);
+    let response = await axios.get(url, { validateStatus: false });
+    log(`GET response received from ${url}.`);
     return response;
 };
 
 async function issueHttpPost(pathAndParams, body, headers) {
     const url = `${TEST_APP_BASE_URL}/${pathAndParams}`;
-    logger.info(`POST issued to ${url}.`);
-    let response = await axios.post(url, body, {headers: headers, validateStatus: false});
-    logger.info(`POST response received from ${url}.`);
+    log(`POST issued to ${url}.`);
+    let response = await axios.post(url, body, { headers: headers, validateStatus: false });
+    log(`POST response received from ${url}.`);
     return response;
 };
 
 async function addGoal(goal) {
     let pathAndParams = "goal";
-    const headers = {"Content-Type": "application/json"};
+    const headers = { "Content-Type": "application/json" };
     return issueHttpPost(pathAndParams, goal, headers);
 }
 
-async function startAppServer(dbHost, dbPort, dbUser, dbPassword) {
+async function startTestAppServer(neo4jBoltUri, neo4jUser, neo4jPassword) {
 
-    process.env.PORT = TEST_APP_SERVER_PORT;
-    process.env.NEO4J_HOST = dbHost;
-    process.env.NEO4J_PORT = dbPort;
-    process.env.NEO4J_USER = dbUser;
-    process.env.NEO4J_PW = dbPassword;
-
-    APP_SERVER = require('../../src/index.js');
+    APP_SERVER = await startServer(TEST_APP_SERVER_PORT, neo4jBoltUri, neo4jUser, neo4jPassword);
 
     let maxAttempts = 5;
     let attempt = 0;
@@ -45,21 +42,26 @@ async function startAppServer(dbHost, dbPort, dbUser, dbPassword) {
     return new Promise((resolve, reject) => {
         let checkServerIntervalId = setInterval(async () => {
             attempt++;
-            logger.info(`Attempt #${attempt} to see if app server started.`);
+            log(`Attempt #${attempt} to see if app server started.`);
             let healthRequest = await issueHttpGet(`health`);
             if (healthRequest.status === 200) {
-                logger.info(`App server has started. Proceeding.`);
+                log(`App server has started. Proceeding.`);
                 clearInterval(checkServerIntervalId);
                 resolve(process.env.PORT);
             } else if (attempt > maxAttempts) {
-                logger.info(`Exceeded maximum attempts (${maxAttempts}). Exiting.`);
+                log(`Exceeded maximum attempts (${maxAttempts}). Exiting.`);
                 clearInterval(checkServerIntervalId);
                 reject();
             } else {
-                logger.info(`App server not ready. Will try again in ${timeBetweenAttemptsMs} ms.`);
+                log(`App server not ready. Will try again in ${timeBetweenAttemptsMs} ms.`);
             }
         }, timeBetweenAttemptsMs);
     });
+}
+
+async function stopAppServer() {
+    await stopServer(APP_SERVER);
+    APP_SERVER = undefined;
 }
 
 function assertEqualEntityProgress(actualProgress, expectedProgress) {
@@ -71,22 +73,30 @@ function assertEqualEntityProgress(actualProgress, expectedProgress) {
 };
 
 function normalizeGeneratedValues(progress) {
-    for (key in progress) {
+    for (let key in progress) {
         if (key === 'id') {
             delete progress[key];
         } else if (key === 'completionTimestamp') {
             if (progress['completionTimestamp'] && progress['completionTimestamp'] !== null) {
                 progress['completionTimestamp'] = 'a-valid-timestamp'
             }
-        } else if (typeof progress[key] === 'object') {
+
+
+        }  else if (typeof progress[key] === 'object') {
             normalizeGeneratedValues(progress[key]);
+        }
+
+        if (key === "criteria") {
+            progress[key].sort((c1,c2) => {
+                return c1.description.localeCompare(c2.description)}
+            );
         }
     }
 }
 
-
-module.exports = {
-    startAppServer,
+export {
+    startTestAppServer,
+    stopAppServer,
     issueHttpGet,
     issueHttpPost,
     addGoal,

@@ -1,36 +1,45 @@
-const express = require('express');
-const logger = require('./utility/logger.js');
-const dbHelper = require('./database/db-helper');
+import express  from 'express';
+import { log } from './utility/logger.js';
+import { initDbConnection } from './database/db-helper.js';
+import { router as healthRoutes } from "./health/health-routes.js"
+import { router as goalRoutes } from "./goal/goal-routes.js"
+import { router as eventRoutes } from "./event/event-routes.js"
+import { router as entityRoutes } from "./entity/entity-routes.js"
 
-let httpServer;
+async function startServer(appServerPort, neo4jBoltUri, neo4jUser, neo4jPassword) {
 
-async function start() {
-
-    await dbHelper.initDbConnection();
+    await initDbConnection(neo4jBoltUri, neo4jUser, neo4jPassword);
 
     const app = express();
 
     app.use((req, res, next) => {
-        logger.info(`Request received: ${req.method} ${req.url}.`);
+        log(`Request received: ${req.method} ${req.url}.`);
         next();
     });
 
     app.use(express.json());
 
-    app.use("/health", require('./health/health-routes.js'));
-    app.use("/goals", require('./goal/goal-routes.js'));
-    app.use("/events", require('./event/event-routes.js'));
-    app.use("/entities", require('./entity/entity-routes.js'));
+    app.use("/health", healthRoutes);
+    app.use("/goals", goalRoutes);
+    app.use("/events", eventRoutes);
+    app.use("/entities", entityRoutes);
 
-    const port = process.env.PORT || 3000;
+    appServerPort = appServerPort || 3000;
 
-    httpServer = app.listen(port, (err) => {
+    return await app.listen(appServerPort, (err) => {
         if (err) {
-            logger.error(err);
+            log(err);
         }
 
-        logger.info(`Listening on ${port}.`);
+        log(`Listening on ${appServerPort}.`);
     });
 }
 
-start();
+async function stopServer(httpServer) {
+    await httpServer.close();
+}
+
+export {
+    startServer,
+    stopServer
+};

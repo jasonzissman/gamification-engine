@@ -1,6 +1,6 @@
-const express = require('express');
-const axios = require('axios');
-const integrationTestHelper = require('../../test/integration-tests/integration-test-helper');
+import { express } from 'express';
+import axios from 'axios';
+import { issueHttpPost } from '../../test/integration-tests/integration-test-helper';
 
 let GAMIFICATION_ENGINE_PORT;
 const SAMPLE_APP_PORT = 31854;
@@ -13,7 +13,7 @@ async function start() {
 
 async function startGamificationEngine() {
     // TODO - need to replicate a graphDB in place of our old in-memory Mongo
-    let gamificationEnginePort = await integrationTestHelper.startAppServer(dbHost, dbPort, dbUser, dbPassword);
+    let gamificationEnginePort = await integrationTestHelper.startTestAppServer(dbHost, dbPort, dbUser, dbPassword);
     GAMIFICATION_ENGINE_PORT = gamificationEnginePort;
 }
 
@@ -200,6 +200,6 @@ function startExpressSampleApp() {
     });
 }
 
-module.exports = {
+export {
     start
 };

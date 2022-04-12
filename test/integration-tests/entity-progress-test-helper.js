@@ -1,11 +1,11 @@
-const integrationTestHelper = require('./integration-test-helper');
+import { issueHttpGet } from './integration-test-helper.js';
 
-async function getProgress(entityIdField, entityIdValue) {
-    let pathAndParams = `entities/${entityIdField}/${entityIdValue}/progress`;
-    return integrationTestHelper.issueHttpGet(pathAndParams);
+async function getProgress(entityIdField, entityIdValue, goalId) {
+    let pathAndParams = `entities/${entityIdField}/${entityIdValue}/${goalId}`;
+    return issueHttpGet(pathAndParams);
 }
 
 
-module.exports = {
+export {
     getProgress
 };

@@ -1,48 +1,69 @@
-const assert = require('assert');
-const { v4: uuidv4 } = require('uuid');
+import { v4 as uuidv4 } from "uuid";
+import neo4j from "neo4j-driver";
+import { Neo4jContainer } from "testcontainers";
 
-const integrationTestHelper = require('./integration-test-helper');
-const goalTestHelper = require('./goal-test-helper');
-const eventTestHelper = require('./event-test-helper');
-const entityProgressTestHelper = require('./entity-progress-test-helper');
+import { addGoal } from './goal-test-helper.js';
+import { startTestAppServer, stopAppServer, assertEqualEntityProgress } from './integration-test-helper.js';
+import { sendEvent } from './event-test-helper.js';
+import { getProgress } from './entity-progress-test-helper.js';
 
-const NEO4J_PARAMS = {
-    dbHost: process.env.NEO4J_HOST || "localhost",
-    dbPort: process.env.NEO4J_PORT || 7687,
-    dbUser: process.env.NEO4J_USER || "neo4j",
-    dbPassword: process.env.NEO4J_PW || "password"
-}
-
-// TODO - switch to Jest
+// TODO - switch to Jest - Easier syntax and allows proper shutdown of express
 
 describe('Basic Use Cases', function () {
 
+    let neo4jTestInstance;
+    let neo4jDriver;
+
     // The Mocha this.timeout() call only works inside of 'function'
     // declarations, not inside of arrow notation () => {}
-    this.timeout(15000);
+    this.timeout(120000);
 
-    beforeEach(async () => {
-        await integrationTestHelper.startAppServer(NEO4J_PARAMS.dbHost, NEO4J_PARAMS.dbPort, NEO4J_PARAMS.dbUser, NEO4J_PARAMS.dbPassword);
+    this.beforeAll(async () => {
+        neo4jTestInstance = await new Neo4jContainer().withApoc().withStartupTimeout(120000).start();
+        console.log(`neo4j test instance started at: ${neo4jTestInstance.getBoltUri()}`)
+        neo4jDriver = neo4j.driver(
+            neo4jTestInstance.getBoltUri(),
+            neo4j.auth.basic(neo4jTestInstance.getUsername(), neo4jTestInstance.getPassword())
+        );
+        await startTestAppServer(neo4jTestInstance.getBoltUri(), neo4jTestInstance.getUsername(), neo4jTestInstance.getPassword());
     });
 
-    // TODO - shut down servers after test. Requires us to end setIntervalId routine.
+    this.afterAll(async () => {
+        await stopAppServer();
+        await neo4jDriver.close();
+        await neo4jTestInstance.stop();
+        // TODO Stop express server here
+    });
+
+    this.beforeEach(async () => {
+        const session = neo4jDriver.session();
+        await session.run("MATCH (e) DETACH DELETE e");
+        session.close();
+    });
+
+    this.afterEach(async () => {
+        const session = neo4jDriver.session();
+        await session.run("MATCH (e) DETACH DELETE e");
+        session.close();
+    });
 
     it('should mark a goal as complete after enough relevant events received', async () => {
 
         let userId = `test-user-${uuidv4()}`;
-        let requiredValue = uuidv4();
+        let uniqueTestRunValue = uuidv4(); // TODO - would be better to wipe in-memory test DB after each test run
 
-        let createdGoal = await goalTestHelper.addGoal({
+        let createdGoal = await addGoal({
             name: "Mobile Power User",
-            description: "Log in at least 3 times on a mobile device",
+            description: "Use our fancy new mobile app to gain additional points!",
             points: 10,
             criteria: [
                 {
+                    description: "Log in at least 3 times on a mobile device",
                     targetEntityIdField: "userId",
                     qualifyingEvent: {
                         action: "log-in",
                         platform: "mobile",
-                        requiredField: requiredValue
+                        requiredField: uniqueTestRunValue
                     },
                     aggregation: {
                         type: "count",
@@ -54,52 +75,52 @@ describe('Basic Use Cases', function () {
 
         let goalId = createdGoal.data.goalId;
 
-        await eventTestHelper.sendEvent({
+        await sendEvent({
             clientId: "client-app-1234",
             action: "log-in",
             platform: "mobile",
             userId: userId,
             foo: "bar",
-            requiredField: requiredValue
+            requiredField: uniqueTestRunValue
         }, true);
 
-        let progress = await entityProgressTestHelper.getProgress("userId", userId);
+        let progress = await getProgress("userId", userId, goalId);
 
-        integrationTestHelper.assertEqualEntityProgress(progress.data, {
+        assertEqualEntityProgress(progress.data, {
             userId: userId,
             goals: [{
                 id: goalId,
                 isComplete: false,
                 name: "Mobile Power User",
                 criteria: [{
+                    description: "Log in at least 3 times on a mobile device",
                     progress: 1,
-                    id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
                     threshold: 3,
                 }]
             }]
         });
 
-        await eventTestHelper.sendEvent({
+        await sendEvent({
             clientId: "client-app-1234",
             action: "log-in",
             platform: "mobile",
             userId: userId,
             foo: "bar",
-            requiredField: requiredValue
+            requiredField: uniqueTestRunValue
         }, true);
 
-        await eventTestHelper.sendEvent({
+        await sendEvent({
             clientId: "client-app-1234",
             action: "log-in",
             platform: "mobile",
             userId: userId,
             foo: "bar",
-            requiredField: requiredValue
+            requiredField: uniqueTestRunValue
         }, true);
 
-        let progress2 = await entityProgressTestHelper.getProgress("userId", userId);
+        let progress2 = await getProgress("userId", userId, goalId);
 
-        integrationTestHelper.assertEqualEntityProgress(progress2.data, {
+        assertEqualEntityProgress(progress2.data, {
             userId: userId,
             goals: [{
                 id: goalId,
@@ -107,17 +128,143 @@ describe('Basic Use Cases', function () {
                 isComplete: true,
                 completionTimestamp: 'a-valid-timestamp',
                 criteria: [{
+                    description: "Log in at least 3 times on a mobile device",
                     progress: 3,
                     threshold: 3,
                 }]
             }]
         });
 
-    }).timeout(15000);
+    }).timeout(120000);
+
+
+    it('should mark a goal with multiple criteria as complete after enough relevant events received', async () => {
+
+        let userId = `test-user-${uuidv4()}`;
+        let uniqueTestRunValue = uuidv4();
+
+        let createdGoal = await addGoal({
+            name: "Repeat Customer",
+            description: "Returning customers who make multiple purchases will receieve special perks and prioritized customer support.",
+            points: 10,
+            criteria: [
+                {
+                    description: "Log in at least 3 times.",
+                    targetEntityIdField: "userId",
+                    qualifyingEvent: {
+                        action: "userLoggedIn",
+                        requiredField: uniqueTestRunValue
+                    },
+                    aggregation: {
+                        type: "count"
+                    },
+                    threshold: 3
+                },
+                {
+                    description: "Make at least 2 purchases.",
+                    targetEntityIdField: "userId",
+                    qualifyingEvent: {
+                        action: "itemPurchased",
+                        requiredField: uniqueTestRunValue
+                    },
+                    aggregation: {
+                        type: "count"
+                    },
+                    threshold: 2
+                }
+            ]
+        });
+
+        let goalId = createdGoal.data.goalId;
+
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "userLoggedIn",
+            platform: "mobile",
+            userId: userId,
+            foo: "bar",
+            requiredField: uniqueTestRunValue
+        }, true);
+
+        let progress = await getProgress("userId", userId, goalId);
+
+        assertEqualEntityProgress(progress.data, {
+            userId: userId,
+            goals: [{
+                id: goalId,
+                isComplete: false,
+                name: "Repeat Customer",
+                criteria: [{
+                    description: "Log in at least 3 times.",
+                    progress: 1,
+                    id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+                    threshold: 3,
+                }, {
+                    description: "Make at least 2 purchases.",
+                    progress: 0,
+                    id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+                    threshold: 2,
+                }]
+            }]
+        });
+
+        // await sendEvent({
+        //     clientId: "client-app-1234",
+        //     action: "itemPurchased",
+        //     platform: "mobile",
+        //     userId: userId,
+        //     foo: "bar",
+        //     requiredField: uniqueTestRunValue
+        // }, true);
+
+        // assertEqualEntityProgress(progress.data, {
+        //     userId: userId,
+        //     goals: [{
+        //         id: goalId,
+        //         isComplete: false,
+        //         name: "Repeat Customer",
+        //         criteria: [{
+        //             progress: 1,
+        //             id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+        //             threshold: 3,
+        //         }, {
+        //             progress: 1,
+        //             id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+        //             threshold: 2,
+        //         }]
+        //     }]
+        // });
+
+        // await sendEvent({
+        //     clientId: "client-app-1234",
+        //     action: "log-in",
+        //     platform: "mobile",
+        //     userId: userId,
+        //     foo: "bar",
+        //     requiredField: uniqueTestRunValue
+        // }, true);
+
+        // let progress2 = await getProgress("userId", userId, goalId);
+
+        // assertEqualEntityProgress(progress2.data, {
+        //     userId: userId,
+        //     goals: [{
+        //         id: goalId,
+        //         name: "Mobile Power User",
+        //         isComplete: true,
+        //         completionTimestamp: 'a-valid-timestamp',
+        //         criteria: [{
+        //             progress: 3,
+        //             threshold: 3,
+        //         }]
+        //     }]
+        // });
+
+    }).timeout(120000);
 
     // it('should let multiple entities benefit from the same event if multiple goals are applicable', async () => {
 
-    //     let goal1 = await goalTestHelper.addGoal({
+    //     let goal1 = await addGoal({
     //         name: "Mobile Power User",
     //         description: "Log in at least 3 times on a mobile device",
     //         criteria: [
@@ -138,7 +285,7 @@ describe('Basic Use Cases', function () {
     //     let goal1Id = goal1.data.goalId;
     //     let goal1CriteriaIds = goal1.data.goal.criteriaIds;
 
-    //     let goal2 = await goalTestHelper.addGoal({
+    //     let goal2 = await addGoal({
     //         name: "The Popular Group",
     //         description: "Have members of your group log into at least 3 times",
     //         criteria: [
@@ -158,7 +305,7 @@ describe('Basic Use Cases', function () {
     //     let goal2Id = goal2.data.goalId;
     //     let goal2CriteriaIds = goal2.data.goal.criteriaIds;
 
-    //     await eventTestHelper.sendEvent({
+    //     await sendEvent({
     //         clientId: "client-app-1234",
     //         action: "log-in",
     //         platform: "mobile",
@@ -167,7 +314,7 @@ describe('Basic Use Cases', function () {
     //         foo: "bar"
     //     }, true);
 
-    //     await eventTestHelper.sendEvent({
+    //     await sendEvent({
     //         clientId: "client-app-1234",
     //         action: "log-in",
     //         platform: "mobile",
@@ -176,7 +323,7 @@ describe('Basic Use Cases', function () {
     //         foo: "bar"
     //     }, true);
 
-    //     await eventTestHelper.sendEvent({
+    //     await sendEvent({
     //         clientId: "client-app-1234",
     //         action: "log-in",
     //         platform: "desktop",
@@ -185,8 +332,8 @@ describe('Basic Use Cases', function () {
     //         foo: "bar"
     //     }, true);
 
-    //     let johnProgress = await entityProgressTestHelper.getProgress("userId", "john-doe-1234");
-    //     integrationTestHelper.assertEqualEntityProgress(johnProgress.data, {
+    //     let johnProgress = await getProgress("userId", "john-doe-1234");
+    //     assertEqualEntityProgress(johnProgress.data, {
     //         entityId: 'john-doe-1234',
     //         points: 0,
     //         goals: {
@@ -202,8 +349,8 @@ describe('Basic Use Cases', function () {
     //         }
     //     });
 
-    //     let mikeProgress = await entityProgressTestHelper.getProgress("mike-smith-1234");
-    //     integrationTestHelper.assertEqualEntityProgress(mikeProgress.data, {
+    //     let mikeProgress = await getProgress("mike-smith-1234");
+    //     assertEqualEntityProgress(mikeProgress.data, {
     //         entityId: 'mike-smith-1234',
     //         points: 0,
     //         goals: {
@@ -219,15 +366,15 @@ describe('Basic Use Cases', function () {
     //         }
     //     });
 
-    //     let sallyProgress = await entityProgressTestHelper.getProgress("sally-craig-1234");
+    //     let sallyProgress = await getProgress("sally-craig-1234");
     //     // Sally has not made progress towards any goal so her overall progress is 404
     //     assert.deepStrictEqual(sallyProgress.status, 404);
     //     assert.deepStrictEqual(sallyProgress.data, {
     //         message: "no progress found for entity sally-craig-1234."
     //     });
 
-    //     let groupProgress = await entityProgressTestHelper.getProgress("the-wildcats");
-    //     integrationTestHelper.assertEqualEntityProgress(groupProgress.data, {
+    //     let groupProgress = await getProgress("the-wildcats");
+    //     assertEqualEntityProgress(groupProgress.data, {
     //         entityId: 'the-wildcats',
     //         points: 0,
     //         goals: {
@@ -243,11 +390,11 @@ describe('Basic Use Cases', function () {
     //         }
     //     });
 
-    // }).timeout(15000);
+    // }).timeout(120000);
 
     // it('should allow fetching of existing goals', async () => {
 
-    //     let goal1 = await goalTestHelper.addGoal({
+    //     let goal1 = await addGoal({
     //         name: "Mobile Power User",
     //         description: "Log in at least 3 times on a mobile device",
     //         criteria: [
@@ -268,7 +415,7 @@ describe('Basic Use Cases', function () {
     //     let goal1Id = goal1.data.goalId;
     //     let goal1CriteriaIds = goal1.data.goal.criteriaIds;
 
-    //     let goal2 = await goalTestHelper.addGoal({
+    //     let goal2 = await addGoal({
     //         name: "The Popular Group",
     //         description: "Have members of your group log into at least 3 times",
     //         criteria: [
@@ -288,7 +435,7 @@ describe('Basic Use Cases', function () {
     //     let goal2Id = goal2.data.goalId;
     //     let goal2CriteriaIds = goal2.data.goal.criteriaIds;
 
-    //     let fetchedGoals = await goalTestHelper.getGoals();
+    //     let fetchedGoals = await getGoals();
 
     //     assert.deepStrictEqual(fetchedGoals.data, [
     //         {
@@ -307,11 +454,11 @@ describe('Basic Use Cases', function () {
     //         }
     //     ]);
 
-    // }).timeout(15000);
+    // }).timeout(120000);
 
     // it('should support sum aggregations on specific event fields', async () => {
 
-    //     let createdGoal = await goalTestHelper.addGoal({
+    //     let createdGoal = await addGoal({
     //         name: "Frequent Flyer",
     //         description: "Spend at least 5 minutes in our app",
     //         criteria: [
@@ -332,7 +479,7 @@ describe('Basic Use Cases', function () {
     //     let goalId = createdGoal.data.goalId;
     //     let criteriaIds = createdGoal.data.goal.criteriaIds;
 
-    //     await eventTestHelper.sendEvent({
+    //     await sendEvent({
     //         clientId: "client-app-1234",
     //         action: "session-ended",
     //         userId: "john-doe-1234",
@@ -340,9 +487,9 @@ describe('Basic Use Cases', function () {
     //         foo: "bar"
     //     }, true);
 
-    //     let progress = await entityProgressTestHelper.getProgress("userId", "john-doe-1234");
+    //     let progress = await getProgress("userId", "john-doe-1234");
 
-    //     integrationTestHelper.assertEqualEntityProgress(progress.data, {
+    //     assertEqualEntityProgress(progress.data, {
     //         entityId: 'john-doe-1234',
     //         points: 0,
     //         goals: {
@@ -358,7 +505,7 @@ describe('Basic Use Cases', function () {
     //         }
     //     });
 
-    //     await eventTestHelper.sendEvent({
+    //     await sendEvent({
     //         clientId: "client-app-1234",
     //         action: "session-ended",
     //         userId: "john-doe-1234",
@@ -366,9 +513,9 @@ describe('Basic Use Cases', function () {
     //         foo: "bar"
     //     }, true);
 
-    //     let progress2 = await entityProgressTestHelper.getProgress("userId", "john-doe-1234");
+    //     let progress2 = await getProgress("userId", "john-doe-1234");
 
-    //     integrationTestHelper.assertEqualEntityProgress(progress2.data, {
+    //     assertEqualEntityProgress(progress2.data, {
     //         entityId: 'john-doe-1234',
     //         points: 0,
     //         goals: {
@@ -384,11 +531,11 @@ describe('Basic Use Cases', function () {
     //         }
     //     });
 
-    // }).timeout(15000);
+    // }).timeout(120000);
 
     // it('should support sum aggregations with predefined value', async () => {
 
-    //     let createdGoal = await goalTestHelper.addGoal({
+    //     let createdGoal = await addGoal({
     //         name: "Social Butterfly",
     //         description: "Talk with your friends",
     //         criteria: [
@@ -409,15 +556,15 @@ describe('Basic Use Cases', function () {
     //     let goalId = createdGoal.data.goalId;
     //     let criteriaIds = createdGoal.data.goal.criteriaIds;
 
-    //     await eventTestHelper.sendEvent({
+    //     await sendEvent({
     //         clientId: "client-app-1234",
     //         action: "send-message",
     //         userId: "john-doe-1234"
     //     }, true);
 
-    //     let progress = await entityProgressTestHelper.getProgress("userId", "john-doe-1234");
+    //     let progress = await getProgress("userId", "john-doe-1234");
 
-    //     integrationTestHelper.assertEqualEntityProgress(progress.data, {
+    //     assertEqualEntityProgress(progress.data, {
     //         entityId: 'john-doe-1234',
     //         points: 0,
     //         goals: {
@@ -433,21 +580,21 @@ describe('Basic Use Cases', function () {
     //         }
     //     });
 
-    //     await eventTestHelper.sendEvent({
+    //     await sendEvent({
     //         clientId: "client-app-1234",
     //         action: "send-message",
     //         userId: "john-doe-1234"
     //     }, true);
 
-    //     await eventTestHelper.sendEvent({
+    //     await sendEvent({
     //         clientId: "client-app-1234",
     //         action: "send-message",
     //         userId: "john-doe-1234"
     //     }, true);
 
-    //     let progress2 = await entityProgressTestHelper.getProgress("userId", "john-doe-1234");
+    //     let progress2 = await getProgress("userId", "john-doe-1234");
 
-    //     integrationTestHelper.assertEqualEntityProgress(progress2.data, {
+    //     assertEqualEntityProgress(progress2.data, {
     //         entityId: 'john-doe-1234',
     //         points: 0,
     //         goals: {
@@ -463,11 +610,11 @@ describe('Basic Use Cases', function () {
     //         }
     //     });
 
-    // }).timeout(15000);
+    // }).timeout(120000);
 
     // it('should require all criteria to finish before marking goal as complete', async () => {
 
-    //     let createdGoal = await goalTestHelper.addGoal({
+    //     let createdGoal = await addGoal({
     //         name: "Power User",
     //         description: "Log in 2 times AND spend at least 5 minutes in the app",
     //         criteria: [
@@ -499,21 +646,21 @@ describe('Basic Use Cases', function () {
     //     let criteriaIds = createdGoal.data.goal.criteriaIds;
 
     //     // User logs in
-    //     await eventTestHelper.sendEvent({
+    //     await sendEvent({
     //         action: "log-in",
     //         userId: "john-doe-1234",
     //     }, true);
 
     //     // User session ends 10 minutes later
-    //     await eventTestHelper.sendEvent({
+    //     await sendEvent({
     //         action: "session-ended",
     //         userId: "john-doe-1234",
     //         sessionDurationInSeconds: 600, // 10 minutes, well past requirements
     //     }, true);
 
-    //     let progress1 = await entityProgressTestHelper.getProgress("userId", "john-doe-1234");
+    //     let progress1 = await getProgress("userId", "john-doe-1234");
 
-    //     integrationTestHelper.assertEqualEntityProgress(progress1.data, {
+    //     assertEqualEntityProgress(progress1.data, {
     //         entityId: 'john-doe-1234',
     //         points: 0,
     //         goals: {
@@ -534,14 +681,14 @@ describe('Basic Use Cases', function () {
     //     });
 
     //     // User logs in again
-    //     await eventTestHelper.sendEvent({
+    //     await sendEvent({
     //         action: "log-in",
     //         userId: "john-doe-1234",
     //     }, true);
 
-    //     let progress2 = await entityProgressTestHelper.getProgress("userId", "john-doe-1234");
+    //     let progress2 = await getProgress("userId", "john-doe-1234");
 
-    //     integrationTestHelper.assertEqualEntityProgress(progress2.data, {
+    //     assertEqualEntityProgress(progress2.data, {
     //         entityId: 'john-doe-1234',
     //         points: 0,
     //         goals: {
@@ -561,6 +708,6 @@ describe('Basic Use Cases', function () {
     //         }
     //     });
 
-    // }).timeout(15000);
+    // }).timeout(120000);
 
 });
