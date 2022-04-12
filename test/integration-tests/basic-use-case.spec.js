@@ -9,6 +9,7 @@ import { getProgress } from './entity-progress-test-helper.js';
 import { log } from '../../src/utility/logger.js'
 
 // TODO - switch to Jest - Easier syntax and allows proper shutdown of express
+// TODO - tests hang when a failure occurs. Can we ensure proper cleanup? May happen automatically with Jest.
 
 describe('Basic Use Cases', function () {
 

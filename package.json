@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src//index.js",
-    "unit-test": "mocha \"src/**/*spec.js\"",
-    "integration-test": "mocha \"test/integration-tests/**/*spec.js\""
+    "unit-tests": "mocha \"src/**/*spec.js\"",
+    "integration-tests": "mocha \"test/integration-tests/**/*spec.js\""
   },
   "author": "Jason Zissman",
   "license": "ISC",
