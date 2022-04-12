@@ -88,7 +88,7 @@ function normalizeGeneratedValues(progress) {
 
         if (key === "criteria") {
             progress[key].sort((c1,c2) => {
-                return c1.description.localeCompare(c2.description)}
+                return c1.description?.localeCompare(c2.description)}
             );
         }
     }
