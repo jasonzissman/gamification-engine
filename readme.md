@@ -1,20 +1,21 @@
 # JZ Gamification Engine
-*jz-gamification-engine* is a platform that manages common gamification features such as badges, awards, user journeys, and point systems. 
+*jz-gamification-engine* is a platform that manages common gamification features such as badges, user journeys, and point systems. 
 
 ## Features and Flows
 The gamification engine is a backend service meant to run alongside existing applications that want to offer gamification features in a decoupled, performant fashion. It currently supports:
 
-- Custom goal definition (e.g. badges, awards, or user journeys)
+- Custom goal definition (e.g. badges or user journeys)
 - Goal progress tracking
 - Real time goal completion notifications
 - The ability for "non-user" entities to make progress towards goals
+- Integration with event brokers like Kafka
 
 These features can be used to enable gamification flows such as:
 
-- Awarding a badge to users that log in using a mobile app 5 times.  
 - Awarding a badge to **blog posts** that are read 1000+ times. 
 - Awarding a badge to **blog post authors** whose content are read 1000+ times. 
 - Requiring new users to complete a journey that involves visiting 3 tutorial pages and writing a first blog post before gaining access to greater functionality.
+- Awarding a badge to users that log in using a mobile app 5 times.  
 
 See the [documented sample flows](./docs/sample-flows/) to learn how to facilitate these features.
 
@@ -24,7 +25,7 @@ See the [documented sample flows](./docs/sample-flows/) to learn how to facilita
 See the [getting started guide](./docs/getting-started.md) to learn how to deploy the engine and start interacting with it.
 
 ### Detailed APIs
-[Detailed API documentation](docs/api.md)
+[Swagger APIs](TODO_PUT_THIS_HERE)
 
 ### System Architecture and Design
 [Detailed system architecture documentation](docs/system-architecture.md)
@@ -55,6 +56,7 @@ npm start
 
 
 ## TODO!!!!
+* Define API schema, generate swagger from it
 * Can we make this Docker friendly?
 * Perf test: create baseline that reliably executes in given environment (ram/CPU/etc).
 * Perf test: make tests deterministic!
