@@ -50,7 +50,7 @@
             "description": "Goal object defining the objective to achieve",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Goal"
+              "$ref": "http://localhost:3000/schemas/goal.schema.json"
             }
           }
         ],
@@ -87,96 +87,12 @@
             "schema": {
               "type": "object",
               "items": {
-                "$ref": "#/definitions/Goal"
+                "$ref": "http://localhost:3000/schemas/goal.schema.json"
               }
             }
           },
           "404": {
             "description": "Not found"
-          }
-        }
-      }
-    }
-  },
-  "definitions": {
-    "Goal": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "A short, human-readable name for this goal",
-          "example": "Mobile Power User"
-        },
-        "description": {
-          "type": "string",
-          "description": "A human-understandable description for this goal",
-          "example": "A goal awarded when a user logs into our mobile app at least 5 times"
-        },
-        "points": {
-          "type": "integer",
-          "description": "The number of points to award to entities that completes this goal",
-          "format": "int64",
-          "example": 10
-        },
-        "criteria": {
-          "type": "array",
-          "description": "A collection of requirements that must be fulfilled to complete this goal",
-          "items": {
-            "type": "object",
-            "properties": {
-              "description": {
-                "type": "string",
-                "description": "A human-understandable description for this criteria",
-                "example": "Log into the mobile app 5 times"
-              },
-              "targetEntityIdField": {
-                "type": "string",
-                "description": "The field in received events which identifies the unique entity for which criteria progress is tracked",
-                "example": "userId"
-              },
-              "qualifyingEvent": {
-                "type": "object",
-                "description": "An open-ended key value map that defines the events which satisfy this criteria",
-                "example": {
-                  "eventType": "user-logged-in",
-                  "platform": "mobile-app"
-                }
-              },
-              "aggregation": {
-                "type": "object",
-                "description": "A configuration that describes how to increment progress towards this criteria",
-                "required": [
-                  "type"
-                ],
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "description": "Whether to increment criteria progress by 1 (count) or more than 1 (sum) each time a qualifying event is received",
-                    "enum": [
-                      "count",
-                      "sum"
-                    ],
-                    "example": "count"
-                  },
-                  "value": {
-                    "type": "integer",
-                    "format": "int64",
-                    "description": "If aggregation.type='sum', then this value is added to an entity's criteria progress every time a qualifying event is received",
-                    "example": 2
-                  },
-                  "valueField": {
-                    "type": "string",
-                    "description": "If aggregation.type='sum', then the value of the field indicated by this property on the received is added to entity's criteria progress every time a qualifying event is received",
-                    "example": "some-field-name"
-                  }
-                }
-              },
-              "threshold": {
-                "type": "integer",
-                "description": "111",
-                "format": "int64"
-              }
-            }
           }
         }
       }

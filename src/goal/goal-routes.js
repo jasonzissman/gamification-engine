@@ -1,11 +1,15 @@
 import express from 'express';
+import fs from 'fs';
+import { Validator as SchemaValidator } from "express-json-validator-middleware";
 import { persistGoal, getGoal } from './goal-helper.js';
 
 const router = express.Router();
+const { validate } = new SchemaValidator()
+var goalSchema = JSON.parse(fs.readFileSync(`src/schemas/goal.schema.json`));
 
 // Create a new goal
 // HTTP POST <host>/goals/
-router.post("/", async (request, response) => {
+router.post("/", validate({ body: goalSchema }), async (request, response) => {
     // TODO validate payload not too big
     // TODO authorize request - put in middleware?
 
