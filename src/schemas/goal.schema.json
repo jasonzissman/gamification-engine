@@ -27,7 +27,7 @@
                 "properties": {
                     "description": {
                         "type": "string",
-                        "description": "A human-understandable description for this criteria",
+                        "description": "A human-understandable description for this criterion",
                         "example": "Log into the mobile app 5 times"
                     },
                     "targetEntityIdField": {
@@ -73,7 +73,7 @@
                     },
                     "threshold": {
                         "type": "integer",
-                        "description": "The value at which point this criteria is satisfied"
+                        "description": "The value at which point this criterion is satisfied"
                     }
                 }
             }

@@ -78,7 +78,7 @@ async function getEntityProgress(entityIdField, entityIdValue, goalId) {
     const results = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId, goalId });
     return {
         [entityIdField]: entityIdValue,
-        goals: results.map(r => {
+        goalProgress: results.map(r => {
             if (r.completionTimestamp !== null && r.completionTimestamp > 0) {
                 r.isComplete = true;
             } else {

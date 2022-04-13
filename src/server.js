@@ -15,9 +15,10 @@ async function startServer(appServerPort, neo4jBoltUri, neo4jUser, neo4jPassword
 
     const app = express();
 
-    var swaggerDocument = JSON.parse(fs.readFileSync(`./src/swagger.json`, `utf8`));
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
     app.use('/schemas', express.static('src/schemas'))
+    
+    var swaggerDocument = JSON.parse(fs.readFileSync(`./src/swagger.json`, `utf8`));    
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
     app.use((req, res, next) => {
         log(`Request received: ${req.method} ${req.url}.`);

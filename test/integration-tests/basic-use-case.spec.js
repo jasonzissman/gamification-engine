@@ -89,11 +89,11 @@ describe('Basic Use Cases', function () {
 
         assertEqualEntityProgress(progress.data, {
             userId: userId,
-            goals: [{
+            goalProgress: [{
                 id: goalId,
                 isComplete: false,
                 name: "Mobile Power User",
-                criteria: [{
+                criteriaProgress: [{
                     description: "Log in at least 3 times on a mobile device",
                     progress: 1,
                     threshold: 3,
@@ -121,12 +121,12 @@ describe('Basic Use Cases', function () {
 
         assertEqualEntityProgress(progress2.data, {
             userId: userId,
-            goals: [{
+            goalProgress: [{
                 id: goalId,
                 name: "Mobile Power User",
                 isComplete: true,
                 completionTimestamp: 'a-valid-timestamp',
-                criteria: [{
+                criteriaProgress: [{
                     description: "Log in at least 3 times on a mobile device",
                     progress: 3,
                     threshold: 3,
@@ -136,6 +136,23 @@ describe('Basic Use Cases', function () {
 
     }).timeout(120000);
 
+    it('should reject request to create goal not adhering to goal schema', async () => {
+
+        let userId = `test-user-${uuidv4()}`;
+
+        try {
+            const res = await addGoal({
+                name: "Invalid Goal",
+                description: "Use our fancy new mobile app to gain additional points!",
+                points: 10,
+                criteria: "this-is-not-valid-criteria"
+            });
+            assert.fail("Goal creation should have failed")
+        } catch (err) {
+            assert.equal(err, "what")
+        }
+
+    }).timeout(120000);
 
     it('should mark a goal with multiple criteria as complete after enough relevant events received', async () => {
 
@@ -185,11 +202,11 @@ describe('Basic Use Cases', function () {
 
         assertEqualEntityProgress(progress.data, {
             userId: userId,
-            goals: [{
+            goalProgress: [{
                 id: goalId,
                 isComplete: false,
                 name: "Repeat Customer",
-                criteria: [{
+                criteriaProgress: [{
                     description: "Log in at least 3 times.",
                     progress: 1,
                     id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
@@ -215,11 +232,11 @@ describe('Basic Use Cases', function () {
 
         assertEqualEntityProgress(progress2.data, {
             userId: userId,
-            goals: [{
+            goalProgress: {
                 id: goalId,
                 isComplete: false,
                 name: "Repeat Customer",
-                criteria: [{
+                criteriaProgress: [{
                     description: "Log in at least 3 times.",
                     progress: 1,
                     id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
@@ -230,7 +247,7 @@ describe('Basic Use Cases', function () {
                     id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
                     threshold: 2,
                 }]
-            }]
+            }
         });
 
         await sendEvent({
@@ -253,11 +270,11 @@ describe('Basic Use Cases', function () {
 
         assertEqualEntityProgress(progress3.data, {
             userId: userId,
-            goals: [{
+            goalProgress: [{
                 id: goalId,
                 name: "Repeat Customer",
                 isComplete: false,
-                criteria: [{
+                criteriaProgress: [{
                     description: "Log in at least 3 times.",
                     progress: 3,
                     id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
@@ -283,12 +300,12 @@ describe('Basic Use Cases', function () {
 
         assertEqualEntityProgress(progress4.data, {
             userId: userId,
-            goals: [{
+            goalProgress: [{
                 id: goalId,
                 name: "Repeat Customer",
                 isComplete: true,
                 completionTimestamp: 'a-valid-timestamp',
-                criteria: [{
+                criteriaProgress: [{
                     description: "Log in at least 3 times.",
                     progress: 3,
                     id: "2ad583c6-0c08-4a89-83bf-11be4da93923",

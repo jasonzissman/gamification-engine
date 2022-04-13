@@ -56,11 +56,10 @@ npm start
 
 
 ## TODO!!!!
-* Define API schema, generate swagger from it
+* Use schema in response validation
 * Can we make this Docker friendly?
 * Perf test: create baseline that reliably executes in given environment (ram/CPU/etc).
 * Perf test: make tests deterministic!
-* Swagger
 * Push notifications when goal completed.
 * Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
 * Cache calls to database
