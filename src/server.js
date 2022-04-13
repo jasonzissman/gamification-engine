@@ -1,4 +1,7 @@
-import express  from 'express';
+import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import fs from 'fs';
+
 import { log } from './utility/logger.js';
 import { initDbConnection } from './database/db-helper.js';
 import { router as healthRoutes } from "./health/health-routes.js"
@@ -11,6 +14,9 @@ async function startServer(appServerPort, neo4jBoltUri, neo4jUser, neo4jPassword
     await initDbConnection(neo4jBoltUri, neo4jUser, neo4jPassword);
 
     const app = express();
+
+    var swaggerDocument = JSON.parse(fs.readFileSync(`./src/swagger.json`, `utf8`));
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
     app.use((req, res, next) => {
         log(`Request received: ${req.method} ${req.url}.`);
