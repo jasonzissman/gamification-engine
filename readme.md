@@ -8,14 +8,13 @@ The gamification engine is a backend service meant to run alongside existing app
 - Goal progress tracking
 - Real time goal completion notifications
 - The ability for "non-user" entities to make progress towards goals
-- Integration with event brokers like Kafka
 
 These features can be used to enable gamification flows such as:
 
 - Awarding a badge to **blog posts** that are read 1000+ times. 
 - Awarding a badge to **blog post authors** whose content are read 1000+ times. 
-- Requiring new users to complete a journey that involves visiting 3 tutorial pages and writing a first blog post before gaining access to greater functionality.
-- Awarding a badge to users that log in using a mobile app 5 times.  
+- Requiring **new users** to complete a journey that involves visiting 3 tutorial pages and writing a first blog post before gaining access to greater functionality.
+- Awarding a badge to **users** that log in using a mobile app 5 times.  
 
 See the [documented sample flows](./docs/sample-flows/) to learn how to facilitate these features.
 
@@ -25,7 +24,7 @@ See the [documented sample flows](./docs/sample-flows/) to learn how to facilita
 See the [getting started guide](./docs/getting-started.md) to learn how to deploy the engine and start interacting with it.
 
 ### Detailed APIs
-[Swagger APIs](TODO_PUT_THIS_HERE)
+[Swagger APIs](TODO_PUT_LINK_HERE)
 
 ### System Architecture and Design
 [Detailed system architecture documentation](docs/system-architecture.md)

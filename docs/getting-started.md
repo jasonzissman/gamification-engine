@@ -1,22 +1,24 @@
-# Getting Started with jz-gamification-engine APIs
+# Getting Started 
 
 ## Vocabulary
 
-* `goals` are as you understand it in English - objectives that someone can achieve.
-* `criteria` are the specific conditions which entities must satisfy to achieve a goal. 
-* `entities` are the things that can achieve goals. Most often entities are your application's users.
+* `goals` are objectives that someone or something can achieve.
+* `criteria` are specific conditions which entities must satisfy in order to achieve a goal. 
+* `entities` are things that can achieve goals (often an application's users).
 
-**Events** are the basic currency of the engine. We define criteria in terms of `qualifyingEvents` that specify which events should qualify towards goal completion. Events are then sent to the jz-gamification-engine as users interact with your system. The jz-gamification-engine will determine if progress towards a goal should be updated based on the event metadata.
+## Deploying jz-gamification-engine
 
-Note that anything with a unique identifier can make progress towards a goal, not just users. This is why we use the words 'entity' instead of 'user' in our vocabulary.
+Today the project is most easily run via docker and npm. A more mature deployment system should be available at a later date.
 
-## Flow
-All of the features above are enabled via three simple flows made available by the engine APIs:
+1. Start neo4j: `docker-compose up`
+2. Start the gamification engine: `node index.js`
+
+## Using jz-gamification-engine from your app
+All of the engine's features are enabled via three simple flows:
 
 1. Define `goals` that are relevant to your application.
-2. Send usage `events` as users interact with your applcation.
-3. Check any `entity's` progress towards goals (*push notifications coming later*)
-
+2. Send usage `activity` as users interact with your applcation.
+3. Check on an `entity's` progress towards goals
 
 ## Create Goal
 
