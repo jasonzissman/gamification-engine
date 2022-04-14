@@ -1,12 +1,12 @@
 import assert from 'assert';
-import { createCleanVersionOfEvent, computeIncrementValue } from './event-processor.js';
+import { createCleanVersionOfActivity, computeIncrementValue } from './activity-processor.js';
 
-describe("event processing", () => {
+describe("activity processing", () => {
 
-    describe("createCleanVersionOfEvent", () => {
+    describe("createCleanVersionOfActivity", () => {
 
         it("should not alter supported characters 1", () => {
-            let event = {
+            let activity = {
                 var1: "aaa"
             };
             let knownCriteriaKeyValuePairs = {
@@ -15,12 +15,12 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
-            assert.strictEqual(cleanEvent.var1, "aaa");
+            let cleanActivity = createCleanVersionOfActivity(activity, knownCriteriaKeyValuePairs, knownSystemFields);
+            assert.strictEqual(cleanActivity.var1, "aaa");
         });
 
         it("should support multiple fields", () => {
-            let event = {
+            let activity = {
                 var1: "aaa",
                 var2: "bbb"
             };
@@ -31,12 +31,12 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
-            assert.strictEqual(cleanEvent.var1, "aaa");
+            let cleanActivity = createCleanVersionOfActivity(activity, knownCriteriaKeyValuePairs, knownSystemFields);
+            assert.strictEqual(cleanActivity.var1, "aaa");
         });
 
         it("should not alter supported characters 2", () => {
-            let event = {
+            let activity = {
                 var1: "some value with space"
             };
             let knownCriteriaKeyValuePairs = {
@@ -45,12 +45,12 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
-            assert.strictEqual(cleanEvent.var1, "some value with space");
+            let cleanActivity = createCleanVersionOfActivity(activity, knownCriteriaKeyValuePairs, knownSystemFields);
+            assert.strictEqual(cleanActivity.var1, "some value with space");
         });
 
         it("should eliminate unknown fields", () => {
-            let event = {
+            let activity = {
                 var1: "aaa",
                 what: "atypical"
             };
@@ -60,13 +60,13 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
-            assert.strictEqual(cleanEvent.var1, "aaa");
-            assert.strictEqual(cleanEvent.what, undefined);
+            let cleanActivity = createCleanVersionOfActivity(activity, knownCriteriaKeyValuePairs, knownSystemFields);
+            assert.strictEqual(cleanActivity.var1, "aaa");
+            assert.strictEqual(cleanActivity.what, undefined);
         });
 
         it("should eliminate fields with unknown corresponding values even if keys are known", () => {
-            let event = {
+            let activity = {
                 var1: "aaa",
                 what: "atypical"
             };
@@ -80,13 +80,13 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
-            assert.strictEqual(cleanEvent.var1, "aaa");
-            assert.strictEqual(cleanEvent.what, undefined);
+            let cleanActivity = createCleanVersionOfActivity(activity, knownCriteriaKeyValuePairs, knownSystemFields);
+            assert.strictEqual(cleanActivity.var1, "aaa");
+            assert.strictEqual(cleanActivity.what, undefined);
         });
 
         it("should also keep entityId fields", () => {
-            let event = {
+            let activity = {
                 var1: "aaa",
                 userGuid: "123"
             };
@@ -96,14 +96,14 @@ describe("event processing", () => {
             let knownSystemFields = {
                 "userGuid": true
             };
-            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
+            let cleanActivity = createCleanVersionOfActivity(activity, knownCriteriaKeyValuePairs, knownSystemFields);
 
-            assert.strictEqual(cleanEvent.var1, "aaa");
-            assert.strictEqual(cleanEvent.userGuid, "123");
+            assert.strictEqual(cleanActivity.var1, "aaa");
+            assert.strictEqual(cleanActivity.userGuid, "123");
         });
 
         it("should also keep entityId fields", () => {
-            let event = {
+            let activity = {
                 var1: "aaa",
                 stringField: "123",
                 numericField: 123
@@ -115,11 +115,11 @@ describe("event processing", () => {
                 "stringField": true,
                 "numericField": true
             };
-            let cleanEvent = createCleanVersionOfEvent(event, knownCriteriaKeyValuePairs, knownSystemFields);
+            let cleanActivity = createCleanVersionOfActivity(activity, knownCriteriaKeyValuePairs, knownSystemFields);
 
-            assert.strictEqual(cleanEvent.var1, "aaa");
-            assert.strictEqual(cleanEvent.stringField, "123");
-            assert.strictEqual(cleanEvent.numericField, 123);
+            assert.strictEqual(cleanActivity.var1, "aaa");
+            assert.strictEqual(cleanActivity.stringField, "123");
+            assert.strictEqual(cleanActivity.numericField, 123);
         });
 
     });
@@ -127,7 +127,7 @@ describe("event processing", () => {
     describe("computeIncrementValue", () => {
 
         it("should return a value of 1 for count", () => {
-            const event = {
+            const activity= {
                 foo: "bar"
             };
             const criterion = {
@@ -138,12 +138,12 @@ describe("event processing", () => {
                     type: "count",
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 1);
         });
 
         it("should return a value of 1 for count even if another value erroneously provided", () => {
-            const event = {
+            const activity= {
                 foo: "bar"
             };
             const criterion = {
@@ -155,12 +155,12 @@ describe("event processing", () => {
                     value: 4
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 1);
         });
 
         it("should default to a value of 1 for sum", () => {
-            const event = {
+            const activity= {
                 foo: "bar"
             };
             const criterion = {
@@ -171,12 +171,12 @@ describe("event processing", () => {
                     type: "sum",
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 1);
         });
 
         it("should return a value of 1 for sum if a non-number 'value' is provided", () => {
-            const event = {
+            const activity= {
                 foo: "bar"
             };
             const criterion = {
@@ -188,12 +188,12 @@ describe("event processing", () => {
                     value: "this-is-not-valid"
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 1);
         });
 
         it("should return a value of 1 for sum if a null 'value' is provided", () => {
-            const event = {
+            const activity= {
                 foo: "bar"
             };
             const criterion = {
@@ -205,12 +205,12 @@ describe("event processing", () => {
                     value: null
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 1);
         });
 
         it("should return a value of 1 for sum if a empty string 'value' is provided", () => {
-            const event = {
+            const activity= {
                 foo: "bar"
             };
             const criterion = {
@@ -222,12 +222,12 @@ describe("event processing", () => {
                     value: ''
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 1);
         });
 
         it("should return the value specified for sum", () => {
-            const event = {
+            const activity= {
                 foo: "bar"
             };
             const criterion = {
@@ -239,12 +239,12 @@ describe("event processing", () => {
                     value: 3
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 3);
         });
 
         it("should return the value from the field specified for sum", () => {
-            const event = {
+            const activity= {
                 foo: 2
             };
             const criterion = {
@@ -256,12 +256,12 @@ describe("event processing", () => {
                     valueField: "foo"
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 2);
         });
 
         it("should return the value from the field specified for sum even if fieldName has a space", () => {
-            const event = {
+            const activity= {
                 ["foo bar"]: 2
             };
             const criterion = {
@@ -273,12 +273,12 @@ describe("event processing", () => {
                     valueField: "foo bar"
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 2);
         });
 
         it("should return the value from the field specified for sum even if fieldName has a hyphen", () => {
-            const event = {
+            const activity= {
                 ["foo-bar"]: 2
             };
             const criterion = {
@@ -290,12 +290,12 @@ describe("event processing", () => {
                     valueField: "foo-bar"
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 2);
         });
 
         it("should default to 1 if the field specified for sum is missing", () => {
-            const event = {
+            const activity= {
                 foo: 2
             };
             const criterion = {
@@ -307,12 +307,12 @@ describe("event processing", () => {
                     valueField: "this_does_not_exist"
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 1);
         });
 
         it("should default to 1 if the field specified for sum is not a number", () => {
-            const event = {
+            const activity= {
                 foo: "this-is-not-a-number"
             };
             const criterion = {
@@ -324,12 +324,12 @@ describe("event processing", () => {
                     valueField: "foo"
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 1);
         });
 
         it("should default to 1 if the field specified for sum is null", () => {
-            const event = {
+            const activity= {
                 foo: 56
             };
             const criterion = {
@@ -341,13 +341,13 @@ describe("event processing", () => {
                     valueField: null
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 1);
         });
 
 
         it("should default to 1 if the value specified for sum is null", () => {
-            const event = {
+            const activity= {
                 foo: null
             };
             const criterion = {
@@ -359,12 +359,12 @@ describe("event processing", () => {
                     valueField: "foo"
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 1);
         });
 
         it("should default to 1 if the value specified for sum is empty string", () => {
-            const event = {
+            const activity= {
                 foo: 7
             };
             const criterion = {
@@ -376,7 +376,7 @@ describe("event processing", () => {
                     valueField: ''
                 }
             };
-            const retVal = computeIncrementValue(criterion, event);
+            const retVal = computeIncrementValue(criterion, activity);
             assert.deepStrictEqual(retVal, 1);
         });
 

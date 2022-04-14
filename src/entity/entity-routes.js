@@ -3,7 +3,7 @@ import { getEntityProgressTowardsGoal } from './entity-helper.js';
 
 const router = express.Router();
 
-router.get("/:entityIdField/:entityIdValue/:goalId", async (request, response) => {
+router.get("/:entityIdField/:entityIdValue/progress/:goalId", async (request, response) => {
     // TODO authorize request - put in common middleware?
 
     const entity = await getEntityProgressTowardsGoal(request.params.entityIdField, request.params.entityIdValue, request.params.goalId);

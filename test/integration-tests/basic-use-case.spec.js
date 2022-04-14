@@ -1,15 +1,15 @@
 import { v4 as uuidv4 } from "uuid";
 import neo4j from "neo4j-driver";
 import { Neo4jContainer } from "testcontainers";
+import assert from 'assert';
 
 import { addGoal } from './goal-test-helper.js';
 import { startTestAppServer, stopAppServer, assertEqualEntityProgress } from './integration-test-helper.js';
-import { sendEvent } from './event-test-helper.js';
+import { sendEvent } from './activity-test-helper.js';
 import { getProgress } from './entity-progress-test-helper.js';
 import { log } from '../../src/utility/logger.js'
 
 // TODO - switch to Jest - Easier syntax and allows proper shutdown of express
-// TODO - tests hang when a failure occurs. Can we ensure proper cleanup? May happen automatically with Jest.
 
 describe('Basic Use Cases', function () {
 
@@ -89,7 +89,7 @@ describe('Basic Use Cases', function () {
 
         assertEqualEntityProgress(progress.data, {
             userId: userId,
-            goalProgress: [{
+            goalProgress: {
                 id: goalId,
                 isComplete: false,
                 name: "Mobile Power User",
@@ -98,7 +98,7 @@ describe('Basic Use Cases', function () {
                     progress: 1,
                     threshold: 3,
                 }]
-            }]
+            }
         });
 
         await sendEvent({
@@ -121,7 +121,7 @@ describe('Basic Use Cases', function () {
 
         assertEqualEntityProgress(progress2.data, {
             userId: userId,
-            goalProgress: [{
+            goalProgress: {
                 id: goalId,
                 name: "Mobile Power User",
                 isComplete: true,
@@ -131,26 +131,23 @@ describe('Basic Use Cases', function () {
                     progress: 3,
                     threshold: 3,
                 }]
-            }]
+            }
         });
 
     }).timeout(120000);
 
-    it('should reject request to create goal not adhering to goal schema', async () => {
+    it('should reject request to create a goal not adhering to goal schema', async () => {
 
         let userId = `test-user-${uuidv4()}`;
 
-        try {
-            const res = await addGoal({
-                name: "Invalid Goal",
-                description: "Use our fancy new mobile app to gain additional points!",
-                points: 10,
-                criteria: "this-is-not-valid-criteria"
-            });
-            assert.fail("Goal creation should have failed")
-        } catch (err) {
-            assert.equal(err, "what")
-        }
+        const res = await addGoal({
+            name: "Invalid Goal",
+            description: "Use our fancy new mobile app to gain additional points!",
+            points: 10,
+            criteria: "this-is-not-valid-criteria"
+        });
+        assert.equal(res.status, 400);
+        assert.equal(res.statusText, "Bad Request");
 
     }).timeout(120000);
 
@@ -202,7 +199,7 @@ describe('Basic Use Cases', function () {
 
         assertEqualEntityProgress(progress.data, {
             userId: userId,
-            goalProgress: [{
+            goalProgress: {
                 id: goalId,
                 isComplete: false,
                 name: "Repeat Customer",
@@ -217,7 +214,7 @@ describe('Basic Use Cases', function () {
                     id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
                     threshold: 2,
                 }]
-            }]
+            }
         });
 
         await sendEvent({
@@ -270,7 +267,7 @@ describe('Basic Use Cases', function () {
 
         assertEqualEntityProgress(progress3.data, {
             userId: userId,
-            goalProgress: [{
+            goalProgress: {
                 id: goalId,
                 name: "Repeat Customer",
                 isComplete: false,
@@ -285,7 +282,7 @@ describe('Basic Use Cases', function () {
                     id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
                     threshold: 2,
                 }]
-            }]
+            }
         });
 
         await sendEvent({
@@ -300,7 +297,7 @@ describe('Basic Use Cases', function () {
 
         assertEqualEntityProgress(progress4.data, {
             userId: userId,
-            goalProgress: [{
+            goalProgress: {
                 id: goalId,
                 name: "Repeat Customer",
                 isComplete: true,
@@ -316,7 +313,7 @@ describe('Basic Use Cases', function () {
                     id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
                     threshold: 2,
                 }]
-            }]
+            }
         });
 
     }).timeout(120000);

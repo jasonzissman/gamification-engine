@@ -8,19 +8,19 @@
   "basePath": "/v1",
   "tags": [
     {
-      "name": "goal",
-      "description": "Objectives that entities can achieve. Often called badges or trophies"
+      "name": "Goals",
+      "description": "Objectives such as badges, trophies, or user journeys"
     },
     {
-      "name": "event",
-      "description": "Activities that contributes towards achieving a goal"
+      "name": "Activities",
+      "description": "Activities that cause entities to make progress towards a goal"
     },
     {
-      "name": "entity",
-      "description": "Things that can make progress towards achieving goals. Most often a system's users"
+      "name": "Goal Progress",
+      "description": "Progress that entities (e.g. users) have made towards achieving goals"
     },
     {
-      "name": "health",
+      "name": "Health",
       "description": "Simple application health check"
     }
   ],
@@ -32,7 +32,7 @@
     "/goals": {
       "post": {
         "tags": [
-          "goal"
+          "Goals"
         ],
         "summary": "Create a new goal",
         "description": "Create a new goal for entities to achieve",
@@ -55,6 +55,9 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "Goal created"
+          },
           "405": {
             "description": "Invalid input"
           }
@@ -64,7 +67,7 @@
     "/goals/{goalId}": {
       "get": {
         "tags": [
-          "goal"
+          "Goals"
         ],
         "summary": "Get goal by id",
         "description": "Fetch goal by id",
@@ -85,14 +88,116 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "type": "object",
-              "items": {
-                "$ref": "http://localhost:3000/schemas/goal.schema.json"
-              }
+              "$ref": "http://localhost:3000/schemas/goal.schema.json"
             }
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/activities": {
+      "post": {
+        "tags": [
+          "Activities"
+        ],
+        "summary": "Report a new activity",
+        "description": "Report an activity that may contribute towards an entity acheiving a goal",
+        "operationId": "reportActivity",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "activity",
+            "description": "Activity object containing any combination of key value pairs",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "example": {
+                "userId": "john_doe_1234",
+                "action": "logged-in",
+                "foo": "bar"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity reported"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/entities/{entityIdField}/{entityIdValue}/progress/{goalId}": {
+      "get": {
+        "tags": [
+          "Goal Progress"
+        ],
+        "summary": "Get an entity's progress towards a goal",
+        "description": "Fetch the progress made towards a goal by a specific entity",
+        "operationId": "getGoalProgress",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "entityIdField",
+            "in": "path",
+            "description": "Entity id field",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "entityIdValue",
+            "in": "path",
+            "description": "Entity id value",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "goalId",
+            "in": "path",
+            "description": "Goal id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "http://localhost:3000/schemas/goalProgress.schema.json"
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Get application health",
+        "description": "Run a simple diagnostic health check",
+        "operationId": "getHealth",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "application healthy"
           }
         }
       }

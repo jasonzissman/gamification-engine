@@ -12,17 +12,13 @@ let APP_SERVER;
 
 async function issueHttpGet(pathAndParams) {
     const url = `${TEST_APP_BASE_URL}/${pathAndParams}`;
-    log(`GET issued to ${url}.`);
     let response = await axios.get(url, { validateStatus: false });
-    log(`GET response received from ${url}.`);
     return response;
 };
 
 async function issueHttpPost(pathAndParams, body, headers) {
     const url = `${TEST_APP_BASE_URL}/${pathAndParams}`;
-    log(`POST issued to ${url}.`);
     let response = await axios.post(url, body, { headers: headers, validateStatus: false });
-    log(`POST response received from ${url}.`);
     return response;
 };
 
@@ -81,12 +77,11 @@ function normalizeGeneratedValues(progress) {
                 progress['completionTimestamp'] = 'a-valid-timestamp'
             }
 
-
         }  else if (typeof progress[key] === 'object') {
             normalizeGeneratedValues(progress[key]);
         }
 
-        if (key === "criteria") {
+        if (key === "criteriaProgress") {
             progress[key].sort((c1,c2) => {
                 return c1.description?.localeCompare(c2.description)}
             );

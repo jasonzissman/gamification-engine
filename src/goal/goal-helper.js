@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { persistGoalAndCriteria, getSpecificGoal } from '../database/db-helper.js';
-import { generateCleanField, generateObjectWithCleanFields } from '../event/event-fields-helper.js';
+import { generateCleanField, generateObjectWithCleanFields } from '../activity/activity-fields-helper.js';
 
 function isAggregationValid(aggregation) {
     let isValid = aggregation && aggregation.type;

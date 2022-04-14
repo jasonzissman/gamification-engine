@@ -11,15 +11,7 @@ async function getGoals() {
     return issueHttpGet(pathAndParams);
 }
 
-async function setGoalState(goalId, state) {
-    let pathAndParams = `goals/${goalId}/state`;
-    const body = { state: state };
-    const headers = {"Content-Type": "application/json"};
-    return issueHttpPost(pathAndParams, body, headers);
-}
-
 export {
     addGoal,
-    getGoals,
-    setGoalState
+    getGoals
 };

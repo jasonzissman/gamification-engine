@@ -73,22 +73,33 @@ async function getSpecificGoal(goalId) {
 }
 
 async function getEntityProgress(entityIdField, entityIdValue, goalId) {
-    const entityId = `${entityIdField}=${entityIdValue}`;
-    const query = `MATCH (g:Goal {id: $goalId}) -[:HAS_CRITERIA]-> (c:Criteria) OPTIONAL MATCH (e:Entity {id: $entityId}) -[hmpc:HAS_MADE_PROGRESS]-> (c) OPTIONAL MATCH (g) <-[hcg:HAS_COMPLETED]- (e:Entity {id: $entityId}) RETURN g{id:g.id,name:g.name,completionTimestamp:toFloat(hcg.completionTimestamp),criteria:collect(c{id:c.id,description:c.description,threshold:c.threshold,progress:hmpc.value})}`;
-    const results = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId, goalId });
-    return {
+    const retVal = {
         [entityIdField]: entityIdValue,
-        goalProgress: results.map(r => {
-            if (r.completionTimestamp !== null && r.completionTimestamp > 0) {
-                r.isComplete = true;
-            } else {
-                r.isComplete = false;
-                delete r["completionTimestamp"];
-            }
-            r.criteria?.filter(c => c?.progress === null).forEach(c => { c.progress = 0; });
-            return r;
-        })
+        goalProgress: undefined
     };
+    const entityId = `${entityIdField}=${entityIdValue}`;
+    const query = `MATCH (g:Goal {id: $goalId}) -[:HAS_CRITERIA]-> (c:Criteria) OPTIONAL MATCH (e:Entity {id: $entityId}) -[hmpc:HAS_MADE_PROGRESS]-> (c) OPTIONAL MATCH (g) <-[hcg:HAS_COMPLETED]- (e:Entity {id: $entityId}) RETURN g{id:g.id,name:g.name,completionTimestamp:toFloat(hcg.completionTimestamp),criteriaProgress:collect(c{id:c.id,description:c.description,threshold:c.threshold,progress:hmpc.value})}`;
+    const results = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId, goalId });
+    
+    if (results && results[0]) {
+        retVal.goalProgress = {
+            ...results[0]
+        };
+        if (retVal.goalProgress.completionTimestamp !== null && retVal.goalProgress.completionTimestamp > 0) {
+            retVal.goalProgress.isComplete = true;
+        } else {
+            retVal.goalProgress.isComplete = false;
+            delete retVal.goalProgress["completionTimestamp"];
+        }
+        retVal.goalProgress.criteriaProgress?.filter(c => {
+            return !c?.progress || c?.progress === null
+        }).forEach(c => {
+            c.progress = 0;
+        });
+    }
+
+    return retVal;
+
 }
 
 async function updateEntityProgress(entityIdField, entityIdValue, criterion, incrementValue) {
@@ -210,7 +221,7 @@ function createNeo4jFriendlyParams(goal, criteria) {
 
 }
 
-async function getCriteriaFulfilledByEvent(event) {
+async function getCriteriaFulfilledByActivity(event) {
 
     const receivedEventProps = Object.keys(event).map(k => `${k}=${event[k]}`);
 
@@ -271,7 +282,7 @@ export {
     persistGoalAndCriteria,
     generateNeo4jInsertGoalTemplate,
     createNeo4jFriendlyParams,
-    getCriteriaFulfilledByEvent,
+    getCriteriaFulfilledByActivity,
     closeAllDbConnections,
     KNOWN_CRITERIA_KEY_VALUE_PAIRS,
     KNOWN_SYSTEM_FIELDS

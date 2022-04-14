@@ -1,5 +1,5 @@
 import express from 'express';
-import { processEvent } from './event-processor.js';
+import { processActivity } from './activity-processor.js';
 
 const router = express.Router();
 
@@ -9,8 +9,7 @@ const router = express.Router();
  * and to speed up development. 
  */
 
-// Create a new event
-// HTTP POST <host>/events/
+// Create a new activity
 router.post("/", async (request, response) => {
 
     // TODO authorize request - put in middleware?
@@ -18,7 +17,7 @@ router.post("/", async (request, response) => {
     let startTime = new Date().getTime();
 
     let retVal = { status: "received" };
-    let promise = processEvent(request.body);
+    let promise = processActivity(request.body);
 
     if (request.query.waitForEventToFinishProcessing) {
         retVal.completedUpdates = await promise;

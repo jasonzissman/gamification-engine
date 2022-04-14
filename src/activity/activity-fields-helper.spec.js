@@ -1,7 +1,7 @@
 import assert from 'assert';
-import {  generateCleanField, generateObjectWithCleanFields } from './event-fields-helper.js';
+import {  generateCleanField } from './activity-fields-helper.js';
 
-describe("event processing", () => {
+describe("activity field cleansing", () => {
     describe("generateCleanField", () => {
         it("should support certain characters", ()=>{
             let actual = generateCleanField("abc 123 ABC _ + - \ / !@#$%^&*()[]");
