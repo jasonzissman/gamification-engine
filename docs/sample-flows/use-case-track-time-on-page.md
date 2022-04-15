@@ -12,10 +12,10 @@ First we invoke an HTTP POST to create the badge. Use the `/goals` API as follow
 {
   "name": "Bookworm",
   "description": "Spend at least 10 minutes reading website content",
-  "targetEntityIdField": "userId",
   "points": 100,
   "criteria": [
     {
+      "targetEntityIdField": "userId",
       "qualifyingEvent": {
         "action": "read-website-content"
       },
@@ -46,7 +46,7 @@ Next, as users read the content of our application, we invoke an HTTP POST again
 }
 ```
 
-To track progress towards a goal, the events that we send must include enough information to match the `criteria.[].qualifyingEvent` and `targetEntityIdField` fields that were provided when creating your goal. In our case, our example event includes `action=read-website-content`, `timeSentInSeconds`, and `userId`, as our "Bookworm" goal requires.
+To track progress towards a goal, the events that we send must include enough information to match the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields that were provided when creating your goal. In our case, our example event includes `action=read-website-content`, `timeSentInSeconds`, and `userId`, as our "Bookworm" goal requires.
 
 However, in this case, user john-doe-1234 only read for 500 seconds, not the required 600 seconds. As such, he has not met the goal yet. We invoke the `/entities/<entityId>` API to see how John (or any user) is tracking towards the Bookworm badge.
 

@@ -1,0 +1,235 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is the jz-gamification-engine API. The endpoints below allow clients to define goals, report goal-related activity, and fetch user progress towards goal completion.",
+    "version": "1.0.0",
+    "title": "jz-gamification-engine"
+  },
+  "basePath": "/api/v1",
+  "tags": [
+    {
+      "name": "Goals",
+      "description": "Objectives such as badges, trophies, or user journeys"
+    },
+    {
+      "name": "Activities",
+      "description": "Activities that cause entities to make progress towards a goal"
+    },
+    {
+      "name": "Goal Progress",
+      "description": "Progress that entities (e.g. users) have made towards achieving goals"
+    },
+    {
+      "name": "Health",
+      "description": "Simple application health check"
+    }
+  ],
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/goals": {
+      "post": {
+        "tags": [
+          "Goals"
+        ],
+        "summary": "Create a new goal",
+        "description": "Create a new goal for entities to achieve",
+        "operationId": "createGoal",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "goal",
+            "description": "Goal object defining the objective to achieve",
+            "required": true,
+            "schema": {
+              "$ref": "http://localhost:3000/schemas/goal.schema.json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Goal created"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/goals/{goalId}": {
+      "get": {
+        "tags": [
+          "Goals"
+        ],
+        "summary": "Get goal by id",
+        "description": "Fetch goal by id",
+        "operationId": "findPetsByStatus",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "goalId",
+            "in": "path",
+            "description": "Goal id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "http://localhost:3000/schemas/goal.schema.json"
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/activities": {
+      "post": {
+        "tags": [
+          "Activities"
+        ],
+        "summary": "Report a new activity",
+        "description": "Report an activity that may contribute towards an entity acheiving a goal",
+        "operationId": "reportActivity",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "activity",
+            "description": "Activity object containing any combination of key value pairs",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "example": {
+                "userId": "john_doe_1234",
+                "action": "logged-in",
+                "foo": "bar"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity reported"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/entities/{entityId}/progress/{goalId}": {
+      "get": {
+        "tags": [
+          "Goal Progress"
+        ],
+        "summary": "Get an entity's progress towards a specific goal",
+        "description": "Fetch the progress made towards a specific goal by a specific entity",
+        "operationId": "getGoalProgress",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "entityId",
+            "in": "path",
+            "description": "Entity id value",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "goalId",
+            "in": "path",
+            "description": "Goal id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "http://localhost:3000/schemas/goalProgress.schema.json"
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/entities/{entityId}/progress": {
+      "get": {
+        "tags": [
+          "Goal Progress"
+        ],
+        "summary": "Get an entity's progress towards all goals",
+        "description": "Fetch an entity's progress towards all configured goals",
+        "operationId": "getAllGoalProgress",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "entityId",
+            "in": "path",
+            "description": "Entity id value",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "http://localhost:3000/schemas/goalProgress.schema.json"
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Get application health",
+        "description": "Run a simple diagnostic health check",
+        "operationId": "getHealth",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "application healthy"
+          }
+        }
+      }
+    }
+  }
+}

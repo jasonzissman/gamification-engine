@@ -12,9 +12,9 @@ First we invoke an HTTP POST to create the badge. Use the `/goals` API as follow
   "name": "Best Selling Author",
   "description": "Be the author whose blog posts are read at least 1000 times.",
   "points": 500,
-  "targetEntityIdField": "blogAuthorId", 
   "criteria": [
     {
+      "targetEntityIdField": "blogAuthorId", 
       "qualifyingEvent": {
         "action": "view-blog-post",
       },
@@ -44,7 +44,7 @@ Next, as users view any blog post, we invoke an HTTP POST against the jz-gamific
 }
 ```
 
-To track progress towards a goal, the events that we send must include enough information to match the `criteria.[].qualifyingEvent` and `targetEntityIdField` fields that were provided when creating your goal. In our case, our example event includes `action=view-blog-post` and `blogAuthorId`, as our "Best Selling Author" goal requires. 
+To track progress towards a goal, the events that we send must include enough information to match the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields that were provided when creating your goal. In our case, our example event includes `action=view-blog-post` and `blogAuthorId`, as our "Best Selling Author" goal requires. 
 
 We see that author mark-twain-1234 has made some initial progress towards the goal. We invoke an HTTP GET against the `/entities/<entityId>` API to see how far he has gotten:
 

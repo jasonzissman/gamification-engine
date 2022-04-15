@@ -1,27 +1,29 @@
-const express = require('express');
-const entityHelper = require('./entity-helper');
+import express from 'express';
+import { getEntityProgressTowardsGoals } from './entity-helper.js';
 
 const router = express.Router();
 
-router.get("/:entityId", async (request, response) => {
-    // TODO authorize request - put in common middleware?
-    const entity = await entityHelper.getEntityProgress(request.params.entityId);
+// TODO authorize requests - put in common middleware?
+
+router.get("/:entityId/progress/:goalId", async (request, response) => {
+
+    const entity = await getEntityProgressTowardsGoals(request.params.entityId, request.params.goalId);
     if (entity) {
         response.status(200).send(entity);
     } else {
-        response.status(404).send({message: `no progress found for entity ${request.params.entityId}.`});
+        response.status(404).send({ message: `no progress found for entity ${request.params.entityIdField}=${request.params.entityIdValue}.` });
     }
 });
 
-// increment/decrement points for entity
-router.post("/:entityId/points", async (request, response) => {
-    // TODO authorize request - put in common middleware?
-    const result = await entityHelper.modifyPointsBalance(request.params.entityId, request.body.amount);
-    if (result.status === "invalid arguments") {
-        response.status(400).send(result.message);
+router.get("/:entityId/progress/", async (request, response) => {
+
+    const entity = await getEntityProgressTowardsGoals(request.params.entityId);
+    if (entity) {
+        response.status(200).send(entity);
     } else {
-        response.status(200).send(result.message);
+        response.status(404).send({ message: `no progress found for entity ${request.params.entityIdField}=${request.params.entityIdValue}.` });
     }
 });
 
-module.exports = router;
+
+export { router };

@@ -1,0 +1,60 @@
+{
+    "type": "object",
+    "description": "The progress an entity has made towards a goal",
+    "properties": {
+        "entityId": {
+            "type": "string",
+            "description": "The value of the field in received events that uniquely identifes the entity",
+            "example": "john_doe_1234"
+        },
+        "goalId": {
+            "type": "string",
+            "description": "A unique identifier for the goal",
+            "example": "2ad583c6-0c08-4a89-83bf-11be4da93923"
+        },
+        "goalName": {
+            "type": "string",
+            "description": "A short, human-readable name for the goal",
+            "example": "Mobile Power User"
+        },
+        "isComplete": {
+            "type": "boolean",
+            "description": "A boolean indicating whether the entity has satisfied all of the goal's criteria"
+        },
+        "completionTimestamp": {
+            "type": "integer",
+            "description": "(Optional) A timestamp indicating when the entity completed all the criteria in the goal",
+            "example": 1649792572030
+        },
+        "criteriaProgress": {
+            "type": "array",
+            "description": "The progress the entity has made towards all of the criteria in a goal.",
+            "items": {
+                "type": "object",
+                "description": "The progress the entity has made towards the criterion.",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "A unique identifier for the criterion",
+                        "example": "2ad583c6-0c08-4a89-83bf-11be4da93923"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "A human-understandable description for the criterion",
+                        "example": "Log in at least 3 times"
+                    },
+                    "progress": {
+                        "type": "integer",
+                        "description": "The current progress made by the entity towards the criterion's threshold",
+                        "example": 2
+                    },
+                    "threshold": {
+                        "type": "integer",
+                        "description": "The value at which point the criterion is satisfied",
+                        "example": 3
+                    }
+                }
+            }
+        }
+    }
+}

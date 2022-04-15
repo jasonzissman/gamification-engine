@@ -1,0 +1,78 @@
+{
+    "type": "object",
+    "description": "Objectives that entities can achieve. Often called badges or trophies",
+    "required": ["name","criteria"],
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "A short, human-readable name for the goal",
+            "example": "Mobile Power User"
+        },
+        "description": {
+            "type": "string",
+            "description": "A human-understandable description for the goal",
+            "example": "A goal awarded when a user logs into our mobile app at least 5 times"
+        },
+        "criteria": {
+            "type": "array",
+            "description": "A collection of criteria that must be fulfilled to complete the goal",
+            "items": {
+                "type": "object",
+                "description": "A specific set of requirements to be fulfilled",
+                "required": ["targetEntityIdField","qualifyingEvent", "aggregation", "threshold"],
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "A human-understandable description for the criterion",
+                        "example": "Log into the mobile app 5 times"
+                    },
+                    "targetEntityIdField": {
+                        "type": "string",
+                        "description": "The field in received events which identifies the unique entity for which criterion progress is tracked",
+                        "example": "userId"
+                    },
+                    "qualifyingEvent": {
+                        "type": "object",
+                        "description": "An open-ended key value map that defines the events which satisfy the criterion",
+                        "example": {
+                            "eventType": "user-logged-in",
+                            "platform": "mobile-app"
+                        }
+                    },
+                    "aggregation": {
+                        "type": "object",
+                        "description": "A configuration that describes how to increment progress towards the criterion",
+                        "required": [
+                            "type"
+                        ],
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "description": "Whether to increment criterion progress by 1 (count) or more than 1 (sum) each time a qualifying event is received",
+                                "enum": [
+                                    "count",
+                                    "sum"
+                                ],
+                                "example": "count"
+                            },
+                            "value": {
+                                "type": "integer",
+                                "description": "If aggregation.type='sum', then the value is added to the entity's criterion progress every time a qualifying event is received",
+                                "example": 2
+                            },
+                            "valueField": {
+                                "type": "string",
+                                "description": "If aggregation.type='sum', then the value of the field indicated by the property on the received is added to the entity's criterion progress every time a qualifying event is received",
+                                "example": "some-field-name"
+                            }
+                        }
+                    },
+                    "threshold": {
+                        "type": "integer",
+                        "description": "The value at which point the criterion is satisfied"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,44 @@
+version: "3"
+services:
+  neo4j:
+    image: neo4j:4.0.11
+    mem_limit: 2500m
+    ports: 
+      - 7474:7474
+      - 7687:7687
+    volumes:
+      - C://data//neo4j/conf:/conf
+      - C://data//neo4j/data:/data
+      - C://data//neo4j/import:/var/lib/neo4j/import
+      - C://data//neo4j/logs:/logs
+      - C://data//neo4j/plugins:/var/lib/neo4j/plugins
+    environment:
+      - NEO4J_dbms_memory_pagecache_size=2048m
+      - NEO4J_dbms.memory.heap.initial__size=2048m
+      - NEO4J_dbms_memory_heap_max__size=2048m
+      - dbms.memory.pagecache.size=2048m
+      - dbms.memory.heap.max_size=2048m
+    healthcheck:
+        test: wget http://localhost:7474 || exit 1
+        interval: 1s
+        timeout: 10s
+        retries: 20
+        start_period: 3s
+    networks:
+      - jz-gamification-engine-network
+  jz-gamification-engine:
+    build: .
+    ports: 
+      - 3000:3000
+    environment:
+      - NEO4J_BOLT_URI=bolt://neo4j:7687/
+      - NEO4J_USER=neo4j
+      - NEO4J_PW=password
+    networks:
+      - jz-gamification-engine-network
+    depends_on:
+      neo4j:
+        condition: service_healthy
+networks:
+  jz-gamification-engine-network:
+    driver: bridge

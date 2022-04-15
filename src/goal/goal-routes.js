@@ -1,12 +1,19 @@
-const express = require('express');
+import express from 'express';
+import fs from 'fs';
+import { Validator as SchemaValidator } from "express-json-validator-middleware";
+import { persistGoal, getGoal } from './goal-helper.js';
+
 const router = express.Router();
-const goalHelper = require('./goal-helper.js');
+const { validate } = new SchemaValidator()
+var goalSchema = JSON.parse(fs.readFileSync(`src/schemas/goal.schema.json`));
 
 // Create a new goal
 // HTTP POST <host>/goals/
-router.post("/", async (request, response) => {
+router.post("/", validate({ body: goalSchema }), async (request, response) => {
     // TODO validate payload not too big
-    let outcome = await goalHelper.persistGoal(request.body);
+    // TODO authorize request - put in middleware?
+
+    let outcome = await persistGoal(request.body);
 
     if (outcome.status === "ok") {
         response.status(200).send(outcome);
@@ -21,40 +28,12 @@ router.post("/", async (request, response) => {
     }
 });
 
-// Update specific goal state
-// HTTP POST <host>/goals/<goalID>/state
-router.post("/:goalId/state", async (request, response) => {
-    let outcome = await goalHelper.updateGoalState(request.params.goalId, request.body.state);
-    if (outcome.status = "bad_arguments") {
-        response.status(400).send({ status: `Must provide valid goalId and state must be 'enabled' or 'disabled'.` });
-    } else if (outcome.status = "not_found") {
-        response.status(404).send({ status: `Goal ${request.params.goalId} not found.` });
-    } else if (outcome.status = "ok") {
-        response.status(200).send({status: "ok", message: `Goal ${request.params.goalId} set to ${request.body.state}.`});
-    } else {
-        response.status(500).send({ status: "server error" });
-    }
-});
-
-// // Update existing goal
-// // HTTP PUT <host>/goals/<goal-id>
-// TODO - anything changed here must be reflected in LOOKUP_MAPS during event processing!
-// router.put("/:goalId", (request, response) => {
-//     // TODO invoke goal update routine
-//     response.status(200).send({ status: "ok" });
-// });
-
-// Get goals
-// HTTP GET <host>/goals/
-router.get("/", async (request, response) => {
-    const allGoals = await goalHelper.getAllGoals();
-    response.status(200).send(allGoals);
-});
-
-// Get specific goal metadata
+// Get specific goal
 // HTTP GET <host>/goals/<goalID>/
 router.get("/:goalId", async (request, response) => {
-    const goal = await goalHelper.getSpecificGoal(request.params.goalId);
+    // TODO authorize request - put in middleware?
+
+    const goal = await getGoal(request.params.goalId);
     if (goal) {
         response.status(200).send(goal);
     } else {
@@ -62,15 +41,5 @@ router.get("/:goalId", async (request, response) => {
     }
 });
 
-// Get criteria for specific goal
-// HTTP GET <host>/goals/<goalID>/criteria
-router.get("/:goalId/criteria", async (request, response) => {
-    const allCriteriaForGoal = await goalHelper.getAllCriteriaForGoal(request.params.goalId);
-    if (allCriteriaForGoal) {
-        response.status(200).send(allCriteriaForGoal);
-    } else {
-        response.status(404).send({ status: `Goal ${request.params.goalId} not found.` });
-    }
-});
 
-module.exports = router;
+export { router };

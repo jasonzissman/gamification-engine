@@ -1,17 +1,14 @@
-const integrationTestHelper = require('./integration-test-helper');
+import { issueHttpGet } from './integration-test-helper.js';
 
-async function getProgress(entityId) {
-    let pathAndParams = `entities/${entityId}`;
-    return integrationTestHelper.issueHttpGet(pathAndParams);
+async function getProgress(entityId, goalId) {
+    let pathAndParams = `api/v1/entities/${entityId}/progress`;
+    if (goalId) {
+        pathAndParams += `/${goalId}`;
+    }
+    return issueHttpGet(pathAndParams);
 }
 
-async function modifyPoints(entityId, amount) {
-    let pathAndParams = `entities/${entityId}/points`;
-    const headers = { "Content-Type": "application/json" };
-    return integrationTestHelper.issueHttpPost(pathAndParams, { amount: amount }, headers);
-}
 
-module.exports = {
-    getProgress,
-    modifyPoints
+export {
+    getProgress
 };

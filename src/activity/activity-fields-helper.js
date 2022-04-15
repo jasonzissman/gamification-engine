@@ -5,7 +5,7 @@ function generateCleanField(field) {
     } else if (!isNaN(field)) {
         return field; 
     } else {
-        return;
+        return undefined;
     }
 }
 
@@ -15,7 +15,9 @@ function generateObjectWithCleanFields(object) {
     for (let key in object) {
         let cleanKey = generateCleanField(key);
         let cleanValue = generateCleanField(object[key]);
-        cleanObject[cleanKey] = cleanValue;
+        if (cleanValue && cleanValue !== null) {
+            cleanObject[cleanKey] = cleanValue;
+        }
     }
 
     return cleanObject;
@@ -25,7 +27,7 @@ function generateNormalizedFieldValueKey(criterionKey, criterionValue) {
     return `${criterionKey}=${criterionValue}`;
 }
 
-module.exports = {
+export {
     generateObjectWithCleanFields,
     generateCleanField,
     generateNormalizedFieldValueKey

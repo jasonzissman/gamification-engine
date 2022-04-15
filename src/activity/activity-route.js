@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import { processActivity } from './activity-processor.js';
+
 const router = express.Router();
-const eventProcessor = require('./event-processor');
 
 /**
  * Note - Ideally, we would subscribe to a message broker (e.g. Kafka) for
@@ -8,22 +9,22 @@ const eventProcessor = require('./event-processor');
  * and to speed up development. 
  */
 
-// Create a new event
-// HTTP POST <host>/events/
+// Create a new activity
 router.post("/", async (request, response) => {
+
+    // TODO authorize request - put in middleware?
 
     let startTime = new Date().getTime();
 
     let retVal = { status: "received" };
-    let promise = eventProcessor.processEvent(request.body);
+    let promise = processActivity(request.body);
 
     if (request.query.waitForEventToFinishProcessing) {
-        retVal.completedUpdates = await promise;        
+        retVal.completedUpdates = await promise;
+        retVal.timingMs = (new Date().getTime() - startTime);
     }
-
-    retVal.timingMs = (new Date().getTime() - startTime);
 
     response.status(200).send(retVal);
 });
 
-module.exports = router;
+export { router };
