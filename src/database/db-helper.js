@@ -73,32 +73,39 @@ async function getSpecificGoal(goalId) {
 }
 
 async function getEntityProgress(entityIdField, entityIdValue, goalId) {
-    const retVal = {
-        [entityIdField]: entityIdValue,
-        goalProgress: undefined
-    };
+    let retVal = [];
     const entityId = `${entityIdField}=${entityIdValue}`;
-    const query = `MATCH (g:Goal {id: $goalId}) -[:HAS_CRITERIA]-> (c:Criteria) OPTIONAL MATCH (e:Entity {id: $entityId}) -[hmpc:HAS_MADE_PROGRESS]-> (c) OPTIONAL MATCH (g) <-[hcg:HAS_COMPLETED]- (e:Entity {id: $entityId}) RETURN g{id:g.id,name:g.name,completionTimestamp:toFloat(hcg.completionTimestamp),criteriaProgress:collect(c{id:c.id,description:c.description,threshold:c.threshold,progress:hmpc.value})}`;
+
+    let goalIdFilter = ``;
+    if (goalId) {
+        goalIdFilter = `{id: $goalId}`;
+    }
+
+    const query = `MATCH (g:Goal ${goalIdFilter}) -[:HAS_CRITERIA]-> (c:Criteria) OPTIONAL MATCH (e:Entity {id: $entityId}) -[hmpc:HAS_MADE_PROGRESS]-> (c) OPTIONAL MATCH (g) <-[hcg:HAS_COMPLETED]- (e:Entity {id: $entityId}) RETURN g{id:g.id,name:g.name,completionTimestamp:toFloat(hcg.completionTimestamp),criteriaProgress:collect(c{id:c.id,description:c.description,threshold:c.threshold,progress:hmpc.value})}`;
     const results = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId, goalId });
     
     if (results && results[0]) {
-        retVal.goalProgress = {
-            ...results[0]
-        };
-        if (retVal.goalProgress.completionTimestamp !== null && retVal.goalProgress.completionTimestamp > 0) {
-            retVal.goalProgress.isComplete = true;
-        } else {
-            retVal.goalProgress.isComplete = false;
-            delete retVal.goalProgress["completionTimestamp"];
-        }
-        retVal.goalProgress.criteriaProgress?.filter(c => {
-            return !c?.progress || c?.progress === null
-        }).forEach(c => {
-            c.progress = 0;
-        });
+        retVal = results.map(result => {
+            if (result.completionTimestamp !== null && result.completionTimestamp > 0) {
+                result.isComplete = true;
+            } else {
+                result.isComplete = false;
+                delete result["completionTimestamp"];
+            }
+            result.criteriaProgress?.filter(c => {
+                return !c?.progress || c?.progress === null
+            }).forEach(c => {
+                c.progress = 0;
+            });
+            return result;
+        })
     }
 
-    return retVal;
+    if (goalId) {
+        return retVal[0];
+    } else {
+        return retVal;
+    }
 
 }
 

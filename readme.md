@@ -1,61 +1,37 @@
 # JZ Gamification Engine
-*jz-gamification-engine* is a platform that facilitates common gamification features such as badges, user journeys, and point systems. 
+*jz-gamification-engine* is a platform that facilitates common gamification features. It is a backend service meant to run alongside existing applications that want to offer gamification features in a decoupled, performant fashion. 
 
-## Features and Flows
-The gamification engine is a backend service meant to run alongside existing applications that want to offer gamification features in a decoupled, performant fashion. It currently supports:
+*jz-gamification-engine* currently supports:
 
 - Custom goal definition (e.g. badges or user journeys)
 - Goal progress tracking
-- Real time goal completion notifications
 
 These features can be used to enable gamification flows such as:
 
 - Awarding a badge to **blog posts** that are read 1000+ times. 
 - Awarding a badge to **blog post authors** whose content are read 1000+ times. 
 - Requiring **new users** to complete a journey that involves visiting 3 tutorial pages and writing a first blog post before gaining access to greater functionality.
-- Awarding a badge to **users** that log in using a mobile app 5 times.  
 
 See the [documented sample flows](./docs/sample-flows/) to learn how to facilitate these features.
 
 ## Getting Started
-> As of April 2022, this project is very young. I welcome feedback and suggestions, but keep in mind that this platform is not battle tested.
+Today the engine is most easily run via docker compose. A more mature deployment system should become available at a later date.
 
-See the [getting started guide](./docs/getting-started.md) to learn how to deploy the engine and start interacting with it.
-
-### Detailed APIs
-[Swagger APIs](TODO_PUT_LINK_HERE)
-
-### System Architecture and Design
-[Detailed system architecture documentation](docs/system-architecture.md)
-
-## Local Development
-
-### Setup
-```
-npm install
+```bash
+## You can modify memory settings and ports in `docker-compose.yaml`
+docker compose up
 ```
 
-### Running Unit Tests
+The API documentation will be available at `http://localhost:3000/api/v1/docs/` after startup. The APIs enable all of the engine's features via three basic operations:
 
-```
-npm run unit-tests
-```
+1. Creating `goals` relevant to your application with the **Goals API**.
+2. Send usage `activity` as users interact with your applcation with the **Activities API**.
+3. Check on an `entity's` progress towards goals **Goal Progress API**.
 
-### Running Integration Tests
-
-```
-npm run integration-tests
-```
-
-### Running the app (Node)
-```
-npm start
-```
-
+See the [documented sample flows](./docs/sample-flows/) for examples on how to interact with the APIs.
 
 ## TODO!!!!
-* Use schema in response validation
-* Can we make this Docker friendly?
+* Redesign entity ID scheme. Different fields (e.g. userId and authorId) may point to the same person.
 * Perf test: create baseline that reliably executes in given environment (ram/CPU/etc).
 * Perf test: make tests deterministic!
 * Push notifications when goal completed.
@@ -65,7 +41,5 @@ npm start
 * Put in timing/profiling options to warn if things are going too slow
 - Establish perf test baseline
 - Cache common/repeated calls
-- Dockerize neo4j
-- Update API docs
 - support mutli-node or clustered model (broadcast to clients when known attributes change)
 - use Jest instead of Mocha

@@ -1,23 +1,24 @@
 
-# Mobile Power User - a simple badge
-Let's walk through the creation and usage of a simple "Mobile Power User" badge. This badge will be awarded to users who log into our mobile app at least 5 times. Anyone who completes the badge will be awarded 10 points.
+# Mobile Power User
+Let's walk through the creation and usage of a simple "Mobile Power User" goal. The purpose of this goal will be to incentivize users to use our company's new mobile application. Users who successfully complete this goal will be awarded a badge that will be put on display in their profile and give them access to additional features.
 
-## Creating the Badge
-First we invoke an HTTP POST to create the badge. Use the `/goals` API as follows:
+## Creating the Goal
+First we invoke an HTTP POST to create the goal. We use the **Goals** API as follows:
 
-```
-// HTTP POST 
-// https://<host>/goals
+```json
+// HTTP POST https://<host>/api/v1/goals
+
+// Request Body
 {
   "name": "Mobile Power User",
-  "description": "Log in at least 5 times on a mobile device",
-  "points": 10,
+  "description": "Award a goal to users that log in at least 5 times from our mobile app.",
   "criteria": [
     {
-      "targetEntityIdField": "userId",
+      "description": "Log in 5 times from our mobile app.",
+  	  "targetEntityIdField": "userId",
       "qualifyingEvent": {
-        "action": "log-in",
-        "platform": "mobile"
+        "action": "logged-in",
+        "platform": "mobile-app"
       },
       "aggregation": {
       	"type":"count"
@@ -26,107 +27,154 @@ First we invoke an HTTP POST to create the badge. Use the `/goals` API as follow
     }
   ]
 }
-```
 
-You can read this goal as *A badge that is completed for a given `userId` after the gamification system receives 5 events with `action=log-in`, `platform=mobile`, and `userId=*`*.
-
-## Sending Usage Events
-Next, as users log into our application, we invoke an HTTP POST against the jz-gamification-engine `/events` API:
-
-**Request**
-```
-// HTTP POST 
-// https://<host>/events
+// Response Body
 {
-  "action": "log-in",
-  "platform": "mobile",
-  "userId": "john-doe-1234",
-  "foo": "bar" // there can be extra data, it will just be ignored
+    "status": "ok",
+    "goalId": "fb1e71f7-2cc2-4194-b69c-919f8039afcb"
 }
 ```
 
-To track progress towards a goal, the events that we send must include enough information to match the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields that were provided when creating your goal. In our case, our example event includes `action=log-in`, `platform=mobile`, and `userId`, as our "Mobile Power User" goal requires. 
+You can read this goal as *A goal that is completed after jz-gamification-engine receives 5 events with `action=logged-in` and `platform=mobile-app` for a given `userId`*.
 
-We see that user john-doe-1234 has made some initial progress towards the goal. We invoke an HTTP GET against the `/entities/<entityId>` API to see how far he has gotten:
+## Reporting Activity
+Next, as users log into our application, we invoke an HTTP POST against the jz-gamification-engine **Activities** API.
+
+> The platform will eventually support integration with event brokers like Kafka so that clients do not have to send requests directly to the engine.
+
+```json
+// HTTP POST https://<host>/api/v1/activities
+
+// Request Body
+{
+  "clientId": "client-app-1234",
+  "action": "logged-in",
+  "platform": "mobile-app",
+  "userId": "john-doe-1234",
+  "foo": "bar"
+}
+
+// Response Body
+{
+    "status": "received"
+}
+```
+
+You can read this activity as "John Doe logged in using the mobile app". This activity matches the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields defined in our *Mobile Power User* goal; consequently, John Doe has now made progress towards achieving this goal.
+
+Note that *jz-gamification-engine* only considers key/value combinations that appear in existing goals. This is done to optimize activity processing. In this example, the other activity fields (`clientId` and `foo`) are simply ignored by the engine.
+
+## Checking Progress
+Let's invoke an HTTP GET against the **Goal Progress API** to see how close John Doe is to achieving this goal:
 
 **Request**
-```
-// HTTP GET 
-// https://<host>/entities/john-doe-1234
-```
+```json
+// HTTP GET https://<host>/api/v1/entities/userId/john-doe-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
 
-**Response**
-```
+// Response Body
 {
-    entityId: 'john-doe-1234',
-    points: 0,
-    goals: {
-        goal_12345678: {
-            criteriaIds: {
-                criteria_9999: {
-                    isComplete: false,
-                    value: 1
-                }
-            },
-            isComplete: false
-        }
+    "userId": "john-doe-1234",
+    "goalProgress": {
+        "name": "Mobile Power User",
+        "isComplete": false,
+        "id": "fb1e71f7-2cc2-4194-b69c-919f8039afcb",
+        "criteriaProgress": [
+            {
+                "description": "Log in 5 times from our mobile app.",
+                "progress": 1,
+                "threshold": 5,
+                "id": "9fa51a7d-7356-46c6-aec1-02d6b74bdd76"
+            }
+        ],
     }
-```
-
-John has not yet completed the required criteria to satisfy this goal. He has only logged one event that meets the criteria, but the goal requires 5 such events. 
-
-Let's say John logs in again tomorrow but on his desktop instead of the mobile app. We receive an event like this:
-
-**Request**
-```
-// HTTP POST 
-// https://<host>/events
-{
-  "action": "log-in",
-  "platform": "desktop",
-  "userId": "john-doe-1234",
-  "foo": "bar" // there can be extra data, it will just be ignored
 }
 ```
 
-This event would **not** contribute towards John completing the goal since it does not contain the requires `platform=mobile` attribute. Ultimately, this event will be discarded as it does not apply towards any system goals.
+## Finishing the Goal
 
-But, later that day, John logs into the mobile app 4 more times:
+John has not yet completed the required criteria to satisfy this goal since he has only logged into the mobile app one time. Let's simulate John logging into the mobile app 4 more times:
 
-**Request (x4)**
-```
-// HTTP POST (x4)
-// https://<host>/events
+```json
+// HTTP POST https://<host>/api/v1/activities (x4)
+
+// Request Body (x4)
 {
-  "action": "log-in",
-  "platform": "mobile",
+  "clientId": "client-app-1234",
+  "action": "logged-in",
+  "platform": "mobile-app",
   "userId": "john-doe-1234",
-  "foo": "bar" // there can be extra data, it will just be ignored
+  "foo": "bar"
+}
+
+// Response Body (x4)
+{
+    "status": "received"
 }
 ```
 
-We check John's progress one more time and see that he has now completed the goal requirements:
+We'll check the **Goal Progress API** one more time to see John's progress towards this specific goal:
 
 **Request**
-```
-// HTTP GET 
-// https://<host>/entities/john-doe-1234
-```
+```json
+// HTTP GET https://<host>/api/v1/entities/userId/john-doe-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
 
-**Response**
-```
+// Response Body
 {
-    entityId: 'john-doe-1234',
-    points: 10,
-    goals: {
-        goal_12345678: {
-            criteriaIds: {
-                criteria_9999: {
-                    isComplete: true,
-                    value: 5
-                }
-            },
-            isComplete: true
+    "name": "Mobile Power User",
+    "isComplete": true,
+    "id": "fb1e71f7-2cc2-4194-b69c-919f8039afcb",
+    "completionTimestamp": 1650022019914,
+    "criteriaProgress": [
+        {
+            "description": "Log in 5 times from our mobile app.",
+            "progress": 5,
+            "threshold": 5,
+            "id": "9fa51a7d-7356-46c6-aec1-02d6b74bdd76"
         }
-    }
+    ]
+}
 ```
+
+## Seeing John's Progress Towards All Goals
+
+You can generically fetch a user's progress against all configured goals in this manner:
+
+**Request**
+```json
+// HTTP GET https://<host>/api/v1/entities/userId/john-doe-1234/progress
+
+// Response Body
+[
+  {
+    "name": "Mobile Power User",
+    "isComplete": true,
+    "id": "fb1e71f7-2cc2-4194-b69c-919f8039afcb",
+    "completionTimestamp": 1650022019914,
+    "criteriaProgress": [
+        {
+            "description": "Log in 5 times from our mobile app.",
+            "progress": 5,
+            "threshold": 5,
+            "id": "9fa51a7d-7356-46c6-aec1-02d6b74bdd76"
+        }
+    ]
+  },
+  {
+    "name": "Impossible Goal",
+    "isComplete": false,
+    "id": "9a69fc07-9ee0-4fb5-860a-9a5fcdbeec9a",
+    "criteriaProgress": [
+        {
+            "description": "Do something impossible.",
+            "progress": 0,
+            "threshold": 5,
+            "id": "2ad583c6-0c08-4a89-83bf-11be4da93923"
+        }
+    ]
+  },
+  // ... more goal progress...
+]
+```
+
+
+

@@ -12,7 +12,7 @@ import { router as entityRoutes } from "./entity/entity-routes.js"
 
 async function startServer(appServerPort, neo4jBoltUri, neo4jUser, neo4jPassword) {
 
-    await initDbConnection(neo4jBoltUri, neo4jUser, neo4jPassword);
+    // await initDbConnection(neo4jBoltUri, neo4jUser, neo4jPassword);
 
     const app = express();
 

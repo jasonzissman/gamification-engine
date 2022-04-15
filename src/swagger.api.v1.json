@@ -142,8 +142,8 @@
         "tags": [
           "Goal Progress"
         ],
-        "summary": "Get an entity's progress towards a goal",
-        "description": "Fetch the progress made towards a goal by a specific entity",
+        "summary": "Get an entity's progress towards a specific goal",
+        "description": "Fetch the progress made towards a specific goal by a specific entity",
         "operationId": "getGoalProgress",
         "produces": [
           "application/json"
@@ -176,6 +176,49 @@
             "description": "successful operation",
             "schema": {
               "$ref": "http://localhost:3000/schemas/goalProgress.schema.json"
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/entities/{entityIdField}/{entityIdValue}/progress": {
+      "get": {
+        "tags": [
+          "Goal Progress"
+        ],
+        "summary": "Get an entity's progress towards all goals",
+        "description": "Fetch an entity's progress towards all configured goals",
+        "operationId": "getAllGoalProgress",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "entityIdField",
+            "in": "path",
+            "description": "Entity id field",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "entityIdValue",
+            "in": "path",
+            "description": "Entity id value",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "http://localhost:3000/schemas/goalProgress.schema.json"
+              }
             }
           },
           "404": {

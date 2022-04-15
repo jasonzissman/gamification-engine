@@ -1,9 +1,9 @@
 import { getEntityProgress } from '../database/db-helper.js';
 
-async function getEntityProgressTowardsGoal(entityIdField, entityIdValue, goalId) {
-    let entityProgress;
+async function getEntityProgressTowardsGoals(entityIdField, entityIdValue, goalId) {
+    let entityProgress;    
 
-    if (entityIdField?.length > 0 && entityIdValue?.length > 0 && goalId?.length > 0) {
+    if (entityIdField?.length > 0 && entityIdValue?.length > 0) {
         entityProgress = await getEntityProgress(entityIdField, entityIdValue, goalId)
     }
 
@@ -11,5 +11,5 @@ async function getEntityProgressTowardsGoal(entityIdField, entityIdValue, goalId
 }
 
 export {
-    getEntityProgressTowardsGoal
+    getEntityProgressTowardsGoals
 };
