@@ -5,7 +5,7 @@ Let's walk through the creation and usage of a simple "Mobile Power User" goal. 
 ## Creating the Goal
 First we invoke an HTTP POST to create the goal. We use the **Goals** API as follows:
 
-```json
+```jsonc
 // HTTP POST https://<host>/api/v1/goals
 
 // Request Body
@@ -42,7 +42,7 @@ Next, as users log into our application, we invoke an HTTP POST against the jz-g
 
 > The platform will eventually support integration with event brokers like Kafka so that clients do not have to send requests directly to the engine.
 
-```json
+```jsonc
 // HTTP POST https://<host>/api/v1/activities
 
 // Request Body
@@ -68,7 +68,7 @@ Note that *jz-gamification-engine* only considers key/value combinations that ap
 Let's invoke an HTTP GET against the **Goal Progress API** to see how close John Doe is to achieving this goal:
 
 **Request**
-```json
+```jsonc
 // HTTP GET https://<host>/api/v1/entities/userId/john-doe-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
 
 // Response Body
@@ -94,7 +94,7 @@ Let's invoke an HTTP GET against the **Goal Progress API** to see how close John
 
 John has not yet completed the required criteria to satisfy this goal since he has only logged into the mobile app one time. Let's simulate John logging into the mobile app 4 more times:
 
-```json
+```jsonc
 // HTTP POST https://<host>/api/v1/activities (x4)
 
 // Request Body (x4)
@@ -115,7 +115,7 @@ John has not yet completed the required criteria to satisfy this goal since he h
 We'll check the **Goal Progress API** one more time to see John's progress towards this specific goal:
 
 **Request**
-```json
+```jsonc
 // HTTP GET https://<host>/api/v1/entities/userId/john-doe-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
 
 // Response Body
@@ -140,7 +140,7 @@ We'll check the **Goal Progress API** one more time to see John's progress towar
 You can generically fetch a user's progress against all configured goals in this manner:
 
 **Request**
-```json
+```jsonc
 // HTTP GET https://<host>/api/v1/entities/userId/john-doe-1234/progress
 
 // Response Body
