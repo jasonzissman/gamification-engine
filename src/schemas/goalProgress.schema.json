@@ -2,12 +2,7 @@
     "type": "object",
     "description": "The progress an entity has made towards a goal",
     "properties": {
-        "entityIdField": {
-            "type": "string",
-            "description": "The field in received events that uniquely identifes the entity",
-            "example": "userId"
-        },
-        "entityIdFieldValue": {
+        "entityId": {
             "type": "string",
             "description": "The value of the field in received events that uniquely identifes the entity",
             "example": "john_doe_1234"

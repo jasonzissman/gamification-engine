@@ -31,7 +31,6 @@ The API documentation will be available at `http://localhost:3000/api/v1/docs/` 
 See the [documented sample flows](./docs/sample-flows/) for examples on how to interact with the APIs.
 
 ## TODO!!!!
-* Redesign entity ID scheme. Different fields (e.g. userId and authorId) may point to the same person.
 * Perf test: create baseline that reliably executes in given environment (ram/CPU/etc).
 * Perf test: make tests deterministic!
 * Push notifications when goal completed.

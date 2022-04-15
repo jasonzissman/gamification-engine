@@ -137,7 +137,7 @@
         }
       }
     },
-    "/entities/{entityIdField}/{entityIdValue}/progress/{goalId}": {
+    "/entities/{entityId}/progress/{goalId}": {
       "get": {
         "tags": [
           "Goal Progress"
@@ -150,14 +150,7 @@
         ],
         "parameters": [
           {
-            "name": "entityIdField",
-            "in": "path",
-            "description": "Entity id field",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "entityIdValue",
+            "name": "entityId",
             "in": "path",
             "description": "Entity id value",
             "required": true,
@@ -184,7 +177,7 @@
         }
       }
     },
-    "/entities/{entityIdField}/{entityIdValue}/progress": {
+    "/entities/{entityId}/progress": {
       "get": {
         "tags": [
           "Goal Progress"
@@ -197,14 +190,7 @@
         ],
         "parameters": [
           {
-            "name": "entityIdField",
-            "in": "path",
-            "description": "Entity id field",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "entityIdValue",
+            "name": "entityId",
             "in": "path",
             "description": "Entity id value",
             "required": true,

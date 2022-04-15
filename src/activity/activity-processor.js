@@ -14,7 +14,7 @@ async function processActivity(receivedActivity) {
                 const incrementValue = computeIncrementValue(criterion, cleanActivity);
                 const entityIdValue = cleanActivity[criterion.targetEntityIdField];
 
-                const hasCompleted = await updateEntityProgress(criterion.targetEntityIdField, entityIdValue, criterion, incrementValue);
+                const hasCompleted = await updateEntityProgress(entityIdValue, criterion, incrementValue);
                 if (hasCompleted && hasCompleted[0] === true) {
                     // TODO - here we can broadcast that an entity has finished all the criteria within a goal
                 }

@@ -50,259 +50,259 @@ describe('Basic Use Cases', function () {
         await session.run("MATCH (e) DETACH DELETE e");
         session.close();
     });
+ it('should mark a goal as complete after enough relevant events received', async () => {
 
-    // it('should mark a goal as complete after enough relevant events received', async () => {
+        let userId = `test-user-${uuidv4()}`;
 
-    //     let userId = `test-user-${uuidv4()}`;
+        let createdGoal = await addGoal({
+            name: "Mobile Power User",
+            description: "Use our fancy new mobile app to gain additional points!",
+            points: 10,
+            criteria: [
+                {
+                    description: "Log in at least 3 times on a mobile device",
+                    targetEntityIdField: "userId",
+                    qualifyingEvent: {
+                        action: "log-in",
+                        platform: "mobile",
+                    },
+                    aggregation: {
+                        type: "count",
+                    },
+                    threshold: 3
+                }
+            ]
+        });
 
-    //     let createdGoal = await addGoal({
-    //         name: "Mobile Power User",
-    //         description: "Use our fancy new mobile app to gain additional points!",
-    //         points: 10,
-    //         criteria: [
-    //             {
-    //                 description: "Log in at least 3 times on a mobile device",
-    //                 targetEntityIdField: "userId",
-    //                 qualifyingEvent: {
-    //                     action: "log-in",
-    //                     platform: "mobile",
-    //                 },
-    //                 aggregation: {
-    //                     type: "count",
-    //                 },
-    //                 threshold: 3
-    //             }
-    //         ]
-    //     });
+        let goalId = createdGoal.data.goalId;
 
-    //     let goalId = createdGoal.data.goalId;
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "log-in",
+            platform: "mobile",
+            userId: userId,
+            foo: "bar",
+        }, true);
 
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "log-in",
-    //         platform: "mobile",
-    //         userId: userId,
-    //         foo: "bar",
-    //     }, true);
+        let progress = await getProgress(userId, goalId);
 
-    //     let progress = await getProgress("userId", userId, goalId);
+        assertEqualEntityProgress(progress.data, {
+            id: goalId,
+            isComplete: false,
+            name: "Mobile Power User",
+            criteriaProgress: [{
+                description: "Log in at least 3 times on a mobile device",
+                progress: 1,
+                threshold: 3,
+            }]
+        });
 
-    //     assertEqualEntityProgress(progress.data, {
-    //         id: goalId,
-    //         isComplete: false,
-    //         name: "Mobile Power User",
-    //         criteriaProgress: [{
-    //             description: "Log in at least 3 times on a mobile device",
-    //             progress: 1,
-    //             threshold: 3,
-    //         }]
-    //     });
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "log-in",
+            platform: "mobile",
+            userId: userId,
+            foo: "bar",
+        }, true);
 
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "log-in",
-    //         platform: "mobile",
-    //         userId: userId,
-    //         foo: "bar",
-    //     }, true);
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "log-in",
+            platform: "mobile",
+            userId: userId,
+            foo: "bar",
+        }, true);
 
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "log-in",
-    //         platform: "mobile",
-    //         userId: userId,
-    //         foo: "bar",
-    //     }, true);
+        let progress2 = await getProgress(userId, goalId);
 
-    //     let progress2 = await getProgress("userId", userId, goalId);
+        assertEqualEntityProgress(progress2.data, {
+            id: goalId,
+            name: "Mobile Power User",
+            isComplete: true,
+            completionTimestamp: 'a-valid-timestamp',
+            criteriaProgress: [{
+                description: "Log in at least 3 times on a mobile device",
+                progress: 3,
+                threshold: 3,
+            }]
 
-    //     assertEqualEntityProgress(progress2.data, {
-    //         id: goalId,
-    //         name: "Mobile Power User",
-    //         isComplete: true,
-    //         completionTimestamp: 'a-valid-timestamp',
-    //         criteriaProgress: [{
-    //             description: "Log in at least 3 times on a mobile device",
-    //             progress: 3,
-    //             threshold: 3,
-    //         }]
+        });
 
-    //     });
+    }).timeout(240000);
 
-    // }).timeout(240000);
+    it('should reject request to create a goal not adhering to goal schema', async () => {
 
-    // it('should reject request to create a goal not adhering to goal schema', async () => {
+        let userId = `test-user-${uuidv4()}`;
 
-    //     let userId = `test-user-${uuidv4()}`;
+        const res = await addGoal({
+            name: "Invalid Goal",
+            description: "Use our fancy new mobile app to gain additional points!",
+            points: 10,
+            criteria: "this-is-not-valid-criteria"
+        });
+        assert.equal(res.status, 400);
+        assert.equal(res.statusText, "Bad Request");
 
-    //     const res = await addGoal({
-    //         name: "Invalid Goal",
-    //         description: "Use our fancy new mobile app to gain additional points!",
-    //         points: 10,
-    //         criteria: "this-is-not-valid-criteria"
-    //     });
-    //     assert.equal(res.status, 400);
-    //     assert.equal(res.statusText, "Bad Request");
+    }).timeout(240000);
 
-    // }).timeout(240000);
+    it('should mark a goal with multiple criteria as complete after enough relevant events received', async () => {
 
-    // it('should mark a goal with multiple criteria as complete after enough relevant events received', async () => {
+        let userId = `test-user-${uuidv4()}`;
 
-    //     let userId = `test-user-${uuidv4()}`;
+        let createdGoal = await addGoal({
+            name: "Repeat Customer",
+            description: "Returning customers who make multiple purchases will receieve special perks and prioritized customer support.",
+            points: 10,
+            criteria: [
+                {
+                    description: "Log in at least 3 times.",
+                    targetEntityIdField: "userId",
+                    qualifyingEvent: {
+                        action: "userLoggedIn",
+                    },
+                    aggregation: {
+                        type: "count"
+                    },
+                    threshold: 3
+                },
+                {
+                    description: "Make at least 2 purchases.",
+                    targetEntityIdField: "userId",
+                    qualifyingEvent: {
+                        action: "itemPurchased",
+                    },
+                    aggregation: {
+                        type: "count"
+                    },
+                    threshold: 2
+                }
+            ]
+        });
 
-    //     let createdGoal = await addGoal({
-    //         name: "Repeat Customer",
-    //         description: "Returning customers who make multiple purchases will receieve special perks and prioritized customer support.",
-    //         points: 10,
-    //         criteria: [
-    //             {
-    //                 description: "Log in at least 3 times.",
-    //                 targetEntityIdField: "userId",
-    //                 qualifyingEvent: {
-    //                     action: "userLoggedIn",
-    //                 },
-    //                 aggregation: {
-    //                     type: "count"
-    //                 },
-    //                 threshold: 3
-    //             },
-    //             {
-    //                 description: "Make at least 2 purchases.",
-    //                 targetEntityIdField: "userId",
-    //                 qualifyingEvent: {
-    //                     action: "itemPurchased",
-    //                 },
-    //                 aggregation: {
-    //                     type: "count"
-    //                 },
-    //                 threshold: 2
-    //             }
-    //         ]
-    //     });
+        let goalId = createdGoal.data.goalId;
 
-    //     let goalId = createdGoal.data.goalId;
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "userLoggedIn",
+            platform: "mobile",
+            userId: userId,
+            foo: "bar",
+        }, true);
 
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "userLoggedIn",
-    //         platform: "mobile",
-    //         userId: userId,
-    //         foo: "bar",
-    //     }, true);
+        let progress = await getProgress(userId, goalId);
 
-    //     let progress = await getProgress("userId", userId, goalId);
+        assertEqualEntityProgress(progress.data, {
+            id: goalId,
+            isComplete: false,
+            name: "Repeat Customer",
+            criteriaProgress: [{
+                description: "Log in at least 3 times.",
+                progress: 1,
+                id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+                threshold: 3,
+            }, {
+                description: "Make at least 2 purchases.",
+                progress: 0,
+                id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+                threshold: 2,
+            }]
 
-    //     assertEqualEntityProgress(progress.data, {
-    //         id: goalId,
-    //         isComplete: false,
-    //         name: "Repeat Customer",
-    //         criteriaProgress: [{
-    //             description: "Log in at least 3 times.",
-    //             progress: 1,
-    //             id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
-    //             threshold: 3,
-    //         }, {
-    //             description: "Make at least 2 purchases.",
-    //             progress: 0,
-    //             id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
-    //             threshold: 2,
-    //         }]
+        });
 
-    //     });
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "itemPurchased",
+            platform: "mobile",
+            userId: userId,
+            foo: "bar",
+        }, true);
 
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "itemPurchased",
-    //         platform: "mobile",
-    //         userId: userId,
-    //         foo: "bar",
-    //     }, true);
+        let progress2 = await getProgress(userId, goalId);
 
-    //     let progress2 = await getProgress("userId", userId, goalId);
+        assertEqualEntityProgress(progress2.data, {
+            id: goalId,
+            isComplete: false,
+            name: "Repeat Customer",
+            criteriaProgress: [{
+                description: "Log in at least 3 times.",
+                progress: 1,
+                id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+                threshold: 3,
+            }, {
+                description: "Make at least 2 purchases.",
+                progress: 1,
+                id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+                threshold: 2,
+            }]
 
-    //     assertEqualEntityProgress(progress2.data, {
-    //         id: goalId,
-    //         isComplete: false,
-    //         name: "Repeat Customer",
-    //         criteriaProgress: [{
-    //             description: "Log in at least 3 times.",
-    //             progress: 1,
-    //             id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
-    //             threshold: 3,
-    //         }, {
-    //             description: "Make at least 2 purchases.",
-    //             progress: 1,
-    //             id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
-    //             threshold: 2,
-    //         }]
+        });
 
-    //     });
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "userLoggedIn",
+            platform: "mobile",
+            userId: userId,
+            foo: "bar",
+        }, true);
 
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "userLoggedIn",
-    //         platform: "mobile",
-    //         userId: userId,
-    //         foo: "bar",
-    //     }, true);
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "userLoggedIn",
+            platform: "mobile",
+            userId: userId,
+            foo: "bar",
+        }, true);
 
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "userLoggedIn",
-    //         platform: "mobile",
-    //         userId: userId,
-    //         foo: "bar",
-    //     }, true);
+        let progress3 = await getProgress(userId, goalId);
 
-    //     let progress3 = await getProgress("userId", userId, goalId);
+        assertEqualEntityProgress(progress3.data, {
+            id: goalId,
+            name: "Repeat Customer",
+            isComplete: false,
+            criteriaProgress: [{
+                description: "Log in at least 3 times.",
+                progress: 3,
+                id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+                threshold: 3,
+            }, {
+                description: "Make at least 2 purchases.",
+                progress: 1,
+                id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+                threshold: 2,
+            }]
 
-    //     assertEqualEntityProgress(progress3.data, {
-    //         id: goalId,
-    //         name: "Repeat Customer",
-    //         isComplete: false,
-    //         criteriaProgress: [{
-    //             description: "Log in at least 3 times.",
-    //             progress: 3,
-    //             id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
-    //             threshold: 3,
-    //         }, {
-    //             description: "Make at least 2 purchases.",
-    //             progress: 1,
-    //             id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
-    //             threshold: 2,
-    //         }]
+        });
 
-    //     });
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "itemPurchased",
+            platform: "mobile",
+            userId: userId,
+            foo: "bar",
+        }, true);
 
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "itemPurchased",
-    //         platform: "mobile",
-    //         userId: userId,
-    //         foo: "bar",
-    //     }, true);
+        let progress4 = await getProgress(userId, goalId);
 
-    //     let progress4 = await getProgress("userId", userId, goalId);
+        assertEqualEntityProgress(progress4.data, {
+            id: goalId,
+            name: "Repeat Customer",
+            isComplete: true,
+            completionTimestamp: 'a-valid-timestamp',
+            criteriaProgress: [{
+                description: "Log in at least 3 times.",
+                progress: 3,
+                id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+                threshold: 3,
+            }, {
+                description: "Make at least 2 purchases.",
+                progress: 2,
+                id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+                threshold: 2,
+            }]
+        });
 
-    //     assertEqualEntityProgress(progress4.data, {
-    //         id: goalId,
-    //         name: "Repeat Customer",
-    //         isComplete: true,
-    //         completionTimestamp: 'a-valid-timestamp',
-    //         criteriaProgress: [{
-    //             description: "Log in at least 3 times.",
-    //             progress: 3,
-    //             id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
-    //             threshold: 3,
-    //         }, {
-    //             description: "Make at least 2 purchases.",
-    //             progress: 2,
-    //             id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
-    //             threshold: 2,
-    //         }]
-    //     });
-
-    // }).timeout(240000);
+    }).timeout(240000);
+   
 
     it('should return progress made towards multiple goals', async () => {
 
@@ -387,7 +387,7 @@ describe('Basic Use Cases', function () {
             itemId: "123",
         }, true);
 
-        let progress = await getProgress("userId", userId);
+        let progress = await getProgress(userId);
 
         assertEqualEntityProgress(progress.data, [
             {

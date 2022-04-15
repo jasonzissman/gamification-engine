@@ -72,9 +72,8 @@ async function getSpecificGoal(goalId) {
     }
 }
 
-async function getEntityProgress(entityIdField, entityIdValue, goalId) {
+async function getEntityProgress(entityId, goalId) {
     let retVal = [];
-    const entityId = `${entityIdField}=${entityIdValue}`;
 
     let goalIdFilter = ``;
     if (goalId) {
@@ -109,11 +108,9 @@ async function getEntityProgress(entityIdField, entityIdValue, goalId) {
 
 }
 
-async function updateEntityProgress(entityIdField, entityIdValue, criterion, incrementValue) {
+async function updateEntityProgress(entityId, criterion, incrementValue) {
 
     const criterionId = criterion.id;
-
-    const entityId = `${entityIdField}=${entityIdValue}`;
 
     const command = `
         WITH datetime().epochMillis as currentTime
@@ -121,7 +118,6 @@ async function updateEntityProgress(entityIdField, entityIdValue, criterion, inc
 
         // Create the entity if does not exist yet
         MERGE (e:Entity {id: $entityId})
-        ON CREATE set e.\`${entityIdField}\`=$entityIdValue
 
         // Increment this entity's progress towards the criteria
         MERGE (e)-[r:HAS_MADE_PROGRESS]-> (c)
@@ -147,7 +143,7 @@ async function updateEntityProgress(entityIdField, entityIdValue, criterion, inc
         return hcg.completionTimestamp = currentTime
     `;
 
-    const params = { entityId, entityIdValue, criterionId, incrementValue }
+    const params = { entityId, criterionId, incrementValue }
 
     return runNeo4jCommand(`Update entity ${entityId} progress to criterion ${criterionId}.`, command, params);
 }

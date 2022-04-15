@@ -5,9 +5,9 @@ const router = express.Router();
 
 // TODO authorize requests - put in common middleware?
 
-router.get("/:entityIdField/:entityIdValue/progress/:goalId", async (request, response) => {
+router.get("/:entityId/progress/:goalId", async (request, response) => {
 
-    const entity = await getEntityProgressTowardsGoals(request.params.entityIdField, request.params.entityIdValue, request.params.goalId);
+    const entity = await getEntityProgressTowardsGoals(request.params.entityId, request.params.goalId);
     if (entity) {
         response.status(200).send(entity);
     } else {
@@ -15,9 +15,9 @@ router.get("/:entityIdField/:entityIdValue/progress/:goalId", async (request, re
     }
 });
 
-router.get("/:entityIdField/:entityIdValue/progress/", async (request, response) => {
+router.get("/:entityId/progress/", async (request, response) => {
 
-    const entity = await getEntityProgressTowardsGoals(request.params.entityIdField, request.params.entityIdValue);
+    const entity = await getEntityProgressTowardsGoals(request.params.entityId);
     if (entity) {
         response.status(200).send(entity);
     } else {

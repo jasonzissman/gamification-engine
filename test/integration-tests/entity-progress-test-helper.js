@@ -1,7 +1,7 @@
 import { issueHttpGet } from './integration-test-helper.js';
 
-async function getProgress(entityIdField, entityIdValue, goalId) {
-    let pathAndParams = `api/v1/entities/${entityIdField}/${entityIdValue}/progress`;
+async function getProgress(entityId, goalId) {
+    let pathAndParams = `api/v1/entities/${entityId}/progress`;
     if (goalId) {
         pathAndParams += `/${goalId}`;
     }
