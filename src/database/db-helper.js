@@ -65,6 +65,7 @@ async function ping() {
 }
 
 async function getSpecificGoal(goalId) {
+    // TODO - be specific about what you want to return. No wildcards!
     const query = `MATCH (g:Goal {id: $goalId}) -[:HAS_CRITERIA]-> (c:Criteria) -[:REQUIRES_EVENT_ATTRIBUTE]-> (ea:EventAttribute) RETURN g{criteria:c{.*,qualifyingEvents:ea{.*}},.*}`;
     const resultsArray = await runNeo4jCommand(`Get goal ${goalId}.`, query, { goalId });
     if (resultsArray && resultsArray.length > 0) {

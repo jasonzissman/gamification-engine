@@ -13,12 +13,6 @@
             "description": "A human-understandable description for the goal",
             "example": "A goal awarded when a user logs into our mobile app at least 5 times"
         },
-        "points": {
-            "type": "integer",
-            "description": "The number of points to award to entities that completes the goal",
-            "default": 1,
-            "example": 10
-        },
         "criteria": {
             "type": "array",
             "description": "A collection of criteria that must be fulfilled to complete the goal",

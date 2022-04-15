@@ -38,7 +38,6 @@ See the [documented sample flows](./docs/sample-flows/) for examples on how to i
 * Cache calls to database
 * General authorization approach.
 * Put in timing/profiling options to warn if things are going too slow
-- Establish perf test baseline
-- Cache common/repeated calls
-- support mutli-node or clustered model (broadcast to clients when known attributes change)
-- use Jest instead of Mocha
+* Cache common/repeated calls
+* support mutli-node or clustered model (broadcast to clients when known attributes change)
+* use Jest instead of Mocha
