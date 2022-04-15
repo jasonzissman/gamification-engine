@@ -1,7 +1,7 @@
 import { issueHttpPost } from './integration-test-helper.js';
 
 async function sendEvent(event, waitForEventToFinishProcessing) {
-    let pathAndParams = "activities";
+    let pathAndParams = "api/v1/activities";
     if(waitForEventToFinishProcessing) {
         pathAndParams += "?waitForEventToFinishProcessing=true";
     }

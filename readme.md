@@ -1,5 +1,5 @@
 # JZ Gamification Engine
-*jz-gamification-engine* is a platform that manages common gamification features such as badges, user journeys, and point systems. 
+*jz-gamification-engine* is a platform that facilitates common gamification features such as badges, user journeys, and point systems. 
 
 ## Features and Flows
 The gamification engine is a backend service meant to run alongside existing applications that want to offer gamification features in a decoupled, performant fashion. It currently supports:
@@ -7,7 +7,6 @@ The gamification engine is a backend service meant to run alongside existing app
 - Custom goal definition (e.g. badges or user journeys)
 - Goal progress tracking
 - Real time goal completion notifications
-- The ability for "non-user" entities to make progress towards goals
 
 These features can be used to enable gamification flows such as:
 

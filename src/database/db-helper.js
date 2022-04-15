@@ -7,7 +7,7 @@ let KNOWN_SYSTEM_FIELDS = {};
 
 async function initDbConnection(neo4jBoltUri, neo4jUser, neo4jPassword) {
 
-    log(`Connecting to database.`);
+    log(`Connecting to database at ${neo4jBoltUri}.`);
     let neo4jAuth = neo4j.auth.basic(neo4jUser, neo4jPassword);
     neo4jDriver = neo4j.driver(neo4jBoltUri, neo4jAuth, { encrypted: false });
 

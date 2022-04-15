@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "title": "jz-gamification-engine"
   },
-  "basePath": "/v1",
+  "basePath": "/api/v1",
   "tags": [
     {
       "name": "Goals",

@@ -18,8 +18,8 @@ async function startServer(appServerPort, neo4jBoltUri, neo4jUser, neo4jPassword
 
     app.use('/schemas', express.static('src/schemas'))
 
-    var swaggerDocument = JSON.parse(fs.readFileSync(`./src/swagger.json`, `utf8`));
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+    var swaggerDocument = JSON.parse(fs.readFileSync(`./src/swagger.api.v1.json`, `utf8`));
+    app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
     app.use((req, res, next) => {
         log(`Request received: ${req.method} ${req.url}.`);
@@ -29,9 +29,9 @@ async function startServer(appServerPort, neo4jBoltUri, neo4jUser, neo4jPassword
     app.use(express.json());
 
     app.use("/health", healthRoutes);
-    app.use("/goals", goalRoutes);
-    app.use("/activities", activityRoutes);
-    app.use("/entities", entityRoutes);
+    app.use("/api/v1/goals", goalRoutes);
+    app.use("/api/v1/activities", activityRoutes);
+    app.use("/api/v1/entities", entityRoutes);
 
     // handle schema validation errors
     app.use((error, request, response, next) => {
