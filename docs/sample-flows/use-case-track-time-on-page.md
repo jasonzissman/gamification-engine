@@ -1,23 +1,22 @@
-
 # Bookworm - A badge tied to time spent reading content
-We'll create a "Bookworm" badge which will be awarded to users who spend at least 10 minutes reading website content. We'll also give 100 points to anyone who completes this badge.
+We'll create a "Bookworm" badge which will be awarded to users who spend at least 10 minutes reading website content. 
 
-## Creating the Badge
-First we invoke an HTTP POST to create the badge. Use the `/goals` API as follows:
+## Creating the Goal
+First we invoke an HTTP POST to create the goal. We use the **Goals** API as follows:
 
-**Request**
-```
-// HTTP POST 
-// https://<host>/goals
+```jsonc
+// HTTP POST https://<host>/api/v1/goals
+
+// Request Body
 {
   "name": "Bookworm",
   "description": "Spend at least 10 minutes reading website content",
-  "points": 100,
   "criteria": [
     {
+      "description": "Spend time reading website content",
       "targetEntityIdField": "userId",
       "qualifyingEvent": {
-        "action": "read-website-content"
+        "action": "content-viewed"
       },
       "aggregation": {
       	"type": "sum",
@@ -27,95 +26,89 @@ First we invoke an HTTP POST to create the badge. Use the `/goals` API as follow
     }
   ]
 }
-```
 
-You can read this goal as *A badge that is completed for a given `userId` after the gamification system totals a `timeSpentInSeconds` value of 1200 or greater from events with `action=read-website-content`, `timeSpentInSeconds=<some_value>`, and `userId=<that-users-ids>`*.
-
-## Sending Usage Events
-Next, as users read the content of our application, we invoke an HTTP POST against the jz-gamification-engine `/events` API:
-
-**Request**
-```
-// HTTP POST 
-// https://<host>/events
+// Response Body
 {
-  "action": "read-website-content",
-  "timeSpentInSeconds": 500,
-  "userId": "john-doe-1234",
-  "foo": "bar" // there can be extra data, it will just be ignored
+    "status": "ok",
+    "goalId": "fb1e71f7-2cc2-4194-b69c-919f8039afcb"
 }
 ```
 
-To track progress towards a goal, the events that we send must include enough information to match the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields that were provided when creating your goal. In our case, our example event includes `action=read-website-content`, `timeSentInSeconds`, and `userId`, as our "Bookworm" goal requires.
+You can read this goal as *A badge that is completed for a given `userId` after the gamification system totals a `timeSpentInSeconds` value of 600 or greater from events with `action=content-viewed`, `timeSpentInSeconds=<some_value>`, and `userId=<someUserId>`*.
 
-However, in this case, user john-doe-1234 only read for 500 seconds, not the required 600 seconds. As such, he has not met the goal yet. We invoke the `/entities/<entityId>` API to see how John (or any user) is tracking towards the Bookworm badge.
+## Reporting Activity
+Next, as users view the our website's content, we invoke an HTTP POST against the jz-gamification-engine **Activities** API.
 
-**Request**
-```
-// HTTP GET 
-// https://<host>/entities/john-doe-1234
-```
+> The platform will eventually support integration with event brokers like Kafka so that clients do not have to send requests directly to the engine.
 
-**Response**
-```
+```jsonc
+// HTTP POST https://<host>/api/v1/activities
+
+// Request Body
 {
-    entityId: 'john-doe-1234',
-    points: 0,
-    goals: {
-        goal_12345678: {
-            criteriaIds: {
-                criteria_9999: {
-                    isComplete: false,
-                    value: 500
-                }
-            },
-            isComplete: false
-        }
-    }
-```
-
-John has not yet completed the required criteria to satisfy this goal.
-
-Let's pretend John comes back 2 weeks from now and reads some more content for 200 more seconds. We issue this HTTP POST against the jz-gamification-engine `/events` API:
-
-**Request**
-```
-// HTTP POST 
-// https://<host>/events
-{
-  "action": "read-website-content",
-  "timeSpentInSeconds": 200,
+  "clientId": "client-app-1234",
+  "platform": "mobile-app",
+  "action": "content-viewed",
+  "page": "product-documentation-page",
   "userId": "john-doe-1234",
-  "foo": "bar" // there can be extra data, it will just be ignored
+  "timeSpentInSeconds": 122,
+  "foo": "bar"
+}
+
+// Response Body
+{
+    "status": "received"
 }
 ```
 
-Great! Now the events received by the jz-gamification-engine have indicated that John has read more than enough (700 seconds) to meet our goal requirements.
+You can read this activity as "John Doe viewed the product documentation page for 122 seconds". This activity matches the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields defined in our *Bookworm* goal; consequently, John Doe has now made progress towards achieving this goal.
 
-Finally, as needed, we invoke an HTTP GET against the `/entities/<entityId>` API to see how John (or any user) is tracking towards the Bookworm badge.
+Note that *jz-gamification-engine* only processes key/value combinations that exist in configured goals. This is done to optimize activity processing. In this example, the other activity fields (`clientId`, `platform`, `page`, `userId` and `foo`) are simply ignored by the engine.
+
+## Checking Progress
+Let's invoke an HTTP GET against the **Goal Progress API** to see how close John Doe is to achieving this goal:
 
 **Request**
-```
-// HTTP GET 
-// https://<host>/entities/john-doe-1234
-```
+```jsonc
+// HTTP GET https://<host>/api/v1/entities/john-doe-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
 
-**Response**
-```
+// Response Body
 {
-    entityId: 'john-doe-1234',
-    points: 100,
-    goals: {
-        goal_12345678: {
-            criteriaIds: {
-                criteria_9999: {
-                    isComplete: true,
-                    value: 700
-                }
-            },
-            isComplete: true
+    "name": "Bookworm",
+    "isComplete": false,
+    "id": "fb1e71f7-2cc2-4194-b69c-919f8039afcb",
+    "criteriaProgress": [
+        {
+            "description": "Spend time reading website content",
+            "progress": 122,
+            "threshold": 600,
+            "id": "9fa51a7d-7356-46c6-aec1-02d6b74bdd76"
         }
-    }
+    ]
+    
+}
 ```
 
-We see in the response that John has completed all the criteria in the goal and has been awarded 100 points for his effort.
+John has not yet completed the required criteria to satisfy this goal since he has only read roughly 2 minutes' worth of content. After he reads a while longer, we check in on his progress again.
+
+**Request**
+
+```jsonc
+// HTTP GET https://<host>/api/v1/entities/john-doe-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
+
+// Response Body
+{
+  "name": "Bookworm",
+  "isComplete": true,
+  "completionTimestamp": 1650022019914,    
+  "id": "fb1e71f7-2cc2-4194-b69c-919f8039afcb",
+  "criteriaProgress": [
+      {
+          "description": "Spend time reading website content",
+          "progress": 122,
+          "threshold": 600,
+          "id": "9fa51a7d-7356-46c6-aec1-02d6b74bdd76"
+      }
+  ]
+}
+```

@@ -31,6 +31,9 @@ The API documentation will be available at `http://localhost:3000/api/v1/docs/` 
 See the [documented sample flows](./docs/sample-flows/) for examples on how to interact with the APIs.
 
 ## TODO!!!!
+* Allow enable/disable of goals
+* Support nested event properties
+* Allow assignment of goals
 * Perf test: create baseline that reliably executes in given environment (ram/CPU/etc).
 * Perf test: make tests deterministic!
 * Push notifications when goal completed.

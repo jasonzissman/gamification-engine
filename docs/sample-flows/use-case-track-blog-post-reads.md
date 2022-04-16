@@ -1,22 +1,23 @@
 
 # Best Selling Author 
-Let's walk through the creation and usage of a "Best Selling Author" badge. This badge will be awarded to users whose blog articles are read 1000 times in aggregate. We'll craft the goal so that progress is counted any time any user reads any article from this author.
+Let's walk through the creation and usage of a "Best Selling Author" badge. This badge will be awarded to authors whose blog articles are read 1000 times in aggregate. We'll craft the goal so that progress is counted any time any user reads any article from this author.
 
-## Creating the Badge
-First we invoke an HTTP POST to create the badge. Use the `/goals` API as follows:
+## Creating the Goal
+First we invoke an HTTP POST to create the goal. We use the **Goals** API as follows:
 
-```
-// HTTP POST 
-// https://<host>/goals
+```jsonc
+// HTTP POST https://<host>/api/v1/goals
+
+// Request Body
 {
   "name": "Best Selling Author",
-  "description": "Be the author whose blog posts are read at least 1000 times.",
-  "points": 500,
+  "description": "Awarded to users whoses blog content are viewed 1000+ times.",
   "criteria": [
     {
-      "targetEntityIdField": "blogAuthorId", 
+      "description": "Have your blog posts viewed 1000+ times",
+  	  "targetEntityIdField": "authorId",
       "qualifyingEvent": {
-        "action": "view-blog-post",
+        "eventType": "blog-post-viewed",
       },
       "aggregation": {
       	"type":"count"
@@ -25,91 +26,89 @@ First we invoke an HTTP POST to create the badge. Use the `/goals` API as follow
     }
   ]
 }
-```
 
-You can read this goal as *A badge that is completed for a given `blogAuthorId` after the gamification system receives 1000 events with `action=view-blog-post` and `blogAuthorId=*`*.
-
-## Sending Usage Events
-Next, as users view any blog post, we invoke an HTTP POST against the jz-gamification-engine `/events` API:
-
-**Request**
-```
-// HTTP POST 
-// https://<host>/events
+// Response Body
 {
-  "action": "view-blog-post",
-  "blogAuthorId": "mark-twain-1234",
-  "blogArticleId": 246536, // there can be extra data, it will just be ignored for this goal
-  "userId": "john-doe-1234" // there can be extra data, it will just be ignored for this goal
+    "status": "ok",
+    "goalId": "fb1e71f7-2cc2-4194-b69c-919f8039afcb"
 }
 ```
 
-To track progress towards a goal, the events that we send must include enough information to match the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields that were provided when creating your goal. In our case, our example event includes `action=view-blog-post` and `blogAuthorId`, as our "Best Selling Author" goal requires. 
+You can read this goal as *A goal that is completed after jz-gamification-engine receives 1000 events with `eventType=blog-post-viewed` and for a given `authorId`*.
 
-We see that author mark-twain-1234 has made some initial progress towards the goal. We invoke an HTTP GET against the `/entities/<entityId>` API to see how far he has gotten:
+Notice this goal does not specify *which* blog post had to be read. It only specifies that the targetEntityId is the `authorId`. This means any blog that any author writes counts towards that author's completion of the goal.
 
-**Request**
-```
-// HTTP GET 
-// https://<host>/entities/mark-twain-1234
-```
+## Reporting Activity
+Next, as users view the various blog posts within into our application, we invoke an HTTP POST against the jz-gamification-engine **Activities** API.
 
-**Response**
-```
+> The platform will eventually support integration with event brokers like Kafka so that clients do not have to send requests directly to the engine.
+
+```jsonc
+// HTTP POST https://<host>/api/v1/activities
+
+// Request Body
 {
-    entityId: 'mark-twain-1234',
-    points: 0,
-    goals: {
-        goal_12345678: {
-            criteriaIds: {
-                criteria_9999: {
-                    isComplete: false,
-                    value: 1
-                }
-            },
-            isComplete: false
-        }
-    }
-```
+  "clientId": "client-app-1234",
+  "platform": "mobile-app",
+  "eventType": "blog-post-viewed",
+  "blogId": "blog-abc",
+  "userId": "john-doe-1234",
+  "authorId": "mark-twain-1234",
+  "foo": "bar"
+}
 
-Mark Twain has not yet completed the required criteria to satisfy this goal. Only one event that meets the criteria has been processed so far, but the goal requires 1000 such events. 
-
-Let's say throughout the week we see a lot more traffic on Mark Twain's blog post with 2400 people viewing different posts of his:
-
-**Request (x2400)**
-```
-// HTTP POST (2400)
-// https://<host>/events
+// Response Body
 {
-  "action": "view-blog-post",
-  "blogAuthorId": "mark-twain-1234",
-  "blogArticleId": 245245, // there can be extra data, it will just be ignored for this goal
-  "userId": "john-doe-1234" // there can be extra data, it will just be ignored for this goal
+    "status": "received"
 }
 ```
 
-We check Mark Twain's progress one more time and see that he has now completed the goal requirements:
+You can read this activity as "John Doe viewed blog post ABC which is authored by Mark Tawin". This activity matches the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields defined in our *Best Selling Author* goal; consequently, Mark Twain has now made progress towards achieving this goal.
+
+Note that *jz-gamification-engine* only processes key/value combinations that exist in configured goals. This is done to optimize activity processing. In this example, the other activity fields (`clientId`, `platform`, `blogId`, `userId` and `foo`) are simply ignored by the engine.
+
+## Checking Progress
+Let's invoke an HTTP GET against the **Goal Progress API** to see how close Mark Twain is to achieving this goal:
 
 **Request**
-```
-// HTTP GET 
-// https://<host>/entities/mark-twain-1234
+```jsonc
+// HTTP GET https://<host>/api/v1/entities/mark-twain-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
+
+// Response Body
+{
+    "name": "Best Selling Author",
+    "isComplete": false,
+    "id": "fb1e71f7-2cc2-4194-b69c-919f8039afcb",
+    "criteriaProgress": [
+        {
+            "description": "Have your blog posts viewed 1000+ times",
+            "progress": 1,
+            "threshold": 1000,
+            "id": "9fa51a7d-7356-46c6-aec1-02d6b74bdd76"
+        }
+    ]
+}
 ```
 
-**Response**
-```
+Mark has not yet completed the required criteria to satisfy this goal since his blog post has only been viewed one time. After his blog posts are viewed a few more times, we would see that he has completed the Best Selling Author goal:
+
+**Request**
+```jsonc
+// HTTP GET https://<host>/api/v1/entities/mark-twain-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
+
+// Response Body
 {
-    entityId: 'mark-twain-1234',
-    points: 10,
-    goals: {
-        goal_12345678: {
-            criteriaIds: {
-                criteria_9999: {
-                    isComplete: true,
-                    value: 2401
-                }
-            },
-            isComplete: true
+    "name": "Best Selling Author",
+    "isComplete": true,
+    "completionTimestamp": 1650022019914,
+    "id": "fb1e71f7-2cc2-4194-b69c-919f8039afcb",
+    "criteriaProgress": [
+        {
+            "description": "Have your blog posts viewed 1000+ times",
+            "progress": 1304,
+            "threshold": 1000,
+            "id": "9fa51a7d-7356-46c6-aec1-02d6b74bdd76"
         }
-    }
+    ]
+}
 ```

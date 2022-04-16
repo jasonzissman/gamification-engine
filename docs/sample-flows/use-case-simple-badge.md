@@ -11,7 +11,7 @@ First we invoke an HTTP POST to create the goal. We use the **Goals** API as fol
 // Request Body
 {
   "name": "Mobile Power User",
-  "description": "Award a goal to users that log in at least 5 times from our mobile app.",
+  "description": "Awarded to users that log in at least 5 times from our mobile app.",
   "criteria": [
     {
       "description": "Log in 5 times from our mobile app.",
@@ -62,31 +62,28 @@ Next, as users log into our application, we invoke an HTTP POST against the jz-g
 
 You can read this activity as "John Doe logged in using the mobile app". This activity matches the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields defined in our *Mobile Power User* goal; consequently, John Doe has now made progress towards achieving this goal.
 
-Note that *jz-gamification-engine* only considers key/value combinations that appear in existing goals. This is done to optimize activity processing. In this example, the other activity fields (`clientId` and `foo`) are simply ignored by the engine.
+Note that *jz-gamification-engine* only processes key/value combinations that exist in configured goals. This is done to optimize activity processing. In this example, the other activity fields (`clientId` and `foo`) are simply ignored by the engine.
 
 ## Checking Progress
 Let's invoke an HTTP GET against the **Goal Progress API** to see how close John Doe is to achieving this goal:
 
 **Request**
 ```jsonc
-// HTTP GET https://<host>/api/v1/entities/userId/john-doe-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
+// HTTP GET https://<host>/api/v1/entities/john-doe-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
 
 // Response Body
 {
-    "userId": "john-doe-1234",
-    "goalProgress": {
-        "name": "Mobile Power User",
-        "isComplete": false,
-        "id": "fb1e71f7-2cc2-4194-b69c-919f8039afcb",
-        "criteriaProgress": [
-            {
-                "description": "Log in 5 times from our mobile app.",
-                "progress": 1,
-                "threshold": 5,
-                "id": "9fa51a7d-7356-46c6-aec1-02d6b74bdd76"
-            }
-        ],
-    }
+    "name": "Mobile Power User",
+    "isComplete": false,
+    "id": "fb1e71f7-2cc2-4194-b69c-919f8039afcb",
+    "criteriaProgress": [
+        {
+            "description": "Log in 5 times from our mobile app.",
+            "progress": 1,
+            "threshold": 5,
+            "id": "9fa51a7d-7356-46c6-aec1-02d6b74bdd76"
+        }
+    ]
 }
 ```
 
@@ -116,7 +113,7 @@ We'll check the **Goal Progress API** one more time to see John's progress towar
 
 **Request**
 ```jsonc
-// HTTP GET https://<host>/api/v1/entities/userId/john-doe-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
+// HTTP GET https://<host>/api/v1/entities/john-doe-1234/progress/fb1e71f7-2cc2-4194-b69c-919f8039afcb
 
 // Response Body
 {
@@ -141,7 +138,7 @@ You can generically fetch a user's progress against all configured goals in this
 
 **Request**
 ```jsonc
-// HTTP GET https://<host>/api/v1/entities/userId/john-doe-1234/progress
+// HTTP GET https://<host>/api/v1/entities/john-doe-1234/progress
 
 // Response Body
 [
