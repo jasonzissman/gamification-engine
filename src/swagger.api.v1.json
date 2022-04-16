@@ -195,6 +195,14 @@
             "description": "Entity id value",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "onlyComplete",
+            "in": "query",
+            "description": "Only return goals which this entity has completed",
+            "required": false,
+            "type": "boolean",
+            "default": false
           }
         ],
         "responses": {

@@ -1,6 +1,6 @@
 
-# Best Selling Author 
-Let's walk through the creation and usage of a "Best Selling Author" badge. This badge will be awarded to authors whose blog articles are read 1000 times in aggregate. We'll craft the goal so that progress is counted any time any user reads any article from this author.
+# Identifying Popular Authors to Reward Their Actions
+Imagine you want to reward users that generate popular content for your website. To accomplish this we will create a "Best Selling Author" badge that will be awarded to **authors** whose blog articles are read 1000 times on your platform. We'll craft the goal so that progress is counted any time any user reads any article from this author. Authors who earn this badge will be promoted heavily on your application's home page and their content will be recommended more frequently in searches.
 
 ## Creating the Goal
 First we invoke an HTTP POST to create the goal. We use the **Goals** API as follows:
@@ -34,7 +34,7 @@ First we invoke an HTTP POST to create the goal. We use the **Goals** API as fol
 }
 ```
 
-You can read this goal as *A goal that is completed after jz-gamification-engine receives 1000 events with `eventType=blog-post-viewed` and for a given `authorId`*.
+You can read this goal as *A goal that is completed after jz-gamification-engine receives 1000 events with `eventType=blog-post-viewed` for a given `authorId`*.
 
 Notice this goal does not specify *which* blog post had to be read. It only specifies that the targetEntityId is the `authorId`. This means any blog that any author writes counts towards that author's completion of the goal.
 
@@ -65,9 +65,9 @@ Next, as users view the various blog posts within into our application, we invok
 
 You can read this activity as "John Doe viewed blog post ABC which is authored by Mark Tawin". This activity matches the `criteria.[].qualifyingEvent` and `criteria.[].targetEntityIdField` fields defined in our *Best Selling Author* goal; consequently, Mark Twain has now made progress towards achieving this goal.
 
-Note that *jz-gamification-engine* only processes key/value combinations that exist in configured goals. This is done to optimize activity processing. In this example, the other activity fields (`clientId`, `platform`, `blogId`, `userId` and `foo`) are simply ignored by the engine.
+Note that jz-gamification-engine only processes key/value combinations that exist in configured goals. This is done to optimize activity processing. In this example, the other activity fields (`clientId`, `platform`, `blogId`, `userId` and `foo`) are simply ignored by the engine.
 
-## Checking Progress
+## Checking Progress Towards this Goal
 Let's invoke an HTTP GET against the **Goal Progress API** to see how close Mark Twain is to achieving this goal:
 
 **Request**
@@ -111,4 +111,28 @@ Mark has not yet completed the required criteria to satisfy this goal since his 
         }
     ]
 }
+```
+
+## Seeing All Goals Completed by a User
+Your application will likely need to periodically check which goals a user has finished in order to enable special features or display badges correctly. For example - we want to display Mark Twain's *Best Selling Author* badge correctly the next time he loads his profile page. The **Goal Progress API** will let you see all the goals users have completed so that you can enable functionality accordingly:
+
+**Request**
+```jsonc
+// HTTP GET https://<host>/api/v1/entities/john-doe-1234/progress?onlyComplete=true
+
+// Response Body
+[{
+    "name": "Best Selling Author",
+    "isComplete": true,
+    "completionTimestamp": 1650022019914,
+    "id": "fb1e71f7-2cc2-4194-b69c-919f8039afcb",
+    "criteriaProgress": [
+        {
+            "description": "Have your blog posts viewed 1000+ times",
+            "progress": 1304,
+            "threshold": 1000,
+            "id": "9fa51a7d-7356-46c6-aec1-02d6b74bdd76"
+        }
+    ]
+}]
 ```

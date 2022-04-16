@@ -73,17 +73,17 @@ async function getSpecificGoal(goalId) {
     }
 }
 
-async function getEntityProgress(entityId, goalId) {
+async function getEntityProgress(entityId, goalParams) {
     let retVal = [];
 
     let goalIdFilter = ``;
-    if (goalId) {
+    if (goalParams?.goalId) {
         goalIdFilter = `{id: $goalId}`;
     }
 
     const query = `MATCH (g:Goal ${goalIdFilter}) -[:HAS_CRITERIA]-> (c:Criteria) OPTIONAL MATCH (e:Entity {id: $entityId}) -[hmpc:HAS_MADE_PROGRESS]-> (c) OPTIONAL MATCH (g) <-[hcg:HAS_COMPLETED]- (e:Entity {id: $entityId}) RETURN g{id:g.id,name:g.name,completionTimestamp:toFloat(hcg.completionTimestamp),criteriaProgress:collect(c{id:c.id,description:c.description,threshold:c.threshold,progress:hmpc.value})}`;
-    const results = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId, goalId });
-    
+    const results = await runNeo4jCommand(`Get entity progress for ${entityId}.`, query, { entityId, goalId: goalParams?.goalId });
+
     if (results && results[0]) {
         retVal = results.map(result => {
             if (result.completionTimestamp !== null && result.completionTimestamp > 0) {
@@ -98,10 +98,13 @@ async function getEntityProgress(entityId, goalId) {
                 c.progress = 0;
             });
             return result;
-        })
+        });
+        if (goalParams?.onlyComplete) {
+            retVal = retVal.filter(r => r.isComplete);
+        }
     }
 
-    if (goalId) {
+    if (goalParams?.goalId) {
         return retVal[0];
     } else {
         return retVal;

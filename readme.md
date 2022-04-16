@@ -1,18 +1,19 @@
 # JZ Gamification Engine
-*jz-gamification-engine* is a platform that facilitates common gamification features. It is a backend service meant to run alongside existing applications that want to offer gamification features in a decoupled, performant fashion. 
+jz-gamification-engine is a platform that facilitates powerful gamification features for your application in a decoupled, performant fashion. 
 
-*jz-gamification-engine* currently supports:
+## Why Gamification?
 
-- Custom goal definition (e.g. badges or user journeys)
-- Goal progress tracking
+Gamification can facilitate many positive outcomes for your application:
 
-These features can be used to enable gamification flows such as:
+- Incentivize your users to engage more with your application by rewarding them for performing desired behaviors
+- Help you identify your website's best users and content by measuring their engagement milestones 
+- Ensure your new users engage with your platform correctly by tracking their completion of onboarding actions
 
-- Awarding a badge to **blog posts** that are read 1000+ times. 
-- Awarding a badge to **blog post authors** whose content are read 1000+ times. 
-- Requiring **new users** to complete a journey that involves visiting 3 tutorial pages and writing a first blog post before gaining access to greater functionality.
+See [common use cases](./docs/sample-flows/) for in-depth examples on how facilitate these features with jz-gamification-engine.
 
-See the [documented sample flows](./docs/sample-flows/) to learn how to facilitate these features.
+## Why a Dedicated Engine?
+
+Gamification flows are often coupled tightly with the business logic of an application. They are difficult to extend and scale in a reusable fashion. jz-gamification-engine attempts to isolate the fundamental gamification flows (define goals, make progress towards goals, check goal progress, etc.) so they can be scaled independently and reused.
 
 ## Getting Started
 Today the engine is most easily run via docker compose. A more mature deployment system should become available at a later date.
@@ -33,7 +34,6 @@ See the [documented sample flows](./docs/sample-flows/) for examples on how to i
 ## TODO!!!!
 * Allow enable/disable of goals
 * Support nested event properties
-* Allow assignment of goals
 * Perf test: create baseline that reliably executes in given environment (ram/CPU/etc).
 * Perf test: make tests deterministic!
 * Push notifications when goal completed.
