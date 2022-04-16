@@ -9,7 +9,7 @@ Gamification can facilitate many positive outcomes for your application:
 - Help you identify your website's best users and content by measuring their engagement milestones 
 - Ensure your new users engage with your platform correctly by tracking their completion of onboarding actions
 
-See [common use cases](./docs/sample-flows/) for in-depth examples on how facilitate these features with jz-gamification-engine.
+See [common use cases](./docs/sample-flows/overview.md) for in-depth examples on how facilitate these features with jz-gamification-engine.
 
 ## Why a Dedicated Engine?
 
@@ -29,7 +29,7 @@ The API documentation will be available at `http://localhost:3000/api/v1/docs/` 
 2. Send usage `activity` as users interact with your applcation with the **Activities API**.
 3. Check on an `entity's` progress towards goals **Goal Progress API**.
 
-See the [documented sample flows](./docs/sample-flows/) for examples on how to interact with the APIs.
+See the [documented sample flows](./docs/sample-flows/overview.md) for examples on how to interact with the APIs.
 
 ## TODO!!!!
 * Allow enable/disable of goals
