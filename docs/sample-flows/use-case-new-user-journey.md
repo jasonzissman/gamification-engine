@@ -15,7 +15,7 @@ First we invoke an HTTP POST to create the goal. We use the **Goals** API as fol
   "criteria": [
     {
       "description": "Log into the application once.",
-  	  "targetEntityIdField": "userId",
+      "targetEntityIdField": "userId",
       "qualifyingEvent": {
         "eventType": "logged-in"
       },
@@ -26,7 +26,7 @@ First we invoke an HTTP POST to create the goal. We use the **Goals** API as fol
     }, 
     {
       "description": "Accept the application's EULA (terms and agreements)",
-  	  "targetEntityIdField": "userId",
+      "targetEntityIdField": "userId",
       "qualifyingEvent": {
         "eventType": "eula-accepted"
       },
@@ -37,7 +37,7 @@ First we invoke an HTTP POST to create the goal. We use the **Goals** API as fol
     },
     {
       "description": "Introduce yourself in the forum",
-  	  "targetEntityIdField": "userId",
+      "targetEntityIdField": "userId",
       "qualifyingEvent": {
         "eventType": "posted-in-forum",
         "forum-id": "introductions"
