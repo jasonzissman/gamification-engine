@@ -34,16 +34,13 @@ The API documentation will be available at `http://localhost:3000/api/v1/docs/` 
 
 See the [common use cases](./docs/use-cases/overview.md) for examples on how to create and use goals.
 
-## TODO!!!!
-* Allow enable/disable of goals
-* Support nested event properties
-* Perf test: create baseline that reliably executes in given environment (ram/CPU/etc).
-* Perf test: make tests deterministic!
-* Push notifications when goal completed.
-* Add support for goal expiration! Should not process criteria/goals that are no longer applicable.
-* Cache calls to database
-* General authorization approach.
+## Feature Ideas that Need Prioritization
+* Support nested (dot notation) activity field names
+* Event stream integration
+* Allow enabling/disabling of goals
+* Allow expiration of goals
+* Push notifications when entity completes goal
+* Authorization
 * Put in timing/profiling options to warn if things are going too slow
-* Cache common/repeated calls
 * support mutli-node or clustered model (broadcast to clients when known attributes change)
 * use Jest instead of Mocha
