@@ -36,7 +36,6 @@ describe('Basic Use Cases', function () {
         await neo4jDriver.close();
         log(`stopping neo4j test instance`)
         await neo4jTestInstance.stop();
-
     });
 
     this.beforeEach(async () => {
@@ -50,7 +49,8 @@ describe('Basic Use Cases', function () {
         await session.run("MATCH (e) DETACH DELETE e");
         session.close();
     });
- it('should mark a goal as complete after enough relevant events received', async () => {
+
+    it('should mark a goal as complete after enough relevant events received', async () => {
 
         let userId = `test-user-${uuidv4()}`;
 
@@ -302,7 +302,6 @@ describe('Basic Use Cases', function () {
         });
 
     }).timeout(240000);
-   
 
     it('should return progress made towards multiple goals', async () => {
 
@@ -425,6 +424,23 @@ describe('Basic Use Cases', function () {
                     {
                         description: "Do something impossible.",
                         progress: 0,
+                        id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
+                        threshold: 1,
+                    }
+                ]
+            }]);
+
+        let onlyCompletedGoalProgress = await getProgress(userId, undefined, true);
+        assertEqualEntityProgress(onlyCompletedGoalProgress.data, [
+            {
+                id: goalId2,
+                isComplete: true,
+                completionTimestamp: "some-valid-timestamp",
+                name: "Salesman",
+                criteriaProgress: [
+                    {
+                        description: "Sell at least one item.",
+                        progress: 1,
                         id: "2ad583c6-0c08-4a89-83bf-11be4da93923",
                         threshold: 1,
                     }
