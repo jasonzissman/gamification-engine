@@ -2,8 +2,8 @@ function generateCleanField(field) {
 
     if (field && typeof field === 'string') {
         return field.trim();
-    } else if (!isNaN(field)) {
-        return field; 
+    } else if (!isNaN(field) || typeof field === 'object') {
+        return field;
     } else {
         return undefined;
     }

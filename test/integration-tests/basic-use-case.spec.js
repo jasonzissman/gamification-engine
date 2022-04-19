@@ -50,6 +50,16 @@ describe('Basic Use Cases', function () {
         session.close();
     });
 
+    // it('should support sample "New Guy in Town" goal from the use cases documentation', () => {
+
+    // it('should support sample "Mobile Power User" goal from the use cases documentation', () => {
+
+    // it('should support sample "Best Selling Author" goal from the use cases documentation', () => {
+
+    // it('should support sample "Best Selling Title" goal from the use cases documentation', () => {
+
+    // it('should support sample "Bookworm" goal from the use cases documentation', () => {
+
     it('should mark a goal as complete after enough relevant events received', async () => {
 
         let userId = `test-user-${uuidv4()}`;
@@ -449,452 +459,94 @@ describe('Basic Use Cases', function () {
 
     }).timeout(240000);
 
+    it('should support "less than" goal criteria comparison', async () => {
+
+        let userId = `test-user-${uuidv4()}`;
+
+        let createdGoal = await addGoal({
+            name: "Short Attention Span",
+            description: "Read at least one book for less than 60 seconds",
+            criteria: [
+                {
+                    description: "Read book for less than 60 seconds (60,000 ms)",
+                    targetEntityIdField: "userId",
+                    qualifyingEvent: {
+                        action: "exited-reader",
+                        timeSpentOnPageMs: {
+                            lessThan: 60000
+                        }
+                    },
+                    aggregation: {
+                        type: "count",
+                    },
+                    threshold: 1
+                }
+            ]
+        });
+
+        let goalId = createdGoal.data.goalId;
+
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "exited-reader",
+            timeSpentOnPageMs: 67045,
+            userId: userId,
+            foo: "bar",
+        }, true);
+
+        let progress = await getProgress(userId, goalId);
+
+        assertEqualEntityProgress(progress.data, {
+            id: goalId,
+            isComplete: false,
+            name: "Short Attention Span",
+            criteriaProgress: [{
+                description: "Read book for less than 60 seconds (60,000 ms)",
+                progress: 0,
+                threshold: 1,
+            }]
+        });
+
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "exited-reader",
+            timeSpentOnPageMs: 17341,
+            userId: userId,
+            foo: "bar",
+        }, true);
+
+        let progress2 = await getProgress(userId, goalId);
+
+        assertEqualEntityProgress(progress2.data, {
+            id: goalId,
+            isComplete: true,
+            completionTimestamp: 'a-valid-timestamp',
+            name: "Short Attention Span",
+            criteriaProgress: [{
+                description: "Read book for less than 60 seconds (60,000 ms)",
+                progress: 1,
+                threshold: 1,
+            }]
+        });
+
+    }).timeout(240000);
+
+    // it('should support "greater than" goal criteria comparison', () => {
+
+    // it('should support compound goal criteria comparisons (less than and greater than simultaneously)', () => {
+
+    // it('should support enabling and disabling of goals', () => {
+
+    // it('should support goal expiration', () => {
+
+    // it('should support dot notation field nesting', () => {
+
     // it('should let multiple entities benefit from the same event if multiple goals are applicable', async () => {
-
-    //     let goal1 = await addGoal({
-    //         name: "Mobile Power User",
-    //         description: "Log in at least 3 times on a mobile device",
-    //         criteria: [
-    //             {
-    //                 targetEntityIdField: "userId",
-    //                 qualifyingEvent: {
-    //                     action: "log-in",
-    //                     platform: "mobile"
-    //                 },
-    //                 aggregation: {
-    //                     type: "count",
-    //                 },
-    //                 threshold: 3
-    //             }
-    //         ]
-    //     });
-
-    //     let goal1Id = goal1.data.goalId;
-    //     let goal1CriteriaIds = goal1.data.goal.criteriaIds;
-
-    //     let goal2 = await addGoal({
-    //         name: "The Popular Group",
-    //         description: "Have members of your group log into at least 3 times",
-    //         criteria: [
-    //             {
-    //                 targetEntityIdField: "groupId",
-    //                 qualifyingEvent: {
-    //                     action: "log-in",
-    //                 },
-    //                 aggregation: {
-    //                     type: "count",
-    //                 },
-    //                 threshold: 3
-    //             }
-    //         ]
-    //     });
-
-    //     let goal2Id = goal2.data.goalId;
-    //     let goal2CriteriaIds = goal2.data.goal.criteriaIds;
-
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "log-in",
-    //         platform: "mobile",
-    //         userId: "john-doe-1234",
-    //         groupId: "the-wildcats",
-    //         foo: "bar"
-    //     }, true);
-
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "log-in",
-    //         platform: "mobile",
-    //         userId: "mike-smith-1234",
-    //         groupId: "the-wildcats",
-    //         foo: "bar"
-    //     }, true);
-
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "log-in",
-    //         platform: "desktop",
-    //         userId: "sally-craig-1234",
-    //         groupId: "the-wildcats",
-    //         foo: "bar"
-    //     }, true);
-
-    //     let johnProgress = await getProgress("userId", "john-doe-1234");
-    //     assertEqualEntityProgress(johnProgress.data, {
-    //         entityId: 'john-doe-1234',
-    //         points: 0,
-    //         goals: {
-    //             [goal1Id]: {
-    //                 criteriaIds: {
-    //                     [goal1CriteriaIds[0]]: {
-    //                         isComplete: false,
-    //                         value: 1
-    //                     }
-    //                 },
-    //                 isComplete: false
-    //             }
-    //         }
-    //     });
-
-    //     let mikeProgress = await getProgress("mike-smith-1234");
-    //     assertEqualEntityProgress(mikeProgress.data, {
-    //         entityId: 'mike-smith-1234',
-    //         points: 0,
-    //         goals: {
-    //             [goal1Id]: {
-    //                 criteriaIds: {
-    //                     [goal1CriteriaIds[0]]: {
-    //                         isComplete: false,
-    //                         value: 1
-    //                     }
-    //                 },
-    //                 isComplete: false
-    //             }
-    //         }
-    //     });
-
-    //     let sallyProgress = await getProgress("sally-craig-1234");
-    //     // Sally has not made progress towards any goal so her overall progress is 404
-    //     assert.deepStrictEqual(sallyProgress.status, 404);
-    //     assert.deepStrictEqual(sallyProgress.data, {
-    //         message: "no progress found for entity sally-craig-1234."
-    //     });
-
-    //     let groupProgress = await getProgress("the-wildcats");
-    //     assertEqualEntityProgress(groupProgress.data, {
-    //         entityId: 'the-wildcats',
-    //         points: 0,
-    //         goals: {
-    //             [goal2Id]: {
-    //                 criteriaIds: {
-    //                     [goal2CriteriaIds[0]]: {
-    //                         isComplete: true,
-    //                         value: 3
-    //                     }
-    //                 },
-    //                 isComplete: true
-    //             }
-    //         }
-    //     });
-
-    // }).timeout(240000);
 
     // it('should allow fetching of existing goals', async () => {
 
-    //     let goal1 = await addGoal({
-    //         name: "Mobile Power User",
-    //         description: "Log in at least 3 times on a mobile device",
-    //         criteria: [
-    //             {
-    //                 targetEntityIdField: "userId",
-    //                 qualifyingEvent: {
-    //                     action: "log-in",
-    //                     platform: "mobile"
-    //                 },
-    //                 aggregation: {
-    //                     type: "count",
-    //                 },
-    //                 threshold: 3
-    //             }
-    //         ]
-    //     });
-
-    //     let goal1Id = goal1.data.goalId;
-    //     let goal1CriteriaIds = goal1.data.goal.criteriaIds;
-
-    //     let goal2 = await addGoal({
-    //         name: "The Popular Group",
-    //         description: "Have members of your group log into at least 3 times",
-    //         criteria: [
-    //             {
-    //                 targetEntityIdField: "groupId",
-    //                 qualifyingEvent: {
-    //                     action: "log-in",
-    //                 },
-    //                 aggregation: {
-    //                     type: "count",
-    //                 },
-    //                 threshold: 3
-    //             }
-    //         ]
-    //     });
-
-    //     let goal2Id = goal2.data.goalId;
-    //     let goal2CriteriaIds = goal2.data.goal.criteriaIds;
-
-    //     let fetchedGoals = await getGoals();
-
-    //     assert.deepStrictEqual(fetchedGoals.data, [
-    //         {
-    //             criteriaIds: goal1CriteriaIds,
-    //             id: goal1Id,
-    //             description: "Log in at least 3 times on a mobile device",
-    //             name: 'Mobile Power User',
-    //             state: "enabled"
-    //         },
-    //         {
-    //             criteriaIds: goal2CriteriaIds,
-    //             id: goal2Id,
-    //             description: "Have members of your group log into at least 3 times",
-    //             name: 'The Popular Group',
-    //             state: "enabled"
-    //         }
-    //     ]);
-
-    // }).timeout(240000);
-
     // it('should support sum aggregations on specific event fields', async () => {
 
-    //     let createdGoal = await addGoal({
-    //         name: "Frequent Flyer",
-    //         description: "Spend at least 5 minutes in our app",
-    //         criteria: [
-    //             {
-    //                 targetEntityIdField: "userId",
-    //                 qualifyingEvent: {
-    //                     action: "session-ended"
-    //                 },
-    //                 aggregation: {
-    //                     type: "sum",
-    //                     valueField: "sessionDurationInSeconds"
-    //                 },
-    //                 threshold: 300 // 300 seconds = 5 minutes
-    //             }
-    //         ]
-    //     });
-
-    //     let goalId = createdGoal.data.goalId;
-    //     let criteriaIds = createdGoal.data.goal.criteriaIds;
-
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "session-ended",
-    //         userId: "john-doe-1234",
-    //         sessionDurationInSeconds: 240, // Only 4 minutes, just shy of our goal
-    //         foo: "bar"
-    //     }, true);
-
-    //     let progress = await getProgress("userId", "john-doe-1234");
-
-    //     assertEqualEntityProgress(progress.data, {
-    //         entityId: 'john-doe-1234',
-    //         points: 0,
-    //         goals: {
-    //             [goalId]: {
-    //                 criteriaIds: {
-    //                     [criteriaIds[0]]: {
-    //                         isComplete: false,
-    //                         value: 240
-    //                     }
-    //                 },
-    //                 isComplete: false
-    //             }
-    //         }
-    //     });
-
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "session-ended",
-    //         userId: "john-doe-1234",
-    //         sessionDurationInSeconds: 120, // Spent another 2 minutes in app
-    //         foo: "bar"
-    //     }, true);
-
-    //     let progress2 = await getProgress("userId", "john-doe-1234");
-
-    //     assertEqualEntityProgress(progress2.data, {
-    //         entityId: 'john-doe-1234',
-    //         points: 0,
-    //         goals: {
-    //             [goalId]: {
-    //                 criteriaIds: {
-    //                     [criteriaIds[0]]: {
-    //                         isComplete: true,
-    //                         value: 360
-    //                     }
-    //                 },
-    //                 isComplete: true
-    //             }
-    //         }
-    //     });
-
-    // }).timeout(240000);
-
     // it('should support sum aggregations with predefined value', async () => {
-
-    //     let createdGoal = await addGoal({
-    //         name: "Social Butterfly",
-    //         description: "Talk with your friends",
-    //         criteria: [
-    //             {
-    //                 targetEntityIdField: "userId",
-    //                 qualifyingEvent: {
-    //                     action: "send-message"
-    //                 },
-    //                 aggregation: {
-    //                     type: "sum",
-    //                     value: 40
-    //                 },
-    //                 threshold: 100
-    //             }
-    //         ]
-    //     });
-
-    //     let goalId = createdGoal.data.goalId;
-    //     let criteriaIds = createdGoal.data.goal.criteriaIds;
-
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "send-message",
-    //         userId: "john-doe-1234"
-    //     }, true);
-
-    //     let progress = await getProgress("userId", "john-doe-1234");
-
-    //     assertEqualEntityProgress(progress.data, {
-    //         entityId: 'john-doe-1234',
-    //         points: 0,
-    //         goals: {
-    //             [goalId]: {
-    //                 criteriaIds: {
-    //                     [criteriaIds[0]]: {
-    //                         isComplete: false,
-    //                         value: 40
-    //                     }
-    //                 },
-    //                 isComplete: false
-    //             }
-    //         }
-    //     });
-
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "send-message",
-    //         userId: "john-doe-1234"
-    //     }, true);
-
-    //     await sendEvent({
-    //         clientId: "client-app-1234",
-    //         action: "send-message",
-    //         userId: "john-doe-1234"
-    //     }, true);
-
-    //     let progress2 = await getProgress("userId", "john-doe-1234");
-
-    //     assertEqualEntityProgress(progress2.data, {
-    //         entityId: 'john-doe-1234',
-    //         points: 0,
-    //         goals: {
-    //             [goalId]: {
-    //                 criteriaIds: {
-    //                     [criteriaIds[0]]: {
-    //                         isComplete: true,
-    //                         value: 120
-    //                     }
-    //                 },
-    //                 isComplete: true
-    //             }
-    //         }
-    //     });
-
-    // }).timeout(240000);
-
-    // it('should require all criteria to finish before marking goal as complete', async () => {
-
-    //     let createdGoal = await addGoal({
-    //         name: "Power User",
-    //         description: "Log in 2 times AND spend at least 5 minutes in the app",
-    //         criteria: [
-    //             {
-    //                 targetEntityIdField: "userId",
-    //                 qualifyingEvent: {
-    //                     action: "log-in",
-    //                 },
-    //                 aggregation: {
-    //                     type: "count",
-    //                 },
-    //                 threshold: 2
-    //             },
-    //             {
-    //                 targetEntityIdField: "userId",
-    //                 qualifyingEvent: {
-    //                     action: "session-ended"
-    //                 },
-    //                 aggregation: {
-    //                     type: "sum",
-    //                     valueField: "sessionDurationInSeconds"
-    //                 },
-    //                 threshold: 300 // 300 seconds = 5 minutes
-    //             }
-    //         ]
-    //     });
-
-    //     let goalId = createdGoal.data.goalId;
-    //     let criteriaIds = createdGoal.data.goal.criteriaIds;
-
-    //     // User logs in
-    //     await sendEvent({
-    //         action: "log-in",
-    //         userId: "john-doe-1234",
-    //     }, true);
-
-    //     // User session ends 10 minutes later
-    //     await sendEvent({
-    //         action: "session-ended",
-    //         userId: "john-doe-1234",
-    //         sessionDurationInSeconds: 600, // 10 minutes, well past requirements
-    //     }, true);
-
-    //     let progress1 = await getProgress("userId", "john-doe-1234");
-
-    //     assertEqualEntityProgress(progress1.data, {
-    //         entityId: 'john-doe-1234',
-    //         points: 0,
-    //         goals: {
-    //             [goalId]: {
-    //                 criteriaIds: {
-    //                     [criteriaIds[0]]: {
-    //                         isComplete: false,
-    //                         value: 1
-    //                     },
-    //                     [criteriaIds[1]]: {
-    //                         isComplete: true,
-    //                         value: 600
-    //                     }
-    //                 },
-    //                 isComplete: false
-    //             }
-    //         }
-    //     });
-
-    //     // User logs in again
-    //     await sendEvent({
-    //         action: "log-in",
-    //         userId: "john-doe-1234",
-    //     }, true);
-
-    //     let progress2 = await getProgress("userId", "john-doe-1234");
-
-    //     assertEqualEntityProgress(progress2.data, {
-    //         entityId: 'john-doe-1234',
-    //         points: 0,
-    //         goals: {
-    //             [goalId]: {
-    //                 criteriaIds: {
-    //                     [criteriaIds[0]]: {
-    //                         isComplete: true,
-    //                         value: 2
-    //                     },
-    //                     [criteriaIds[1]]: {
-    //                         isComplete: true,
-    //                         value: 600
-    //                     }
-    //                 },
-    //                 isComplete: true
-    //             }
-    //         }
-    //     });
-
-    // }).timeout(240000);
 
 });

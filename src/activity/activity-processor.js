@@ -1,11 +1,11 @@
 import { generateCleanField, generateNormalizedFieldValueKey } from './activity-fields-helper.js';
-import { KNOWN_CRITERIA_KEY_VALUE_PAIRS, KNOWN_SYSTEM_FIELDS, getCriteriaFulfilledByActivity, updateEntityProgress } from '../database/db-helper.js';
+import { KNOWN_CRITERIA_KEY_VALUE_PAIRS, KNOWN_SYSTEM_FIELDS, getCriteriaFulfilledByActivity, updateEntityProgress, KNOWN_CRITERIA_NUMERIC_FIELDS } from '../database/db-helper.js';
 
 async function processActivity(receivedActivity) {
 
     if (receivedActivity) {
 
-        const cleanActivity = createCleanVersionOfActivity(receivedActivity, KNOWN_CRITERIA_KEY_VALUE_PAIRS, KNOWN_SYSTEM_FIELDS);
+        const cleanActivity = createCleanVersionOfActivity(receivedActivity, KNOWN_CRITERIA_KEY_VALUE_PAIRS, { ...KNOWN_SYSTEM_FIELDS, ...KNOWN_CRITERIA_NUMERIC_FIELDS });
         if (cleanActivity && Object.keys(cleanActivity).length > 0) {
             const criteria = await getCriteriaFulfilledByActivity(cleanActivity);
 

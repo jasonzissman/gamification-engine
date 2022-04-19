@@ -1,7 +1,9 @@
 import neo4j from "neo4j-driver";
 import { log } from "../utility/logger.js";
+import { v4 as uuidv4 } from 'uuid';
 
 let neo4jDriver;
+let KNOWN_CRITERIA_NUMERIC_FIELDS = {};
 let KNOWN_CRITERIA_KEY_VALUE_PAIRS = {};
 let KNOWN_SYSTEM_FIELDS = {};
 
@@ -15,6 +17,11 @@ async function initDbConnection(neo4jBoltUri, neo4jUser, neo4jPassword) {
     await runNeo4jCommand(`Create :Entity(id) index.`, `CREATE INDEX ON :Entity(id)`);
     await runNeo4jCommand(`Create :Criteria(id) index.`, `CREATE INDEX ON :Criteria(id)`);
     await runNeo4jCommand(`Create :EventAttribute(expression) index.`, `CREATE INDEX ON :EventAttribute(expression)`);
+    await runNeo4jCommand(`Create :EventAttribute(id) index.`, `CREATE INDEX ON :EventAttribute(id)`);
+    await runNeo4jCommand(`Create :EventAttribute(type) index.`, `CREATE INDEX ON :EventAttribute(type)`);
+    await runNeo4jCommand(`Create :EventAttribute(field) index.`, `CREATE INDEX ON :EventAttribute(field)`);
+    await runNeo4jCommand(`Create :EventAttribute(min) index.`, `CREATE INDEX ON :EventAttribute(min)`);
+    await runNeo4jCommand(`Create :EventAttribute(max) index.`, `CREATE INDEX ON :EventAttribute(max)`);
 
     updateKnownFieldFilters();
 }
@@ -27,10 +34,20 @@ async function updateKnownFieldFilters() {
     let fieldValuePairBatch = [];
     let fvpCounter = 0;
     while (fvpCounter === 0 || fieldValuePairBatch.length > 0) {
-        let query = `MATCH (n:EventAttribute) RETURN n.expression SKIP ${fvpCounter * batchSize} LIMIT ${batchSize}`;
+        let query = `MATCH (n:EventAttribute {type: "stringComparison"}) RETURN n.expression SKIP ${fvpCounter * batchSize} LIMIT ${batchSize}`;
         fieldValuePairBatch = await runNeo4jCommand(`Fetch known criteria key value pairs (iteration ${fvpCounter}).`, query);
         fieldValuePairBatch.forEach(fvp => { if (fvp) { KNOWN_CRITERIA_KEY_VALUE_PAIRS[fvp] = true } });
         fvpCounter++;
+    }
+
+    // Fetch updated copy of all numeric event attribute fields
+    let numericFieldBatch = [];
+    let nfCounter = 0;
+    while (nfCounter === 0 || numericFieldBatch.length > 0) {
+        let query = `MATCH (n:EventAttribute {type: "numericComparison"}) RETURN n.fieldName SKIP ${nfCounter * batchSize} LIMIT ${batchSize}`;
+        numericFieldBatch = await runNeo4jCommand(`Fetch known criteria key value pairs (iteration ${nfCounter}).`, query);
+        numericFieldBatch.forEach(nf => { if (nf) { KNOWN_CRITERIA_NUMERIC_FIELDS[nf] = true } });
+        nfCounter++;
     }
 
     // scan all values of criterion.targetEntityField and add them to KNOWN_SYSTEM_FIELDS
@@ -168,7 +185,11 @@ async function persistGoalAndCriteria(goal, criteria) {
             KNOWN_SYSTEM_FIELDS[c.aggregation.valueField] = true;
         }
         Object.keys(c.qualifyingEvent).forEach(ea => {
-            KNOWN_CRITERIA_KEY_VALUE_PAIRS[`${ea}=${c.qualifyingEvent[ea]}`] = true;
+            if (typeof c.qualifyingEvent[ea] === "object") {
+                KNOWN_CRITERIA_NUMERIC_FIELDS[ea] = true;
+            } else {
+                KNOWN_CRITERIA_KEY_VALUE_PAIRS[`${ea}=${c.qualifyingEvent[ea]}`] = true;
+            }
         })
     });
 
@@ -184,9 +205,20 @@ function generateNeo4jInsertGoalTemplate(criteria) {
 
         command += `CREATE (${criteriaVariableName}:Criteria {id: $${criteriaVariableName}_id, description: $${criteriaVariableName}_description, targetEntityIdField: $${criteriaVariableName}_targetEntityIdField, aggregation_type: $${criteriaVariableName}_aggregation_type, aggregation_value: $${criteriaVariableName}_aggregation_value, aggregation_value_field: $${criteriaVariableName}_aggregation_value_field, threshold: $${criteriaVariableName}_threshold })\nCREATE (goal) -[:HAS_CRITERIA]-> (${criteriaVariableName})\n`
 
-        for (let j = 0; j < Object.keys(criteria[i].qualifyingEvent).length; j++) {
+        const qualifyingEventKeys = Object.keys(criteria[i].qualifyingEvent);
+        for (let j = 0; j < qualifyingEventKeys.length; j++) {
             const eventAttrVariableName = `criteria_${i}_attr_${j}`;
-            command += `MERGE (${eventAttrVariableName}:EventAttribute { expression: $${eventAttrVariableName}_expression })\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
+            if (typeof criteria[i].qualifyingEvent[qualifyingEventKeys[j]] === "object") {
+                let fieldRule = criteria[i].qualifyingEvent[qualifyingEventKeys[j]];
+                if (fieldRule.lessThan !== undefined || fieldRule.greaterThan !== undefined) {
+                    command += `MERGE (${eventAttrVariableName}:EventAttribute { id: "${uuidv4()}", type: "numericComparison", fieldName: "${qualifyingEventKeys[j]}", min: $${eventAttrVariableName}_min, max: $${eventAttrVariableName}_max})\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
+                } else if (fieldRule.equals !== undefined) {
+                    command += `MERGE (${eventAttrVariableName}:EventAttribute { id: "${uuidv4()}", type: "stringComparison", expression: $${eventAttrVariableName}_expression })\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
+                }
+
+            } else {
+                command += `MERGE (${eventAttrVariableName}:EventAttribute { id: "${uuidv4()}", type: "stringComparison", expression: $${eventAttrVariableName}_expression })\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
+            }
         }
     }
 
@@ -219,8 +251,24 @@ function createNeo4jFriendlyParams(goal, criteria) {
         for (let j = 0; j < qualifyingEventKeys.length; j++) {
             const key = qualifyingEventKeys[j];
             const eventAttrVariableName = `criteria_${i}_attr_${j}`;
-            const formattedExpression = `${key}=${criterion.qualifyingEvent[key]}`;
-            params[`${eventAttrVariableName}_expression`] = formattedExpression;
+
+            if (typeof criteria[i].qualifyingEvent[key] === "object") {
+                let fieldRule = criteria[i].qualifyingEvent[key];
+
+                if (fieldRule.lessThan !== undefined || fieldRule.greaterThan !== undefined) {
+                    const minSafeInteger = -999999; // TODO -  what is min possible value?
+                    const maxSafeInteger = 999999; // TODO -  what is max possible value?
+                    params[`${eventAttrVariableName}_min`] = fieldRule.greaterThan == undefined || isNaN(fieldRule.greaterThan) ? minSafeInteger : Number(fieldRule.greaterThan);
+                    params[`${eventAttrVariableName}_max`] = fieldRule.lessThan == undefined || isNaN(fieldRule.lessThan) ? maxSafeInteger : Number(fieldRule.lessThan);
+                } else if (fieldRule.equals !== undefined) {
+                    const formattedExpression = `${key}=${criterion.qualifyingEvent[key]}`;
+                    params[`${eventAttrVariableName}_expression`] = formattedExpression;
+                }
+            } else {
+                const formattedExpression = `${key}=${criterion.qualifyingEvent[key]}`;
+                params[`${eventAttrVariableName}_expression`] = formattedExpression;
+            }
+
         }
     }
 
@@ -230,18 +278,26 @@ function createNeo4jFriendlyParams(goal, criteria) {
 
 async function getCriteriaFulfilledByActivity(event) {
 
-    const receivedEventProps = Object.keys(event).map(k => `${k}=${event[k]}`);
-
+    const stringComparisons = Object.entries(event).filter(kv => isNaN(kv[1])).map(kv => `${kv[0]}=${kv[1]}`);
+    const numericComparisons = Object.entries(event).filter(kv => !isNaN(kv[1])).map(kv => {
+        return { fieldName: kv[0], value: kv[1] };
+    });
     let query = `
         MATCH
-            (c:Criteria)-[:REQUIRES_EVENT_ATTRIBUTE]->(e:EventAttribute)
+            (ea:EventAttribute)<-[:REQUIRES_EVENT_ATTRIBUTE]-(c:Criteria)
         WHERE
-            ALL(candidateAttribute IN [(c)-[:REQUIRES_EVENT_ATTRIBUTE]->(candidateAttributes:EventAttribute) | candidateAttributes] WHERE candidateAttribute.expression IN $receivedEventProps)
+            ea.type = "numericComparison" and any(numericComparison in $numericComparisons WHERE ea.fieldName = numericComparison.fieldName AND ea.min < numericComparison.value AND ea.max > numericComparison.value)
+            or
+            ea.type = "stringComparison" and ea.expression in $stringComparisons
+        WITH
+            c, collect(ea.id) as matchingEventAttributeIds
+        WHERE
+            all(candidateAttribute IN [(c)-[:REQUIRES_EVENT_ATTRIBUTE]->(candidateAttributes:EventAttribute) | candidateAttributes] WHERE candidateAttribute.id IN matchingEventAttributeIds)
         RETURN
             distinct c{.*}
     `;
 
-    const criteria = await runNeo4jCommand(`get criteria matching event`, query, { receivedEventProps })
+    const criteria = await runNeo4jCommand(`get criteria matching event`, query, { stringComparisons, numericComparisons })
 
     criteria.forEach((c) => {
         c.aggregation = {
@@ -291,6 +347,7 @@ export {
     createNeo4jFriendlyParams,
     getCriteriaFulfilledByActivity,
     closeAllDbConnections,
+    KNOWN_CRITERIA_NUMERIC_FIELDS,
     KNOWN_CRITERIA_KEY_VALUE_PAIRS,
     KNOWN_SYSTEM_FIELDS
 };

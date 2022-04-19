@@ -21,7 +21,7 @@ function isSingleCriteriaValid(criteria) {
         criteria.qualifyingEvent &&
         Object.keys(criteria.qualifyingEvent).length > 0 &&
         isAggregationValid(criteria.aggregation) &&
-        criteria.threshold) {// 0 is not a valid threshld!
+        criteria.threshold) {// 0 is not a valid threshold!
 
         isValid = true;
     }
