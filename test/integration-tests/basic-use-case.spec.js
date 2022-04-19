@@ -531,7 +531,77 @@ describe('Basic Use Cases', function () {
 
     }).timeout(240000);
 
-    // it('should support "greater than" goal criteria comparison', () => {
+    it('should support "greater than" goal criteria comparison', async () => {
+
+        let userId = `test-user-${uuidv4()}`;
+
+        let createdGoal = await addGoal({
+            name: "Long Attention Span",
+            description: "Read at least one book for more than 60 seconds",
+            criteria: [
+                {
+                    description: "Read book for more than 60 seconds (60,000 ms)",
+                    targetEntityIdField: "userId",
+                    qualifyingEvent: {
+                        action: "exited-reader",
+                        timeSpentOnPageMs: {
+                            greaterThan: 60000
+                        }
+                    },
+                    aggregation: {
+                        type: "count",
+                    },
+                    threshold: 1
+                }
+            ]
+        });
+
+        let goalId = createdGoal.data.goalId;
+
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "exited-reader",
+            timeSpentOnPageMs: 17045,
+            userId: userId,
+            foo: "bar",
+        }, true);
+
+        let progress = await getProgress(userId, goalId);
+
+        assertEqualEntityProgress(progress.data, {
+            id: goalId,
+            isComplete: false,
+            name: "Long Attention Span",
+            criteriaProgress: [{
+                description: "Read book for more than 60 seconds (60,000 ms)",
+                progress: 0,
+                threshold: 1,
+            }]
+        });
+
+        await sendEvent({
+            clientId: "client-app-1234",
+            action: "exited-reader",
+            timeSpentOnPageMs: 67341,
+            userId: userId,
+            foo: "bar",
+        }, true);
+
+        let progress2 = await getProgress(userId, goalId);
+
+        assertEqualEntityProgress(progress2.data, {
+            id: goalId,
+            isComplete: true,
+            completionTimestamp: 'a-valid-timestamp',
+            name: "Long Attention Span",
+            criteriaProgress: [{
+                description: "Read book for more than 60 seconds (60,000 ms)",
+                progress: 1,
+                threshold: 1,
+            }]
+        });
+
+    }).timeout(240000);
 
     // it('should support compound goal criteria comparisons (less than and greater than simultaneously)', () => {
 

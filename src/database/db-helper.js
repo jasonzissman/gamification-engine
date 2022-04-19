@@ -254,12 +254,9 @@ function createNeo4jFriendlyParams(goal, criteria) {
             params[`${eventAttrVariableName}_id`] = uuidv4();
             if (typeof criteria[i].qualifyingEvent[key] === "object") {
                 let fieldRule = criteria[i].qualifyingEvent[key];
-
                 if (fieldRule.lessThan !== undefined || fieldRule.greaterThan !== undefined) {
-                    const minSafeInteger = -999999; // TODO -  what is min possible value?
-                    const maxSafeInteger = 999999; // TODO -  what is max possible value?
-                    params[`${eventAttrVariableName}_min`] = fieldRule.greaterThan == undefined || isNaN(fieldRule.greaterThan) ? minSafeInteger : Number(fieldRule.greaterThan);
-                    params[`${eventAttrVariableName}_max`] = fieldRule.lessThan == undefined || isNaN(fieldRule.lessThan) ? maxSafeInteger : Number(fieldRule.lessThan);
+                    params[`${eventAttrVariableName}_min`] = fieldRule.greaterThan == undefined || isNaN(fieldRule.greaterThan) ? Number.MIN_SAFE_INTEGER : Number(fieldRule.greaterThan);
+                    params[`${eventAttrVariableName}_max`] = fieldRule.lessThan == undefined || isNaN(fieldRule.lessThan) ? Number.MAX_SAFE_INTEGER : Number(fieldRule.lessThan);
                 } else if (fieldRule.equals !== undefined) {
                     const formattedExpression = `${key}=${criterion.qualifyingEvent[key]}`;
                     params[`${eventAttrVariableName}_expression`] = formattedExpression;
