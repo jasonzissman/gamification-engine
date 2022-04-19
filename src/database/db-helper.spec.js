@@ -21,9 +21,9 @@ describe('generateNeo4jInsertGoalTemplate', () => {
         assertNeo4jCommandIsEqual(actual, `CREATE (goal:Goal {id: $goal_id, name: $goal_name, state: $goal_state, description: $goal_description, points: $goal_points})
             CREATE (criteria_0:Criteria {id: $criteria_0_id, description: $criteria_0_description, targetEntityIdField: $criteria_0_targetEntityIdField, aggregation_type: $criteria_0_aggregation_type, aggregation_value: $criteria_0_aggregation_value, aggregation_value_field: $criteria_0_aggregation_value_field, threshold: $criteria_0_threshold })
             CREATE (goal) -[:HAS_CRITERIA]-> (criteria_0)
-            MERGE (criteria_0_attr_0:EventAttribute { expression: $criteria_0_attr_0_expression })
+            MERGE (criteria_0_attr_0:EventAttribute { id: "$criteria_0_attr_0_id", type: "stringComparison", expression: $criteria_0_attr_0_expression })
             CREATE (criteria_0) -[:REQUIRES_EVENT_ATTRIBUTE]-> (criteria_0_attr_0)
-            MERGE (criteria_0_attr_1:EventAttribute { expression: $criteria_0_attr_1_expression })
+            MERGE (criteria_0_attr_1:EventAttribute { id: "$criteria_0_attr_1_id", type: "stringComparison", expression: $criteria_0_attr_1_expression })
             CREATE (criteria_0) -[:REQUIRES_EVENT_ATTRIBUTE]-> (criteria_0_attr_1)
             RETURN goal.id
             `);
@@ -58,13 +58,12 @@ describe('createNeo4jFriendlyParams', () => {
             }
         ]
         const actual = createNeo4jFriendlyParams(goal, criteria);
+        removeIdsFromObject(actual)
         assert.deepStrictEqual(actual, {
             "goal_description": "Receive a badge when you log in at least 5 times on a mobile device",
-            "goal_id": "123",
             "goal_name": "Mobile Power User",
             "goal_points": 10,
             "goal_state": "enabled",
-            "criteria_0_id": "111",
             "criteria_0_description": "Log in 5 times from a mobile device",
             "criteria_0_threshold": 5,
             "criteria_0_targetEntityIdField": "userId",
@@ -82,5 +81,14 @@ function assertNeo4jCommandIsEqual(actual, expected) {
     const expectedLines = expected.split("\n")
     for (let i = 0; i < expectedLines.length; i++) {
         assert.equal(actualLines[i].trim(), expectedLines[i].trim());
+    }
+}
+
+
+function removeIdsFromObject(objectToClean) {
+    for (let key in objectToClean) {
+        if (key.includes("_id")) {
+            delete objectToClean[key];
+        }
     }
 }

@@ -211,13 +211,13 @@ function generateNeo4jInsertGoalTemplate(criteria) {
             if (typeof criteria[i].qualifyingEvent[qualifyingEventKeys[j]] === "object") {
                 let fieldRule = criteria[i].qualifyingEvent[qualifyingEventKeys[j]];
                 if (fieldRule.lessThan !== undefined || fieldRule.greaterThan !== undefined) {
-                    command += `MERGE (${eventAttrVariableName}:EventAttribute { id: "${uuidv4()}", type: "numericComparison", fieldName: "${qualifyingEventKeys[j]}", min: $${eventAttrVariableName}_min, max: $${eventAttrVariableName}_max})\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
+                    command += `MERGE (${eventAttrVariableName}:EventAttribute { id: "$${eventAttrVariableName}_id", type: "numericComparison", fieldName: "${qualifyingEventKeys[j]}", min: $${eventAttrVariableName}_min, max: $${eventAttrVariableName}_max})\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
                 } else if (fieldRule.equals !== undefined) {
-                    command += `MERGE (${eventAttrVariableName}:EventAttribute { id: "${uuidv4()}", type: "stringComparison", expression: $${eventAttrVariableName}_expression })\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
+                    command += `MERGE (${eventAttrVariableName}:EventAttribute { id: "$${eventAttrVariableName}_id", type: "stringComparison", expression: $${eventAttrVariableName}_expression })\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
                 }
 
             } else {
-                command += `MERGE (${eventAttrVariableName}:EventAttribute { id: "${uuidv4()}", type: "stringComparison", expression: $${eventAttrVariableName}_expression })\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
+                command += `MERGE (${eventAttrVariableName}:EventAttribute { id: "$${eventAttrVariableName}_id", type: "stringComparison", expression: $${eventAttrVariableName}_expression })\nCREATE (${criteriaVariableName}) -[:REQUIRES_EVENT_ATTRIBUTE]-> (${eventAttrVariableName})\n`
             }
         }
     }
@@ -251,7 +251,7 @@ function createNeo4jFriendlyParams(goal, criteria) {
         for (let j = 0; j < qualifyingEventKeys.length; j++) {
             const key = qualifyingEventKeys[j];
             const eventAttrVariableName = `criteria_${i}_attr_${j}`;
-
+            params[`${eventAttrVariableName}_id`] = uuidv4();
             if (typeof criteria[i].qualifyingEvent[key] === "object") {
                 let fieldRule = criteria[i].qualifyingEvent[key];
 
